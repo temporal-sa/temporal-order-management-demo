@@ -1,9 +1,9 @@
-module simple-go
+module github.com/ktenzer/temporal-order-management
 
-go 1.21.6
+go 1.21.5
 
 require (
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.6.0
 	go.temporal.io/sdk v1.25.1
 )
 
