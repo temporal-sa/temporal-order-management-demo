@@ -1,8 +1,9 @@
 package workflows
 
 import (
-	"simple-go/activities"
 	"time"
+
+	"github.com/ktenzer/temporal-order-management/activities"
 
 	"github.com/ktenzer/temporal-order-management/resources"
 	"go.temporal.io/sdk/temporal"

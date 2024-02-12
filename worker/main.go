@@ -6,15 +6,15 @@ import (
 	"log/slog"
 	"os"
 
-	"simple-go/activities"
-	"simple-go/workflows"
+	"github.com/ktenzer/temporal-order-management/activities"
+	"github.com/ktenzer/temporal-order-management/workflows"
 
 	"go.temporal.io/sdk/client"
 	tlog "go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/worker"
 )
 
-const TASK_QUEUE = "simple-task-queue"
+const TASK_QUEUE = "order-management-queue"
 
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
