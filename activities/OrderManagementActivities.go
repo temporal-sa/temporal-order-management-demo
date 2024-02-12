@@ -7,12 +7,13 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/ktenzer/temporal-order-management/resources"
 	"go.temporal.io/sdk/activity"
 )
 
 // Basic activity definition
 
-func CheckFraud(ctx context.Context, input OrderInput) (string, error) {
+func CheckFraud(ctx context.Context, input resources.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Check Fraud activity started", "oderId", input)
 
@@ -21,7 +22,7 @@ func CheckFraud(ctx context.Context, input OrderInput) (string, error) {
 	return input, nil
 }
 
-func PrepareShipment(ctx context.Context, input OrderInput) (string, error) {
+func PrepareShipment(ctx context.Context, input resources.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Prepare SHipment activity started", "orderId", input)
 
@@ -30,7 +31,7 @@ func PrepareShipment(ctx context.Context, input OrderInput) (string, error) {
 	return input, nil
 }
 
-func ChargeCustomer(ctx context.Context, input OrderInput) (string, error) {
+func ChargeCustomer(ctx context.Context, input resources.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Charge Customer activity started", "orderId", input)
 
@@ -45,7 +46,7 @@ func ChargeCustomer(ctx context.Context, input OrderInput) (string, error) {
 	return input, nil
 }
 
-func ShipOrder(ctx context.Context, input OrderInput) (string, error) {
+func ShipOrder(ctx context.Context, input resources.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Ship Order activity started", "oderId", input)
 

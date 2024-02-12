@@ -4,11 +4,12 @@ import (
 	"simple-go/activities"
 	"time"
 
+	"github.com/ktenzer/temporal-order-management/resources"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
-func OrderManagementWorkflow(ctx workflow.Context, input OrderInput) (*OrderOutput, error) {
+func OrderManagementWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
 
@@ -49,7 +50,7 @@ func OrderManagementWorkflow(ctx workflow.Context, input OrderInput) (*OrderOutp
 		return nil, err
 	}
 
-	output := &OrderOutput{
+	output := &resources.OrderOutput{
 		TrackingId: trackingId,
 	}
 	return output, nil
