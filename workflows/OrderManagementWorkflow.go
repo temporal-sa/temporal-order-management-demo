@@ -25,20 +25,44 @@ func OrderManagementWorkflow(ctx workflow.Context, input resources.OrderInput) (
 	}
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
+	if input.Scenario == "ADVANCED_VISIBILITY" {
+		orderStatus := map[string]interface{}{
+			"OrderStatus": "Check Fraud",
+		}
+		workflow.UpsertSearchAttributes(ctx, orderStatus)
+	}
+
+	workflow.Sleep(ctx, 3*time.Second)
+
 	var result1 string
 	err := workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Info("Sleeping for 1 second...")
-	workflow.Sleep(ctx, 1*time.Second)
+	if input.Scenario == "ADVANCED_VISIBILITY" {
+		orderStatus := map[string]interface{}{
+			"OrderStatus": "Prepare Shipment",
+		}
+		workflow.UpsertSearchAttributes(ctx, orderStatus)
+	}
+
+	workflow.Sleep(ctx, 3*time.Second)
 
 	var result2 string
 	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &result2)
 	if err != nil {
 		return nil, err
 	}
+
+	if input.Scenario == "ADVANCED_VISIBILITY" {
+		orderStatus := map[string]interface{}{
+			"OrderStatus": "Charge Customer",
+		}
+		workflow.UpsertSearchAttributes(ctx, orderStatus)
+	}
+
+	workflow.Sleep(ctx, 3*time.Second)
 
 	var result3 string
 	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input).Get(ctx, &result3)
@@ -71,10 +95,26 @@ func OrderManagementWorkflow(ctx workflow.Context, input resources.OrderInput) (
 		input.Address = address
 	}
 
+	if input.Scenario == "ADVANCED_VISIBILITY" {
+		orderStatus := map[string]interface{}{
+			"OrderStatus": "Ship Order",
+		}
+		workflow.UpsertSearchAttributes(ctx, orderStatus)
+	}
+
+	workflow.Sleep(ctx, 3*time.Second)
+
 	var trackingId string
 	err = workflow.ExecuteActivity(ctx, activities.ShipOrder, input).Get(ctx, &trackingId)
 	if err != nil {
 		return nil, err
+	}
+
+	if input.Scenario == "ADVANCED_VISIBILITY" {
+		orderStatus := map[string]interface{}{
+			"OrderStatus": "Complete",
+		}
+		workflow.UpsertSearchAttributes(ctx, orderStatus)
 	}
 
 	output := &resources.OrderOutput{
