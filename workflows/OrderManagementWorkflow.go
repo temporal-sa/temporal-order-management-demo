@@ -70,7 +70,7 @@ func OrderManagementWorkflow(ctx workflow.Context, input resources.OrderInput) (
 		return nil, err
 	}
 
-	if input.Scenario == "UNRECOVERABLE_FAILURE" {
+	if input.Scenario == "RECOVERABLE_FAILURE" {
 		//Divide by zero exception
 		//Divide(1, 0)
 	}

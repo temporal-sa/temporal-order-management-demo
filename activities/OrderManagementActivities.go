@@ -9,6 +9,7 @@ import (
 
 	"github.com/ktenzer/temporal-order-management/resources"
 	"go.temporal.io/sdk/activity"
+	"go.temporal.io/sdk/temporal"
 )
 
 // Basic activity definition
@@ -43,6 +44,10 @@ func ChargeCustomer(ctx context.Context, input resources.OrderInput) (string, er
 			time.Sleep(1 * time.Second)
 			return input.OrderId, errors.New("Charge Customer Failed: payment service timeout")
 		}
+	}
+
+	if input.Scenario == "UNRECOVERABLE_FAILURE" {
+		return input.OrderId, temporal.NewNonRetryableApplicationError("Could not process payment", "activityFailure", errors.New("Credit card invalid!"))
 	}
 
 	return input.OrderId, nil
