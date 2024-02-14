@@ -11,8 +11,6 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-const timer = 30
-
 func OrderManagementWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
@@ -53,38 +51,24 @@ func OrderManagementWorkflow(ctx workflow.Context, input resources.OrderInput) (
 		//Divide(1, 0)
 	}
 
+	// Start timer and wait for timer to fire or signal
 	if input.Scenario == "HUMAN_IN_THE_LOOP_SIGNAL" {
-		address := resources.SignalOrderWithAddress(ctx)
-		input.Address = address
-	}
-
-	if input.Scenario == "HUMAN_IN_THE_LOOP_UPDATE" {
-		// Start timer and wait for timer to fire or start game signal
-		isCancelled := resources.ApprovalTimer(ctx)
+		address, isCancelled := resources.SignalApprovalTimer(ctx)
 		if isCancelled {
 			return nil, errors.New("Time limit for approval has been exceeded!")
 		}
-		//address := ""
-		//addressPtr := &address
 
-		//isUpdate := boolPointer(false)
-		/*update := resources.UpdateOrderInput{}
+		input.Address = address
+	}
 
-		workflow.Go(ctx, func(gCtx workflow.Context) {
-			err := update.UpdateOrderWithAddress(gCtx, *addressPtr)
+	// Start timer and wait for timer to fire or update
+	if input.Scenario == "HUMAN_IN_THE_LOOP_UPDATE" {
+		address, isCancelled := resources.UpdateApprovalTimer(ctx)
+		if isCancelled {
+			return nil, errors.New("Time limit for approval has been exceeded!")
+		}
 
-			if err != nil {
-				logger.Error("Update failed.", "Error", err)
-				*isUpdate = false
-			}
-
-			input.Address = address
-
-			if input.Address == "PCH" {
-				*isUpdate = true
-			}
-		})
-		*/
+		input.Address = address
 	}
 
 	var trackingId string

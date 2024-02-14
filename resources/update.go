@@ -9,14 +9,14 @@ import (
 const timeout = 5
 
 // Setup update handler to update order
-func (update *UpdateOrderInput) UpdateOrderWithAddress(ctx workflow.Context, address string) error {
-
+func UpdateOrderWithAddress(ctx workflow.Context, address *string, isUpdate *bool) error {
 	if err := workflow.SetUpdateHandlerWithOptions(
 		ctx,
 		"UpdateOrder",
-		func(ctx workflow.Context, update *UpdateOrderInput) (string, error) {
-			address = update.Address
-			return address, nil
+		func(ctx workflow.Context, update UpdateOrder) error {
+			*isUpdate = true
+			*address = update.Address
+			return nil
 		},
 		workflow.UpdateHandlerOptions{Validator: validateAddress},
 	); err != nil {
@@ -26,7 +26,7 @@ func (update *UpdateOrderInput) UpdateOrderWithAddress(ctx workflow.Context, add
 	return ctx.Err()
 }
 
-func validateAddress(ctx workflow.Context, update *UpdateOrderInput) error {
+func validateAddress(ctx workflow.Context, update UpdateOrder) error {
 	log := workflow.GetLogger(ctx)
 
 	re := regexp.MustCompile(`^\d+`)
