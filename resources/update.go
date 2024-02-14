@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"errors"
 	"regexp"
 
 	"go.temporal.io/sdk/workflow"
@@ -13,10 +14,10 @@ func UpdateOrderWithAddress(ctx workflow.Context, address *string, isUpdate *boo
 	if err := workflow.SetUpdateHandlerWithOptions(
 		ctx,
 		"UpdateOrder",
-		func(ctx workflow.Context, update UpdateOrder) error {
+		func(ctx workflow.Context, update UpdateOrder) (string, error) {
 			*isUpdate = true
 			*address = update.Address
-			return nil
+			return *address, nil
 		},
 		workflow.UpdateHandlerOptions{Validator: validateAddress},
 	); err != nil {
@@ -27,16 +28,18 @@ func UpdateOrderWithAddress(ctx workflow.Context, address *string, isUpdate *boo
 }
 
 func validateAddress(ctx workflow.Context, update UpdateOrder) error {
-	log := workflow.GetLogger(ctx)
+	logger := workflow.GetLogger(ctx)
 
 	re := regexp.MustCompile(`^\d+`)
 	isMatch := re.MatchString(update.Address)
 
 	if !isMatch {
-		log.Debug("Rejecting order update, invalid address", update.Address)
-	} else {
-		log.Debug("Updating order, address", update.Address)
+		msg := "Rejecting order update, invalid address " + update.Address
+		logger.Info(msg)
+		return errors.New(msg)
 	}
+
+	logger.Info("Updating order, address " + update.Address)
 
 	return nil
 }
