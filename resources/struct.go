@@ -1,9 +1,8 @@
 package resources
 
 type OrderInput struct {
-	OrderId  string `json:"orderId"`
-	Scenario string `json:"scenario"`
-	Address  string `json:"address"`
+	OrderId string `json:"orderId"`
+	Address string `json:"address"`
 }
 
 type OrderOutput struct {

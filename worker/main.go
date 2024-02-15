@@ -52,9 +52,20 @@ func main() {
 
 	w := worker.New(temporalClient, TASK_QUEUE, worker.Options{})
 
-	// w.RegisterWorkflow(workflows.Simple)
+	// workflows
+	w.RegisterWorkflow(workflows.OrderWorkflowHappyPath)
+	w.RegisterWorkflow(workflows.OrderWorkflowAPIFailure)
+	w.RegisterWorkflow(workflows.OrderWorkflowAdvancedVisibility)
+	w.RegisterWorkflow(workflows.OrderWorkflowChildWorkflow)
+	w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopSignal)
+	w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopUpdate)
+	w.RegisterWorkflow(workflows.OrderWorkflowRecoverableFailure)
+	w.RegisterWorkflow(workflows.OrderWorkflowUnrecoverableFailure)
+	w.RegisterWorkflow(workflows.ShippingWorkflow)
 
-	w.RegisterWorkflow(workflows.OrderManagementWorkflow)
+	// activities
+	w.RegisterActivity(activities.ChargeCustomerAPIFailure)
+	w.RegisterActivity(activities.ChargeCustomerUnrecoverableFailure)
 	w.RegisterActivity(activities.ChargeCustomer)
 	w.RegisterActivity(activities.CheckFraud)
 	w.RegisterActivity(activities.PrepareShipment)
