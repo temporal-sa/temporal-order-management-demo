@@ -76,7 +76,7 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Ship Order
-	for _, item := range items {
+	for _, item := range *items {
 		err = workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item).Get(ctx, nil)
 		if err != nil {
 			return nil, err

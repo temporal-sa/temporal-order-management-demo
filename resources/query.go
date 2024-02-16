@@ -5,7 +5,7 @@ import (
 )
 
 // Setup query handler for players
-func QueryItems(ctx workflow.Context) (Items, error) {
+func QueryItems(ctx workflow.Context) (*Items, error) {
 	log := workflow.GetLogger(ctx)
 
 	itemList := Items{}
@@ -15,10 +15,10 @@ func QueryItems(ctx workflow.Context) (Items, error) {
 	})
 	if err != nil {
 		log.Error("SetQueryHandler failed for getItems: " + err.Error())
-		return itemList, err
+		return &itemList, err
 	}
 
-	return itemList, nil
+	return &itemList, nil
 }
 
 // Custom Len Sort Method

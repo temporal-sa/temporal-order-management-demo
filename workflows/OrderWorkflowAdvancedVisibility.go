@@ -103,7 +103,7 @@ func OrderWorkflowAdvancedVisibility(ctx workflow.Context, input resources.Order
 	workflow.UpsertSearchAttributes(ctx, orderStatus)
 
 	// Ship Order
-	for _, item := range items {
+	for _, item := range *items {
 		err = workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item).Get(ctx, nil)
 		if err != nil {
 			return nil, err

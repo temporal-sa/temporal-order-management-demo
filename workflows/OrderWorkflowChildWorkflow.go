@@ -75,7 +75,7 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Ship Order
-	for _, item := range items {
+	for _, item := range *items {
 		// set child workflow options
 		childWorkflowOptions := workflow.ChildWorkflowOptions{
 			WorkflowID:        "shipment-" + input.OrderId + "-" + strconv.Itoa(item.Id),
