@@ -72,9 +72,17 @@ func OrderWorkflowUnrecoverableFailure(ctx workflow.Context, input resources.Ord
 
 	workflow.Sleep(ctx, 3*time.Second)
 
-	// Ship Order
+	// Ship Orders
+	var shipItems []workflow.Future
 	for _, item := range *items {
-		err = workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item).Get(ctx, nil)
+		logger.Info("Shipping item " + item.Description)
+		shipItem := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item)
+		shipItems = append(shipItems, shipItem)
+	}
+
+	// Wait for all items to ship
+	for _, shipItem := range shipItems {
+		err = shipItem.Get(ctx, nil)
 		if err != nil {
 			return nil, err
 		}

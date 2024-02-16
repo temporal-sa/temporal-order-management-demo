@@ -75,7 +75,10 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Ship Order
+	var shipItems []workflow.Future
 	for _, item := range *items {
+		logger.Info("Shipping item " + item.Description)
+
 		// set child workflow options
 		childWorkflowOptions := workflow.ChildWorkflowOptions{
 			WorkflowID:        "shipment-" + input.OrderId + "-" + strconv.Itoa(item.Id),
@@ -84,7 +87,17 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 		ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
 
 		// execute and wait on child workflow
-		err = workflow.ExecuteChildWorkflow(ctx, "ShippingWorkflow", input).Get(ctx, nil)
+		shipItem := workflow.ExecuteChildWorkflow(ctx, "ShippingWorkflow", input)
+		if err != nil {
+			return nil, err
+		}
+
+		shipItems = append(shipItems, shipItem)
+	}
+
+	// Wait for all items to ship
+	for _, shipItem := range shipItems {
+		err = shipItem.Get(ctx, nil)
 		if err != nil {
 			return nil, err
 		}
