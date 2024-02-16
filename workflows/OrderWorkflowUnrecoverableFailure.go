@@ -3,6 +3,7 @@ package workflows
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ktenzer/temporal-order-management/activities"
 
 	"github.com/ktenzer/temporal-order-management/resources"
@@ -24,16 +25,36 @@ func OrderWorkflowUnrecoverableFailure(ctx workflow.Context, input resources.Ord
 	}
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
-	workflow.Sleep(ctx, 3*time.Second)
+	// Side effect to generate trackingId
+	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
+		return uuid.New().String()
+	})
 
+	var trackingId string
+	generateTrackingId.Get(&trackingId)
+
+	// Expose items as query
+	items, err := resources.QueryItems(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update items
+	err = workflow.ExecuteActivity(ctx, activities.GetItems).Get(ctx, &items)
+	if err != nil {
+		return nil, err
+	}
+
+	// CHeck Fraud
 	var result1 string
-	err := workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
+	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
 	if err != nil {
 		return nil, err
 	}
 
 	workflow.Sleep(ctx, 3*time.Second)
 
+	// Prepare Shipment
 	var result2 string
 	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &result2)
 	if err != nil {
@@ -42,6 +63,7 @@ func OrderWorkflowUnrecoverableFailure(ctx workflow.Context, input resources.Ord
 
 	workflow.Sleep(ctx, 3*time.Second)
 
+	// Charge Customer
 	var result3 string
 	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomerUnrecoverableFailure, input).Get(ctx, &result3)
 	if err != nil {
@@ -50,10 +72,12 @@ func OrderWorkflowUnrecoverableFailure(ctx workflow.Context, input resources.Ord
 
 	workflow.Sleep(ctx, 3*time.Second)
 
-	var trackingId string
-	err = workflow.ExecuteActivity(ctx, activities.ShipOrder, input).Get(ctx, &trackingId)
-	if err != nil {
-		return nil, err
+	// Ship Order
+	for _, item := range items {
+		err = workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item).Get(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	output := &resources.OrderOutput{

@@ -1,8 +1,10 @@
 package workflows
 
 import (
+	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ktenzer/temporal-order-management/activities"
 
 	"github.com/ktenzer/temporal-order-management/resources"
@@ -25,16 +27,36 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 	}
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
-	workflow.Sleep(ctx, 3*time.Second)
+	// Side effect to generate trackingId
+	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
+		return uuid.New().String()
+	})
 
+	var trackingId string
+	generateTrackingId.Get(&trackingId)
+
+	// Expose items as query
+	items, err := resources.QueryItems(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update items
+	err = workflow.ExecuteActivity(ctx, activities.GetItems).Get(ctx, &items)
+	if err != nil {
+		return nil, err
+	}
+
+	// CHeck Fraud
 	var result1 string
-	err := workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
+	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
 	if err != nil {
 		return nil, err
 	}
 
 	workflow.Sleep(ctx, 3*time.Second)
 
+	// Prepare Shipment
 	var result2 string
 	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &result2)
 	if err != nil {
@@ -43,6 +65,7 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 
 	workflow.Sleep(ctx, 3*time.Second)
 
+	// Charge Customer
 	var result3 string
 	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input).Get(ctx, &result3)
 	if err != nil {
@@ -51,19 +74,25 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 
 	workflow.Sleep(ctx, 3*time.Second)
 
-	output := &resources.OrderOutput{}
+	// Ship Order
+	for _, item := range items {
+		// set child workflow options
+		childWorkflowOptions := workflow.ChildWorkflowOptions{
+			WorkflowID:        "shipment-" + input.OrderId + "-" + strconv.Itoa(item.Id),
+			ParentClosePolicy: enums.PARENT_CLOSE_POLICY_TERMINATE,
+		}
+		ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
 
-	// set child workflow options
-	childWorkflowOptions := workflow.ChildWorkflowOptions{
-		WorkflowID:        "shipment-" + input.OrderId,
-		ParentClosePolicy: enums.PARENT_CLOSE_POLICY_TERMINATE,
+		// execute and wait on child workflow
+		err = workflow.ExecuteChildWorkflow(ctx, "ShippingWorkflow", input).Get(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
-	ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
 
-	// execute and wait on child workflow
-	err = workflow.ExecuteChildWorkflow(ctx, "ShippingWorkflow", input).Get(ctx, &output)
-	if err != nil {
-		return nil, err
+	output := &resources.OrderOutput{
+		TrackingId: trackingId,
+		Address:    input.Address,
 	}
 
 	return output, nil

@@ -17,3 +17,10 @@ type UpdateOrder struct {
 type UpdateOrderInput struct {
 	Address string `json:"address"`
 }
+
+type Items []Item
+
+type Item struct {
+	Id          int    `json:"id"`
+	Description string `json:"description"`
+}

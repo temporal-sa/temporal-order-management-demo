@@ -10,7 +10,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func ShippingWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
+func ShippingWorkflow(ctx workflow.Context, input resources.OrderInput, item resources.Item) error {
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing shipping started", "orderId", input.OrderId)
 
@@ -23,19 +23,12 @@ func ShippingWorkflow(ctx workflow.Context, input resources.OrderInput) (*resour
 		},
 	}
 
-	workflow.Sleep(ctx, 15*time.Second)
-
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
-	var trackingId string
-	err := workflow.ExecuteActivity(ctx, activities.ShipOrder, input).Get(ctx, &trackingId)
+	err := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item).Get(ctx, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	output := &resources.OrderOutput{
-		TrackingId: trackingId,
-		Address:    input.Address,
-	}
-	return output, nil
+	return nil
 }

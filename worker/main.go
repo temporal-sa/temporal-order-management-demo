@@ -70,6 +70,7 @@ func main() {
 	w.RegisterActivity(activities.CheckFraud)
 	w.RegisterActivity(activities.PrepareShipment)
 	w.RegisterActivity(activities.ShipOrder)
+	w.RegisterActivity(activities.GetItems)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
