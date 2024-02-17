@@ -4,7 +4,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-// Setup query handler for players
+// Setup query handler for items
 func QueryItems(ctx workflow.Context) (*Items, error) {
 	log := workflow.GetLogger(ctx)
 
@@ -19,6 +19,23 @@ func QueryItems(ctx workflow.Context) (*Items, error) {
 	}
 
 	return &itemList, nil
+}
+
+// Setup query handler for progress
+func QueryProgress(ctx workflow.Context) (*int, error) {
+	log := workflow.GetLogger(ctx)
+
+	progress := 0
+
+	err := workflow.SetQueryHandler(ctx, "getProgress", func(input []byte) (int, error) {
+		return progress, nil
+	})
+	if err != nil {
+		log.Error("SetQueryHandler failed for getProgress: " + err.Error())
+		return &progress, err
+	}
+
+	return &progress, nil
 }
 
 // Custom Len Sort Method

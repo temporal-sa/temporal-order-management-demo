@@ -14,8 +14,6 @@ import (
 	"go.temporal.io/sdk/worker"
 )
 
-const TASK_QUEUE = "order-management-queue"
-
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
@@ -50,7 +48,7 @@ func main() {
 	}
 	defer temporalClient.Close()
 
-	w := worker.New(temporalClient, TASK_QUEUE, worker.Options{})
+	w := worker.New(temporalClient, os.Getenv("TEMPORAL_TASK_QUEUE"), worker.Options{})
 
 	// workflows
 	w.RegisterWorkflow(workflows.OrderWorkflowHappyPath)
@@ -60,7 +58,7 @@ func main() {
 	w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopSignal)
 	w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopUpdate)
 	w.RegisterWorkflow(workflows.OrderWorkflowRecoverableFailure)
-	w.RegisterWorkflow(workflows.OrderWorkflowUnrecoverableFailure)
+	w.RegisterWorkflow(workflows.OrderWorkflowNonRecoverableFailure)
 	w.RegisterWorkflow(workflows.ShippingWorkflow)
 
 	// activities

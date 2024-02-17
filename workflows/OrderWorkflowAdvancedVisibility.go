@@ -39,20 +39,20 @@ func OrderWorkflowAdvancedVisibility(ctx workflow.Context, input resources.Order
 		return nil, err
 	}
 
-	// Upsert Get Items
-	orderStatus := map[string]interface{}{
-		"OrderStatus": "Get Items",
+	// Expose progress as query
+	progress, err := resources.QueryProgress(ctx)
+	if err != nil {
+		return nil, err
 	}
-	workflow.UpsertSearchAttributes(ctx, orderStatus)
 
-	// Get Items
+	// Update items
 	err = workflow.ExecuteActivity(ctx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}
 
 	// Upsert Check Fraud
-	orderStatus = map[string]interface{}{
+	orderStatus := map[string]interface{}{
 		"OrderStatus": "Check Fraud",
 	}
 	workflow.UpsertSearchAttributes(ctx, orderStatus)
@@ -64,6 +64,7 @@ func OrderWorkflowAdvancedVisibility(ctx workflow.Context, input resources.Order
 		return nil, err
 	}
 
+	*progress = 25
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Upsert Prepare Shipment
@@ -79,6 +80,7 @@ func OrderWorkflowAdvancedVisibility(ctx workflow.Context, input resources.Order
 		return nil, err
 	}
 
+	*progress = 50
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Upsert Charge Customer
@@ -94,6 +96,7 @@ func OrderWorkflowAdvancedVisibility(ctx workflow.Context, input resources.Order
 		return nil, err
 	}
 
+	*progress = 75
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Upsert Ship Order
@@ -118,7 +121,9 @@ func OrderWorkflowAdvancedVisibility(ctx workflow.Context, input resources.Order
 		}
 	}
 
-	// Upsert Check Fraud
+	*progress = 100
+
+	// Upsert Order Completed
 	orderStatus = map[string]interface{}{
 		"OrderStatus": "Order Completed",
 	}

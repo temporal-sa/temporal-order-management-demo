@@ -39,19 +39,26 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 		return nil, err
 	}
 
+	// Expose progress as query
+	progress, err := resources.QueryProgress(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// Update items
 	err = workflow.ExecuteActivity(ctx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}
 
-	// CHeck Fraud
+	// Check Fraud
 	var result1 string
 	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
 	if err != nil {
 		return nil, err
 	}
 
+	*progress = 25
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Prepare Shipment
@@ -61,6 +68,7 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 		return nil, err
 	}
 
+	*progress = 50
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Charge Customer
@@ -73,6 +81,7 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 	//Divide by zero, produce recoverable exception
 	//Divide(1, 0)
 
+	*progress = 75
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Ship Orders
@@ -90,6 +99,8 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 			return nil, err
 		}
 	}
+
+	*progress = 100
 
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,

@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;  /* light gray background for headers */
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            background-color: #f9f9f9;  /* light gray background for all rows */
+        }        
+
+        select {
+            width: 100%;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        function placeOrder() {
+            document.getElementById('orderForm').submit();
+        }
+    </script>    
+</head>
+<body>
+    <h1>Temporal Orders</h1>
+
+    <section>
+        <h2>Order Details</h2>
+        <table>
+            <tr>
+                <th>Quantity</th>
+                <th>Description</th>
+            </tr>
+            {% for key, value in order_data.items() %}
+                <tr>
+                    <td>{{ value['quantity'] }}</td>
+                    <td>{{ value['item'] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </section>
+
+    <section>
+        <h2>Payment Information</h2>
+        <table>
+            <tr>
+                <td>Name</td>
+                <td>{{ payment_data['name'] }}</td>
+            </tr>
+            <tr>
+                <td>Credit Card Type</td>
+                <td>{{ payment_data['card_type'] }}</td>
+            </tr>
+            <tr>
+                <td>Credit Card Number</td>
+                <td>{{ payment_data['card_number'] }}</td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>Shipping Information</h2>
+        <table>
+            <tr>
+                <td>Name</td>
+                <td>{{ shipping_data['name'] }}</td>
+            </tr>
+            <tr>
+                <td>Address</td>
+                <td>{{ shipping_data['address'] }}</td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>Choose Scenario</h2>
+        <select id="scenario" name="scenario">
+            {% for choice in scenarios %}
+                <option value="{{ choice }}">{{ choice }}</option>
+            {% endfor %}
+        </select>        
+    </section>
+
+    <section>
+        <button type="button" onclick="placeOrder()">Place Order</button>
+    </section>
+
+    <section>
+        <input type="hidden" id="order_id" value="{{ order_id }}">
+    </section>
+    
+    <script>
+        function placeOrder() {
+            // Get the selected scenario
+            var selectedScenario = document.getElementById('scenario').value;
+
+            // Get the order_id
+            var order_id = document.getElementById('order_id').value;
+    
+            // Redirect to order processing page with the selected scenario as a query parameter
+            window.location.href = '/process_order?scenario=' + encodeURIComponent(selectedScenario) + '&order_id=' + encodeURIComponent(order_id);
+        }
+    </script>
+</body>
+
+{% endblock %}

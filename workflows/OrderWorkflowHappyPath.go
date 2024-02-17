@@ -39,19 +39,26 @@ func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*
 		return nil, err
 	}
 
+	// Expose progress as query
+	progress, err := resources.QueryProgress(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// Update items
 	err = workflow.ExecuteActivity(ctx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}
 
-	// CHeck Fraud
+	// Check Fraud
 	var result1 string
 	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
 	if err != nil {
 		return nil, err
 	}
 
+	*progress = 25
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Prepare Shipment
@@ -61,6 +68,7 @@ func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*
 		return nil, err
 	}
 
+	*progress = 50
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Charge Customer
@@ -70,6 +78,7 @@ func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*
 		return nil, err
 	}
 
+	*progress = 75
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Ship Orders
@@ -87,6 +96,8 @@ func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*
 			return nil, err
 		}
 	}
+
+	*progress = 100
 
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,

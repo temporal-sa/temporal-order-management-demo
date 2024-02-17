@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Processing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .status-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f2f2f2;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .status-progress {
+            height: 100%;
+            background-color: #4CAF50;
+        }
+    </style>
+    <script>
+        function updateProgress() {
+            // Get the order_id from the URL query parameters
+            var urlParams = new URLSearchParams(window.location.search);
+            var order_id = urlParams.get('order_id');
+
+            // Fetch progress from the server
+            fetch('/get_progress?order_id=' + encodeURIComponent(order_id))
+                .then(response => response.json())
+                .then(data => {
+                    // Update the progress bar
+                    document.getElementById('progress-bar').style.width = data.progress + '%';
+
+                    // Check if the progress is complete, and redirect to order confirmation if needed
+                    if (data.progress === 100) {
+                        // Redirect to order confirmation with the order_id
+                        window.location.href = '/order_confirmation?order_id=' + encodeURIComponent(order_id);
+                    } else {
+                        // Continue updating progress
+                        setTimeout(updateProgress, 1000);  // Adjust the timeout as needed
+                    }
+                })
+                .catch(error => console.error('Error fetching progress:', error));
+        }
+
+        // Start updating progress when the page loads
+        document.addEventListener("DOMContentLoaded", function () {
+            updateProgress();
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Order Processing</h1>
+
+    <div class="status-bar">
+        <div id="progress-bar" class="status-progress" style="width: 0;"></div>
+    </div>
+
+    <p>Processing your order...</p>
+    <p>Selected Scenario: {{ selected_scenario }}</p>
+</body>
+
+{% endblock %}
