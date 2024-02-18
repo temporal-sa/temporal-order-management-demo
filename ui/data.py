@@ -13,3 +13,7 @@ class OrderOutput:
     TrackingId: str
     Address: str
 
+@dataclass
+class UpdateOrder:
+    Address: str    
+

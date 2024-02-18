@@ -33,16 +33,103 @@
             height: 100%;
             background-color: #4CAF50;
         }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }           
     </style>
     <script>
+        // Declare interval in the global scope
+        var interval;
+
+        // Define the startCountdown function
+        function startCountdown(seconds, countdownElement) {
+            function updateCountdown() {
+                countdownElement.innerText = seconds + ' seconds remaining';
+                seconds = seconds -5;
+
+                if (seconds < 0) {
+                    clearInterval(interval);
+                    countdownElement.style.display = 'none';
+                }
+            }
+
+            // Set up interval to call updateCountdown every second
+            interval = setInterval(updateCountdown, 5000);
+        }
+        
+        function startCountdown(seconds, countdownElement) {
+            function updateCountdown() {
+                countdownElement.innerText = seconds + ' seconds remaining';
+                seconds--;
+
+                if (seconds < 0) {
+                    clearInterval(interval);
+                    countdownElement.style.display = 'none';
+                }
+            }
+
+            // Set up interval to call updateCountdown every second
+            interval = setInterval(updateCountdown, 1000);
+        }        
+
+        // Define the updateScenarioElements function
+        isCountdown = false;
+        function updateScenarioElements(selectedScenario, progress) {
+            // Get the elements for HumanInLoopSignal and HumanInLoopUpdate scenarios
+            var signalElement = document.getElementById('humanInLoopSignal');
+            var updateElement = document.getElementById('humanInLoopUpdate');
+            var signalCountdownElement = document.getElementById('signalCountdown');
+            var updateCountdownElement = document.getElementById('updateCountdown');
+
+            // Hide all elements initially
+            signalElement.style.display = 'none';
+            updateElement.style.display = 'none';
+            signalCountdownElement.style.display = 'none';
+            updateCountdownElement.style.display = 'none';
+
+            // Check if the countdown is already active
+            var isCountdownActive = signalCountdownElement.style.display === 'block' || updateCountdownElement.style.display === 'block';
+
+            // Show elements based on the selected scenario and progress
+            if (selectedScenario === 'HumanInLoopSignal' && progress === 75 && !isCountdownActive) {
+                signalElement.style.display = 'block';
+                signalCountdownElement.style.display = 'block';
+                if (!isCountdown) {
+                    isCountdown = true;
+                    startCountdown(30, signalCountdownElement);  // Start 30-second countdown 
+                }
+            } else if (selectedScenario === 'HumanInLoopUpdate' && progress === 75 && !isCountdownActive) {
+                updateElement.style.display = 'block';
+                updateCountdownElement.style.display = 'block';
+                if (!isCountdown) {
+                    isCountdown = true;
+                    startCountdown(30, updateCountdownElement);  // Start 30-second countdown
+                }                
+            }
+        }        
+
+        // Define the updateProgress function
         function updateProgress() {
             // Get the order_id from the URL query parameters
             var urlParams = new URLSearchParams(window.location.search);
             var order_id = urlParams.get('order_id');
+            var selectedScenario = urlParams.get('scenario');
 
             // Fetch progress from the server
             fetch('/get_progress?order_id=' + encodeURIComponent(order_id))
-                .then(response => response.json())
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        // If response status is not okay, throw an error
+                        throw new Error(`Failed to fetch progress. Status: ${response.status}`);
+                    }
+                })
                 .then(data => {
                     // Update the progress bar
                     document.getElementById('progress-bar').style.width = data.progress + '%';
@@ -55,14 +142,108 @@
                         // Continue updating progress
                         setTimeout(updateProgress, 1000);  // Adjust the timeout as needed
                     }
+
+                    // Show/hide elements based on the selected scenario and progress
+                    updateScenarioElements(selectedScenario, data.progress);
                 })
-                .catch(error => console.error('Error fetching progress:', error));
-        }
+                .catch(error => {
+                    // Log the detailed error message to the console
+                    console.error('Error fetching progress:', error.message);
+
+                    // Display the error message in the web browser
+                    document.getElementById('error-message').innerText = error.message;
+
+                    // Handle the error by showing a red status bar
+                    document.getElementById('progress-bar').style.backgroundColor = 'red';
+                });
+        }    
 
         // Start updating progress when the page loads
         document.addEventListener("DOMContentLoaded", function () {
             updateProgress();
         });
+
+// Define the signal function
+function signal() {
+    // Get the order_id from the URL query parameters
+    var urlParams = new URLSearchParams(window.location.search);
+    var order_id = urlParams.get('order_id');
+    
+    // Perform AJAX request to the server for signaling
+    fetch('/signal?order_id=' + encodeURIComponent(order_id), {
+        method: 'POST', // or 'GET' depending on your server route configuration
+        headers: {
+            'Content-Type': 'application/json'
+            // Add other headers if needed
+        },
+        body: JSON.stringify({
+            address: document.getElementById('signalAddress').value
+            // Add other data if needed
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            // Handle success if needed
+            console.log('Signal sent successfully');
+        } else {
+            // Handle error if needed
+            console.error('Failed to send signal');
+        }
+    })
+    .catch(error => {
+        // Handle error if needed
+        console.error('Error during signal:', error.message);
+    });
+}
+
+        // Define the update function
+        function update() {
+            // Get the order_id from the URL query parameters
+            var urlParams = new URLSearchParams(window.location.search);
+            var order_id = urlParams.get('order_id');
+
+            // Perform AJAX request to the server for updating
+            fetch('/update?order_id=' + encodeURIComponent(order_id), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // Add other headers if needed
+                },
+                body: JSON.stringify({
+                    address: document.getElementById('updateAddress').value
+                    // Add other data if needed
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Parse the JSON response
+                    return response.json();
+                } else {
+                    // Handle error if needed
+                    console.error('Failed to send update');
+                    throw new Error('Failed to send update');
+                }
+            })
+            .then(data => {
+                // Get the updateResult element
+                var updateResultElement = document.getElementById('updateResult');
+
+                // Update the display with the result
+                updateResultElement.innerText = data.result;
+
+                // Check if the result contains "rejected" and set text color accordingly
+                if (data.result.includes("rejected")) {
+                    updateResultElement.style.color = 'red';
+                } else {
+                    // Reset text color if not "rejected"
+                    updateResultElement.style.color = ''; // or whatever your default color is
+                }
+            })
+            .catch(error => {
+                // Handle error if needed
+                console.error('Error during update:', error.message);
+            });
+        }   
     </script>
 </head>
 
@@ -75,6 +256,25 @@
 
     <p>Processing your order...</p>
     <p>Selected Scenario: {{ selected_scenario }}</p>
+
+    <!-- Elements for HumanInLoopSignal scenario -->
+    <div id="humanInLoopSignal" style="display: none;">
+        <label for="signalAddress">Enter Address:</label>
+        <input type="text" id="signalAddress">
+        <button onclick="signal()">Signal</button>
+        <p id="signalCountdown"></p>
+    </div>
+
+    <!-- Elements for HumanInLoopUpdate scenario -->
+    <div id="humanInLoopUpdate" style="display: none;">
+        <label for="updateAddress">Enter Address:</label>
+        <input type="text" id="updateAddress">
+        <button onclick="update()">Update</button>
+        <p id="updateCountdown"></p>
+    </div>      
+
+    <div id="updateResult"></div>
+    <p id="error-message" style="color: red;"></p> 
 </body>
 
 {% endblock %}

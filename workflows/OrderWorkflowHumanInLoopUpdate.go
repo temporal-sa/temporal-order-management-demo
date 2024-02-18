@@ -79,6 +79,8 @@ func OrderWorkflowHumanInLoopUpdate(ctx workflow.Context, input resources.OrderI
 		return nil, err
 	}
 
+	*progress = 75
+
 	// Start timer and wait for timer to fire or update
 	address, isCancelled := resources.UpdateApprovalTimer(ctx)
 	if isCancelled {
@@ -86,8 +88,6 @@ func OrderWorkflowHumanInLoopUpdate(ctx workflow.Context, input resources.OrderI
 	}
 
 	input.Address = address
-
-	*progress = 75
 	workflow.Sleep(ctx, 3*time.Second)
 
 	// Ship Orders

@@ -3,7 +3,7 @@ import uuid
 import os
 from client import get_client
 from temporalio.client import WorkflowFailureError
-from data import OrderInput
+from data import OrderInput, UpdateOrder
 import time
 
 app = Flask(__name__)
@@ -87,10 +87,62 @@ async def get_progress():
         order_workflow = client.get_workflow_handle(f'order-{order_id}')
         progress_percent = await order_workflow.query("getProgress")
 
+        desc = await order_workflow.describe()
+        if desc.status == 3:
+            error_message = "Workflow failed: order-{order_id}"
+            print(f"Error in get_progress route: {error_message}")
+            return jsonify({"error": error_message}), 500            
+
         return jsonify({"progress": progress_percent})
     except Exception as e:
         print(f"Error in get_progress route: {str(e)}")
-        return jsonify({"error": "Internal Server Error"}), 500
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/signal', methods=['POST'])
+async def signal():
+    order_id = request.args.get('order_id')
+    address = request.json.get('address') 
+
+    SignalOrderInput = UpdateOrder(
+        Address=address
+    )  
+
+    try:
+        client = await get_client()
+        order_workflow = client.get_workflow_handle(f'order-{order_id}')
+        await order_workflow.signal("UpdateOrder", SignalOrderInput)
+    except Exception as e:
+        print(f"Error sending signal: {str(e)}")
+        return jsonify({"error": str(e)}), 500       
+
+    # Return a response if needed
+    return 'Signal received successfully', 200
+
+@app.route('/update', methods=['POST'])
+async def update():
+    order_id = request.args.get('order_id')
+    address = request.json.get('address')  # Assuming you send JSON data
+
+    UpdateOrderInput = UpdateOrder(
+        Address=address
+    )  
+
+    update_result = None
+    try:
+        client = await get_client()
+        order_workflow = client.get_workflow_handle(f'order-{order_id}')
+        update_result = await order_workflow.execute_update(
+            update="UpdateOrder",
+            arg=UpdateOrderInput,
+        )
+    except Exception as e:
+        result = f"Update for order_id {order_id} rejected! {str(e)}"
+        return jsonify(result=result)
+
+    result = f"Update for order_id {order_id} accepted: {update_result}"
+
+    # Return the result as a JSON response
+    return jsonify(result=result)
 
 if __name__ == '__main__':
     app.run(debug=True)    
