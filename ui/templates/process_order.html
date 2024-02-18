@@ -8,9 +8,9 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
+            max-width: 1000px;
+            margin: 0px auto;
+            padding: 0px;
             border: 1px solid #ddd;
             border-radius: 10px;
             text-align: center;
@@ -248,13 +248,12 @@ function signal() {
 </head>
 
 <body>
-    <h1>Order Processing</h1>
+    <h2>Order Processing</h1>
 
     <div class="status-bar">
         <div id="progress-bar" class="status-progress" style="width: 0;"></div>
     </div>
 
-    <p>Processing your order...</p>
     <p>Selected Scenario: {{ selected_scenario }}</p>
 
     <!-- Elements for HumanInLoopSignal scenario -->
