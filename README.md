@@ -3,7 +3,7 @@ Demos various aspects of [Tempora](http://tempora.io) using the [Go SDK](https:/
 
 | Prerequisites      |   | __ | Features       |   | __ | Patterns            |   | 
 |:-------------------|---|----|----------------|---|----|---------------------|---|
-| Network Connection |  | __  | Schedule       | __ | __ | Entity              | ✅ |
+| Network Connection |  | __  | Schedule       |  | __ | Entity              | ✅ |
 | Golang 1.18+       | ✅ | __ | Local Activity |  ✅ | __ | Long-Running        | ✅ |
 | Python 3.11        | ✅ | __ | Timer          | ✅ | __ | Fanout              | ✅ |
 | Poetry 1.3.2       | ✅ | __ | Signal         | ✅ | __ | Continue As New     |   |
