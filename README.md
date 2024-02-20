@@ -25,6 +25,48 @@ This demo walks through several scenarios using an order management process. The
 - RecoverableFailure
 - NonRecoverableFailure
 
+## Run Worker
+Ensure the following environment variables:
+```bash
+export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
+export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
+export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
+export TEMPORAL_NAMESPACE=<namespace>.<accountId>
+export TEMPORAL_WORKER_METRICS_PORT=9090
+TEMPORAL_TASK_QUEUE=orders
+```
+
+```bash
+$ go run worker/main.go 
+
+2024/02/20 14:05:20 prometheus metrics scope created
+2024/02/20 14:05:20 INFO  No logger configured for temporal client. Created default one.
+2024/02/20 14:05:21 INFO  Started Worker Namespace helloworld.sdvdw TaskQueue orders WorkerID 485217@fedora@
+```
+
+## Run UI
+Ensure the following environment variables:
+```bash
+export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
+export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
+export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
+export TEMPORAL_NAMESPACE=<namespace>.<accountId>
+TEMPORAL_TASK_QUEUE=orders
+```
+
+```bash
+$cd ui;poetry run python app.py
+
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 685-645-739
+```
+
 ## Happy Path
 ![Happy Path](ui/static/happy-path.png)
 
