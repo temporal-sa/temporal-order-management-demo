@@ -17,6 +17,7 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
 
+	// activity options
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: 5 * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -26,6 +27,12 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 		},
 	}
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
+
+	// local activity options
+	localActivityOptions := workflow.LocalActivityOptions{
+		StartToCloseTimeout: 5 * time.Second,
+	}
+	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
 	// Side effect to generate trackingId
 	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
@@ -48,7 +55,7 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 	}
 
 	// Update items
-	err = workflow.ExecuteActivity(ctx, activities.GetItems).Get(ctx, &items)
+	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}

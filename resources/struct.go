@@ -23,4 +23,5 @@ type Items []Item
 type Item struct {
 	Id          int    `json:"id"`
 	Description string `json:"description"`
+	Quantity    int    `json:"quantity"`
 }

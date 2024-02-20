@@ -15,6 +15,7 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
 
+	// activity options
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: 5 * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -24,6 +25,12 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 		},
 	}
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
+
+	// local activity options
+	localActivityOptions := workflow.LocalActivityOptions{
+		StartToCloseTimeout: 5 * time.Second,
+	}
+	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
 	// Side effect to generate trackingId
 	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
@@ -46,7 +53,7 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 	}
 
 	// Update items
-	err = workflow.ExecuteActivity(ctx, activities.GetItems).Get(ctx, &items)
+	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}

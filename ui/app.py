@@ -82,6 +82,7 @@ async def order_confirmation():
 async def get_progress():
     order_id = request.args.get('order_id')
 
+    progress_percent = 0
     try:
         client = await get_client()
         order_workflow = client.get_workflow_handle(f'order-{order_id}')
@@ -94,9 +95,8 @@ async def get_progress():
             return jsonify({"error": error_message}), 500            
 
         return jsonify({"progress": progress_percent})
-    except Exception as e:
-        print(f"Error in get_progress route: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+    except:
+        return jsonify({"progress": progress_percent})
 
 @app.route('/signal', methods=['POST'])
 async def signal():

@@ -15,6 +15,7 @@ func OrderWorkflowNonRecoverableFailure(ctx workflow.Context, input resources.Or
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
 
+	// activity options
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: 5 * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -24,6 +25,12 @@ func OrderWorkflowNonRecoverableFailure(ctx workflow.Context, input resources.Or
 		},
 	}
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
+
+	// local activity options
+	localActivityOptions := workflow.LocalActivityOptions{
+		StartToCloseTimeout: 5 * time.Second,
+	}
+	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
 	// Side effect to generate trackingId
 	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
@@ -46,7 +53,7 @@ func OrderWorkflowNonRecoverableFailure(ctx workflow.Context, input resources.Or
 	}
 
 	// Update items
-	err = workflow.ExecuteActivity(ctx, activities.GetItems).Get(ctx, &items)
+	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +80,7 @@ func OrderWorkflowNonRecoverableFailure(ctx workflow.Context, input resources.Or
 
 	// Charge Customer
 	var result3 string
-	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomerUnrecoverableFailure, input).Get(ctx, &result3)
+	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomerNonRecoverableFailure, input).Get(ctx, &result3)
 	if err != nil {
 		return nil, err
 	}

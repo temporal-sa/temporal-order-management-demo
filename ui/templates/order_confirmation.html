@@ -35,7 +35,20 @@
         th {
             background-color: #f2f2f2;  /* light gray background for headers */
         }
+        button {
+            padding: 10px;
+            background-color: #000000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }        
     </style>
+    <script>
+        function reloadMainPage() {
+            window.location.href = '/';
+        }
+    </script>   
 </head>
 <body>
     <h2>Order Confirmation</h1>
@@ -54,6 +67,7 @@
             <td>{{ address }}</td>
         </tr>        
     </table>
+    <button onclick="reloadMainPage()">Place New Order</button>
 </body>
 
 {% endblock %}

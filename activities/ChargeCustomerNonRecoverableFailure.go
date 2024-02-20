@@ -9,7 +9,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 )
 
-func ChargeCustomerUnrecoverableFailure(ctx context.Context, input resources.OrderInput) (string, error) {
+func ChargeCustomerNonRecoverableFailure(ctx context.Context, input resources.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Charge Customer activity started", "orderId", input.OrderId)
 

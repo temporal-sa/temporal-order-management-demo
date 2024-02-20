@@ -63,7 +63,7 @@ func main() {
 
 	// activities
 	w.RegisterActivity(activities.ChargeCustomerAPIFailure)
-	w.RegisterActivity(activities.ChargeCustomerUnrecoverableFailure)
+	w.RegisterActivity(activities.ChargeCustomerNonRecoverableFailure)
 	w.RegisterActivity(activities.ChargeCustomer)
 	w.RegisterActivity(activities.CheckFraud)
 	w.RegisterActivity(activities.PrepareShipment)
