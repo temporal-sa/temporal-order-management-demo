@@ -31,6 +31,7 @@ This demo walks through several scenarios using an order management process. The
 ![Order Process](ui/static/status-bar.png)
 
 ![Order Confirmation](ui/static/order-confirmation.png)
+
 The happy path demonstrates the base functionality that is consistent across all other scenarios. In this demo you will place an order for various items that make a table. The workflow will generate a trackingId using a Temporal Side Effect. 
 
 The workflow will execute a side effect:
@@ -60,7 +61,8 @@ The items just simulate reaching out to a service. They simply print that they a
 
 ## Advanced Visibility
 ![Advanced Visibility](ui/static/advanced-visibility.png)
-This scenario does Happy Path and in addition shows search attributes to increase workflow visibility. When executing workflow a search attribute is upserted which keeps track of the state of the workflow. In order to use this scenario ensure the following:
+
+This scenario follows Happy Path and in addition shows search attributes to increase workflow visibility. When executing workflow a search attribute is upserted which keeps track of the state of the workflow. In order to use this scenario ensure the following:
 - A search attributed called OrderStatus with type Keyword is defined for your namespace
 ![Add Search Attribute](ui/static/search-attribute.png)
 - The OrderStatus custom search attribute field is added to your workflows UI panel
@@ -68,13 +70,15 @@ This scenario does Happy Path and in addition shows search attributes to increas
 
 ## Human in the Loop Signal
 ![Human in the Loop SIgnal](ui/static/human-in-loop-signal.png)
-This scenario does Happy Path and in addition adds human in the loop. During the order processing you are asked to update the order with a new address. The address you provide is sent and updated in the workflow using a signal. The signal is fire and forget with no validation. You have 30 seconds to submit an updated address otherwise the workflow will timeout. The timeout is done using an asynchronous timer. This scenario also shows how to use Go coroutines with Temporal as both the timer and the signal are coroutines.
+
+This scenario follows Happy Path and in addition adds human in the loop. During the order processing you are asked to update the order with a new address. The address you provide is sent and updated in the workflow using a signal. The signal is fire and forget with no validation. You have 30 seconds to submit an updated address otherwise the workflow will timeout. The timeout is done using an asynchronous timer. This scenario also shows how to use Go coroutines with Temporal as both the timer and the signal are coroutines.
 
 ![Signal](ui/static/signal.png)
 
 ## Human in the Loop Update
 ![Human in the Loop Update](ui/static/human-in-loop-update.png)
-This scenario does Happy Path and in addition adds human in the loop. During the order processing you are asked to update the order with a new address. The address you provide is sent and updated in the workflow using a update. The update allows for validation and if you send an address that doesn't start with a number validation will fail and an error is shown. You have 30 seconds to submit an updated address otherwise the workflow will timeout. The timeout is done using an asynchronous timer. This scenario also shows how to use Go coroutines with Temporal as both the timer and the update are coroutines.
+
+This scenario follows Happy Path and in addition adds human in the loop. During the order processing you are asked to update the order with a new address. The address you provide is sent and updated in the workflow using a update. The update allows for validation and if you send an address that doesn't start with a number validation will fail and an error is shown. You have 30 seconds to submit an updated address otherwise the workflow will timeout. The timeout is done using an asynchronous timer. This scenario also shows how to use Go coroutines with Temporal as both the timer and the update are coroutines.
 
 ![Update Failed](ui/static/update-failed-validation.png)
 
@@ -82,18 +86,21 @@ This scenario does Happy Path and in addition adds human in the loop. During the
 
 ## Child Workflow
 ![Child Workflow](ui/static/child-workflow.png)
-This scenario does Happy Path but instead of shipping the items using parallel activities it does so using child workflows instead.
+
+This scenario follows Happy Path but instead of shipping the items using parallel activities it does so using child workflows instead.
 
 ![Shipping Workflows](ui/static/shipping-workflows.png)
 
 ## API Failure
 ![API Failure](ui/static/api-failure.png)
-This scenario does Happy Path however after instead of executing ChargeCustomer this workflow will execute ChargeCustomerAPIFailure which will fail and on 5th attempt succeed. This scenario shows how Temporal workflows handle failures from activities.
+
+This scenario follows Happy Path, however after instead of executing ChargeCustomer this workflow will execute ChargeCustomerAPIFailure which will fail and on 5th attempt succeed. This scenario shows how Temporal workflows handle failures from activities.
 
 ![Activity Attempts](ui/static/activity-attempts.png)
 
 ## Recoverable Failure
 ![Recoverable Failure](ui/static/recoverable-failure.png)
+
 This scenario follows Happy Path, however after ChargeCustomer activity executes a divide by zero bug is introduced. Simply comment-out the divide by zero code in OrderWorkflowREcoverableFailure.go and restart worker. Temporal will perform a replay, recover state of the workflow and proceed exactly where it left of as if nothing happened.
 
 Before starting scenario uncomment following code in OrderWorkflowRecoverableFailure.go:
@@ -103,6 +110,7 @@ Divide(1, 0)
 
 ## Non Recoverable Failure
 ![Non Recoverable Failure](ui/static/non-recoverable-failure.png)
+
 This scenario follows Happy Path, however after instead of executing ChargeCustomer this workflow will execute ChargeCustomerNonREcoverableFailure activity. This activity throws a non-retryable application error which causes the workflow to fail.
 
 ![Workflow Failed](ui/static/workflow-failed.png)
