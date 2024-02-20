@@ -33,7 +33,7 @@ export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
 export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
 export TEMPORAL_NAMESPACE=<namespace>.<accountId>
 export TEMPORAL_WORKER_METRICS_PORT=9090
-TEMPORAL_TASK_QUEUE=orders
+export TEMPORAL_TASK_QUEUE=orders
 ```
 
 ```bash
@@ -51,7 +51,7 @@ export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
 export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
 export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
 export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-TEMPORAL_TASK_QUEUE=orders
+export TEMPORAL_TASK_QUEUE=orders
 ```
 
 ```bash
