@@ -66,6 +66,7 @@ Install Poetry Dependencies
 $ poetry install
 ```
 
+Run Flask App
 ```bash
 $ poetry run python app.py
 
