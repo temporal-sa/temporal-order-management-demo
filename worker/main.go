@@ -29,9 +29,10 @@ func main() {
 	w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopUpdate)
 	w.RegisterWorkflow(workflows.OrderWorkflowRecoverableFailure)
 	w.RegisterWorkflow(workflows.OrderWorkflowNonRecoverableFailure)
-	w.RegisterWorkflow(workflows.ShippingWorkflow)
+	w.RegisterWorkflow(workflows.ShippingChildWorkflow)
 
 	// activities
+	w.RegisterActivity(activities.ChargeCustomerRollback)
 	w.RegisterActivity(activities.ChargeCustomerAPIFailure)
 	w.RegisterActivity(activities.ChargeCustomerNonRecoverableFailure)
 	w.RegisterActivity(activities.ChargeCustomer)

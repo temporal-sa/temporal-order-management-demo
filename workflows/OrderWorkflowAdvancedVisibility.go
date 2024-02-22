@@ -32,14 +32,6 @@ func OrderWorkflowAdvancedVisibility(ctx workflow.Context, input resources.Order
 	}
 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
-	// Side effect to generate trackingId
-	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
-		return uuid.New().String()
-	})
-
-	var trackingId string
-	generateTrackingId.Get(&trackingId)
-
 	// Expose items as query
 	items, err := resources.QueryItems(ctx)
 	if err != nil {
@@ -135,6 +127,9 @@ func OrderWorkflowAdvancedVisibility(ctx workflow.Context, input resources.Order
 		"OrderStatus": "Order Completed",
 	}
 	workflow.UpsertSearchAttributes(ctx, orderStatus)
+
+	// Generate Tracking Id
+	trackingId := uuid.New().String()
 
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,

@@ -32,14 +32,6 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 	}
 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
-	// Side effect to generate trackingId
-	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
-		return uuid.New().String()
-	})
-
-	var trackingId string
-	generateTrackingId.Get(&trackingId)
-
 	// Expose items as query
 	items, err := resources.QueryItems(ctx)
 	if err != nil {
@@ -86,7 +78,7 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 	}
 
 	//Divide by zero, produce recoverable exception
-	//Divide(1, 0)
+	//divide(1, 0)
 
 	*progress = 75
 	workflow.Sleep(ctx, 3*time.Second)
@@ -109,10 +101,17 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 
 	*progress = 100
 
+	// Generate Tracking Id
+	trackingId := uuid.New().String()
+
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,
 		Address:    input.Address,
 	}
 
 	return output, nil
+}
+
+func divide(a, b int) (int, error) {
+	return a / b, nil
 }

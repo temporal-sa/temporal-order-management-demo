@@ -33,14 +33,6 @@ func OrderWorkflowHumanInLoopSignal(ctx workflow.Context, input resources.OrderI
 	}
 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
-	// Side effect to generate trackingId
-	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
-		return uuid.New().String()
-	})
-
-	var trackingId string
-	generateTrackingId.Get(&trackingId)
-
 	// Expose items as query
 	items, err := resources.QueryItems(ctx)
 	if err != nil {
@@ -91,6 +83,10 @@ func OrderWorkflowHumanInLoopSignal(ctx workflow.Context, input resources.OrderI
 	// Start timer and wait for timer to fire or signal
 	address, isCancelled := resources.SignalApprovalTimer(ctx)
 	if isCancelled {
+		// Rollback Charge Customer
+		var result3 string
+		_ = workflow.ExecuteActivity(ctx, activities.ChargeCustomerRollback, input).Get(ctx, &result3)
+
 		return nil, errors.New("Time limit for approval has been exceeded!")
 	}
 
@@ -114,6 +110,9 @@ func OrderWorkflowHumanInLoopSignal(ctx workflow.Context, input resources.OrderI
 	}
 
 	*progress = 100
+
+	// Generate Tracking Id
+	trackingId := uuid.New().String()
 
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,

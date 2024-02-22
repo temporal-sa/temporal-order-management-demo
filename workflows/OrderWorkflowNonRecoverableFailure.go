@@ -32,14 +32,6 @@ func OrderWorkflowNonRecoverableFailure(ctx workflow.Context, input resources.Or
 	}
 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
-	// Side effect to generate trackingId
-	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
-		return uuid.New().String()
-	})
-
-	var trackingId string
-	generateTrackingId.Get(&trackingId)
-
 	// Expose items as query
 	items, err := resources.QueryItems(ctx)
 	if err != nil {
@@ -82,6 +74,10 @@ func OrderWorkflowNonRecoverableFailure(ctx workflow.Context, input resources.Or
 	var result3 string
 	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomerNonRecoverableFailure, input).Get(ctx, &result3)
 	if err != nil {
+		// Rollback Charge Customer
+		var result3 string
+		_ = workflow.ExecuteActivity(ctx, activities.ChargeCustomerRollback, input).Get(ctx, &result3)
+
 		return nil, err
 	}
 
@@ -105,6 +101,9 @@ func OrderWorkflowNonRecoverableFailure(ctx workflow.Context, input resources.Or
 	}
 
 	*progress = 100
+
+	// Generate Tracking Id
+	trackingId := uuid.New().String()
 
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,

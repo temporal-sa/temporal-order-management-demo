@@ -34,14 +34,6 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 	}
 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
-	// Side effect to generate trackingId
-	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
-		return uuid.New().String()
-	})
-
-	var trackingId string
-	generateTrackingId.Get(&trackingId)
-
 	// Expose items as query
 	items, err := resources.QueryItems(ctx)
 	if err != nil {
@@ -103,7 +95,7 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 		ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
 
 		// execute and wait on child workflow
-		shipItem := workflow.ExecuteChildWorkflow(ctx, "ShippingWorkflow", input)
+		shipItem := workflow.ExecuteChildWorkflow(ctx, "ShippingChildWorkflow", input)
 		if err != nil {
 			return nil, err
 		}
@@ -120,6 +112,9 @@ func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput
 	}
 
 	*progress = 100
+
+	// Generate Tracking Id
+	trackingId := uuid.New().String()
 
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,

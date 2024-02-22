@@ -32,14 +32,6 @@ func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*
 	}
 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
-	// Side effect to generate trackingId
-	generateTrackingId := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
-		return uuid.New().String()
-	})
-
-	var trackingId string
-	generateTrackingId.Get(&trackingId)
-
 	// Expose items as query
 	items, err := resources.QueryItems(ctx)
 	if err != nil {
@@ -106,18 +98,13 @@ func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*
 
 	*progress = 100
 
+	// Generate Tracking Id
+	trackingId := uuid.New().String()
+
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,
 		Address:    input.Address,
 	}
 
 	return output, nil
-}
-
-func Divide(a, b int) (int, error) {
-	return a / b, nil
-}
-
-func boolPointer(b bool) *bool {
-	return &b
 }

@@ -10,7 +10,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func ShippingWorkflow(ctx workflow.Context, input resources.OrderInput, item resources.Item) error {
+func ShippingChildWorkflow(ctx workflow.Context, input resources.OrderInput, item resources.Item) error {
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing shipping started", "orderId", input.OrderId)
 

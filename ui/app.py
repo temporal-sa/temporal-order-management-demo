@@ -2,33 +2,31 @@ from flask import Flask, render_template, request, jsonify
 import uuid
 import os
 from client import get_client
-from temporalio.client import WorkflowFailureError
 from data import OrderInput, UpdateOrder
-import time
 
 app = Flask(__name__)
 
-# Sample data for the order
+# Order Info
 order_data = {
     "table_top": {"item": "Table Top", "quantity": 1},
     "table_legs": {"item": "Table Legs", "quantity": 2},
     "keypad": {"item": "Keypad", "quantity": 1},
 }
 
-# Sample data for payment
+# Payment Info
 payment_data = {
     "name": "Billy Bob",
     "card_type": "Visa",
     "card_number": "1234567890",
 }
 
-# Sample data for shipping
+# Shipping Info
 shipping_data = {
     "name": "Billy Bob",
     "address": "12345 Dongle Way, Nowhere California",
 }
 
-# Sample choices for the drop-down menu
+# Scenario choices dropdown
 scenarios = [
     "HappyPath",
     "AdvancedVisibility",
@@ -115,13 +113,12 @@ async def signal():
         print(f"Error sending signal: {str(e)}")
         return jsonify({"error": str(e)}), 500       
 
-    # Return a response if needed
     return 'Signal received successfully', 200
 
 @app.route('/update', methods=['POST'])
 async def update():
     order_id = request.args.get('order_id')
-    address = request.json.get('address')  # Assuming you send JSON data
+    address = request.json.get('address') 
 
     UpdateOrderInput = UpdateOrder(
         Address=address
@@ -136,12 +133,11 @@ async def update():
             arg=UpdateOrderInput,
         )
     except Exception as e:
-        result = f"Update for order_id {order_id} rejected! {str(e)}"
+        result = f"Update for order_id {order_id} rejected, not a valid address! {str(e)}"
         return jsonify(result=result)
 
     result = f"Update for order_id {order_id} accepted: {update_result}"
 
-    # Return the result as a JSON response
     return jsonify(result=result)
 
 if __name__ == '__main__':

@@ -1,16 +1,17 @@
 package resources
 
 import (
+	"strconv"
 	"time"
 
 	"go.temporal.io/sdk/workflow"
 )
 
-const timer = 30
+const timer = 60
 
 func UpdateApprovalTimer(ctx workflow.Context) (string, bool) {
 	logger := workflow.GetLogger(ctx)
-	logger.Info("Starting timer for 30 seconds")
+	logger.Info("Starting timer for " + strconv.Itoa(timer) + " seconds")
 
 	timerCtx, cancelTimer := workflow.WithCancel(ctx)
 	approvalTimer := workflow.NewTimer(timerCtx, time.Duration(timer*time.Second))

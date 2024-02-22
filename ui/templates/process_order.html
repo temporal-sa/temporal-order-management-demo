@@ -101,14 +101,14 @@
                 signalCountdownElement.style.display = 'block';
                 if (!isCountdown) {
                     isCountdown = true;
-                    startCountdown(30, signalCountdownElement);  // Start 30-second countdown 
+                    startCountdown(59, signalCountdownElement);  // Start 60 second countdown 
                 }
             } else if (selectedScenario === 'HumanInLoopUpdate' && progress === 75 && !isCountdownActive) {
                 updateElement.style.display = 'block';
                 updateCountdownElement.style.display = 'block';
                 if (!isCountdown) {
                     isCountdown = true;
-                    startCountdown(30, updateCountdownElement);  // Start 30-second countdown
+                    startCountdown(59, updateCountdownElement);  // Start 59 second countdown
                 }                
             }
         }        
@@ -134,13 +134,13 @@
                     // Update the progress bar
                     document.getElementById('progress-bar').style.width = data.progress + '%';
 
-                    // Check if the progress is complete, and redirect to order confirmation if needed
+                    // Check if the progress is complete and redirect to order confirmation if needed
                     if (data.progress === 100) {
                         // Redirect to order confirmation with the order_id
                         window.location.href = '/order_confirmation?order_id=' + encodeURIComponent(order_id);
                     } else {
                         // Continue updating progress
-                        setTimeout(updateProgress, 1000);  // Adjust the timeout as needed
+                        setTimeout(updateProgress, 1000);
                     }
 
                     // Show/hide elements based on the selected scenario and progress
@@ -171,27 +171,22 @@ function signal() {
     
     // Perform AJAX request to the server for signaling
     fetch('/signal?order_id=' + encodeURIComponent(order_id), {
-        method: 'POST', // or 'GET' depending on your server route configuration
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
-            // Add other headers if needed
         },
         body: JSON.stringify({
             address: document.getElementById('signalAddress').value
-            // Add other data if needed
         })
     })
     .then(response => {
         if (response.ok) {
-            // Handle success if needed
             console.log('Signal sent successfully');
         } else {
-            // Handle error if needed
             console.error('Failed to send signal');
         }
     })
     .catch(error => {
-        // Handle error if needed
         console.error('Error during signal:', error.message);
     });
 }
@@ -207,19 +202,15 @@ function signal() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                    // Add other headers if needed
                 },
                 body: JSON.stringify({
                     address: document.getElementById('updateAddress').value
-                    // Add other data if needed
                 })
             })
             .then(response => {
                 if (response.ok) {
-                    // Parse the JSON response
                     return response.json();
                 } else {
-                    // Handle error if needed
                     console.error('Failed to send update');
                     throw new Error('Failed to send update');
                 }
@@ -231,16 +222,15 @@ function signal() {
                 // Update the display with the result
                 updateResultElement.innerText = data.result;
 
-                // Check if the result contains "rejected" and set text color accordingly
+                // Check if the result contains rejected and set text color
                 if (data.result.includes("rejected")) {
                     updateResultElement.style.color = 'red';
                 } else {
                     // Reset text color if not "rejected"
-                    updateResultElement.style.color = ''; // or whatever your default color is
+                    updateResultElement.style.color = '';
                 }
             })
             .catch(error => {
-                // Handle error if needed
                 console.error('Error during update:', error.message);
             });
         }   
