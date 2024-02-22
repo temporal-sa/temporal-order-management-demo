@@ -28,12 +28,12 @@ This demo walks through several scenarios using an order management process. The
 ## Run Worker
 Ensure the following environment variables:
 ```bash
-export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
-export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
-export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
-export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-export TEMPORAL_WORKER_METRICS_PORT=9090
-export TEMPORAL_TASK_QUEUE=orders
+$ export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
+$ export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
+$ export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
+$ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
+$ export TEMPORAL_WORKER_METRICS_PORT=9090
+$ export TEMPORAL_TASK_QUEUE=orders
 ```
 
 ```bash
@@ -47,11 +47,11 @@ $ go run worker/main.go
 ## Run UI
 Ensure the following environment variables:
 ```bash
-export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
-export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
-export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
-export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-export TEMPORAL_TASK_QUEUE=orders
+$ export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
+$ export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
+$ export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
+$ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
+$ export TEMPORAL_TASK_QUEUE=orders
 ```
 
 Install [Poetry](https://python-poetry.org/)
