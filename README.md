@@ -54,8 +54,20 @@ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
 export TEMPORAL_TASK_QUEUE=orders
 ```
 
+Install [Poetry](https://python-poetry.org/)
+
+Change to the UI directory
 ```bash
-$cd ui;poetry run python app.py
+$ cd ui
+```
+
+Install Poetry Dependencies
+```bash
+$ poetry install
+```
+
+```bash
+$ poetry run python app.py
 
  * Serving Flask app 'app'
  * Debug mode: on
