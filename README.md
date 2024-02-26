@@ -63,7 +63,7 @@ $ cd ui
 
 Install Poetry Dependencies
 ```bash
-$ poetry install
+$ poetry install --no-root
 ```
 
 Run Flask App

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "oder-management-app"
+name = "order-management-app"
 version = "0.1.0"
 description = "Simple Order Management App"
 authors = ["Keith Tenzer <keith.tenzer@temporal.io>"]
