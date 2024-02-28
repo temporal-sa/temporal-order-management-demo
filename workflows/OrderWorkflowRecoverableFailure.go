@@ -78,7 +78,7 @@ func OrderWorkflowRecoverableFailure(ctx workflow.Context, input resources.Order
 	}
 
 	//Divide by zero, produce recoverable exception
-	//divide(1, 0)
+	divide(1, 0)
 
 	*progress = 75
 	workflow.Sleep(ctx, 3*time.Second)
