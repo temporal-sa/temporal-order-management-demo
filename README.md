@@ -1,5 +1,5 @@
 # Temporal Order Management Demo
-Demos various aspects of [Tempora](http://tempora.io) using the [Go SDK](https://github.com/temporalio/sdk-go) for backend and [Python SDK](https://github.com/temporalio/sdk-python) for frontend.
+Demos various aspects of [Temporal](http://tempora.io) using the [Go SDK](https://github.com/temporalio/sdk-go) for backend and [Python SDK](https://github.com/temporalio/sdk-python) for frontend.
 
 | Prerequisites      |   | __ | Features       |   | __ | Patterns            |   | 
 |:-------------------|---|----|----------------|---|----|---------------------|---|
