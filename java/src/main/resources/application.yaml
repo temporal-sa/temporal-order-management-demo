@@ -1,0 +1,19 @@
+ordermgmt:
+  task-queue: orders
+
+spring:
+  application:
+    name: temporal-ordermgmt
+  temporal:
+    namespace: default
+    connection:
+      target: 127.0.0.1:7233
+    workersAutoDiscovery:
+      packages:
+        - com.example.ordermgmt.workflows
+        - com.example.ordermgmt.activities
+    start-workers: false
+
+#logging:
+#  pattern:
+#    console: "%d{HH:mm:ss.SSS} {%X{WorkflowId} %X{ActivityId}} [%thread] %-5level %logger{36} - %msg %n"
