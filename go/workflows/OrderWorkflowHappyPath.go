@@ -44,7 +44,7 @@ func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*
 		return nil, err
 	}
 
-	// Update items
+	// Get items
 	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err

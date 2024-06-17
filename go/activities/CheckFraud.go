@@ -12,7 +12,7 @@ import (
 
 func CheckFraud(ctx context.Context, input resources.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
-	logger.Info("Check Fraud activity started", "oderId", input.OrderId)
+	logger.Info("Check Fraud activity started", "orderId", input.OrderId)
 
 	time.Sleep(1 * time.Second)
 

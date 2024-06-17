@@ -1,7 +1,7 @@
 # Temporal Order Management Demo
-Demos various aspects of [Tempora](http://tempora.io) using the [Go SDK](https://github.com/temporalio/sdk-go) for backend and [Python SDK](https://github.com/temporalio/sdk-python) for frontend.
+Demos various aspects of [Temporal](http://temporal.io) using the [Go SDK](https://github.com/temporalio/sdk-go) for backend and [Python SDK](https://github.com/temporalio/sdk-python) for frontend.
 
-| Prerequisites      |   | __ | Features       |   | __ | Patterns            |   | 
+| Prerequisites      |   | __ | Features       |   | __ | Patterns            |   |
 |:-------------------|---|----|----------------|---|----|---------------------|---|
 | Network Connection |  | __  | Schedule       |  | __ | Entity              | ✅ |
 | Golang 1.18+       | ✅ | __ | Local Activity |  ✅ | __ | Long-Running        | ✅ |
@@ -37,7 +37,8 @@ $ export TEMPORAL_TASK_QUEUE=orders
 ```
 
 ```bash
-$ go run worker/main.go 
+$ cd go
+$ go run worker/main.go
 
 2024/02/20 14:05:20 prometheus metrics scope created
 2024/02/20 14:05:20 INFO  No logger configured for temporal client. Created default one.
@@ -87,7 +88,7 @@ Press CTRL+C to quit
 
 ![Order Confirmation](ui/static/order-confirmation.png)
 
-The happy path demonstrates the base functionality that is consistent across all other scenarios. In this demo you will place an order for various items that make a table. The workflow will generate a trackingId using a Temporal Side Effect. 
+The happy path demonstrates the base functionality that is consistent across all other scenarios. In this demo you will place an order for various items that make a table. The workflow will generate a trackingId using a Temporal Side Effect.
 
 The workflow will execute a side effect:
 - getTrackingId
@@ -98,7 +99,7 @@ The workflow will expose two queries:
 - getItems
 - progress
 
-The getItems query shows the list of items that are part of order. 
+The getItems query shows the list of items that are part of order.
 
 The progress query is used by the status bar in the UI to show progress. As workflow progress, progress is updated accordingly.
 
@@ -106,7 +107,7 @@ The workflow will execute one local activity:
 - GetItems
 The GetItems activity is used to get the items that need to be shipped as part of order in deterministic way. Lists in Go are not deterministic and as such should be properly sorted.
 
-The workflow will execute several activities: 
+The workflow will execute several activities:
 - CheckFraud
 - PrepareShipment
 - ChargeCustomer

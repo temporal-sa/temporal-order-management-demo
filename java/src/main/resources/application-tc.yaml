@@ -1,0 +1,8 @@
+spring:
+  temporal:
+    namespace: ${TEMPORAL_NAMESPACE}
+    connection:
+      target: ${TEMPORAL_HOST_URL}
+      mtls:
+        key-file: ${TEMPORAL_MTLS_TLS_KEY_PKCS8}
+        cert-chain-file: ${TEMPORAL_MTLS_TLS_CERT}

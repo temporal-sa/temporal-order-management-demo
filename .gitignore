@@ -1,1 +1,4 @@
 __pycache__
+.envrc
+.DS_Store
+.idea
