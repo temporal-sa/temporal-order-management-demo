@@ -27,7 +27,7 @@ func main() {
 	w.RegisterWorkflowWithOptions(workflows.OrderWorkflow, workflow.RegisterOptions{
 		Name: "OrderWorkflowHappyPath",
 	})
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflow, workflow.RegisterOptions{
+	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
 		Name: "OrderWorkflowAPIFailure",
 	})
 
