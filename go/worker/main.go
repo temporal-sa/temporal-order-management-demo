@@ -27,7 +27,10 @@ func main() {
 	w.RegisterWorkflowWithOptions(workflows.OrderWorkflow, workflow.RegisterOptions{
 		Name: "OrderWorkflowHappyPath",
 	})
-	// w.RegisterWorkflow(workflows.OrderWorkflowAPIFailure)
+	w.RegisterWorkflowWithOptions(workflows.OrderWorkflow, workflow.RegisterOptions{
+		Name: "OrderWorkflowAPIFailure",
+	})
+
 	// w.RegisterWorkflow(workflows.OrderWorkflowAdvancedVisibility)
 	// w.RegisterWorkflow(workflows.OrderWorkflowChildWorkflow)
 	// w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopSignal)
