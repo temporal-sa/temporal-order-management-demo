@@ -72,6 +72,7 @@ public class OrderActivitiesImpl implements OrderActivities {
 
         // simulate external API call
         String error = simulateExternalOperation(1000, type, attempt);
+        log.info("Simulated call complete, type = {}, error = {}", type, error);
         switch (error) {
             case ERROR_CHARGE_API_UNAVAILABLE:
                 // a transient error, which can be retried
