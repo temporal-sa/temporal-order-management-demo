@@ -7,14 +7,12 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-const timeout = 5
-
 // Setup update handler to update order
 func UpdateOrderWithAddress(ctx workflow.Context, address *string, isUpdate *bool) error {
 	if err := workflow.SetUpdateHandlerWithOptions(
 		ctx,
 		"UpdateOrder",
-		func(ctx workflow.Context, update UpdateOrder) (string, error) {
+		func(ctx workflow.Context, update UpdateOrderInput) (string, error) {
 			*isUpdate = true
 			*address = update.Address
 			return *address, nil
@@ -27,7 +25,7 @@ func UpdateOrderWithAddress(ctx workflow.Context, address *string, isUpdate *boo
 	return ctx.Err()
 }
 
-func validateAddress(ctx workflow.Context, update UpdateOrder) error {
+func validateAddress(ctx workflow.Context, update UpdateOrderInput) error {
 	logger := workflow.GetLogger(ctx)
 
 	re := regexp.MustCompile(`^\d+`)

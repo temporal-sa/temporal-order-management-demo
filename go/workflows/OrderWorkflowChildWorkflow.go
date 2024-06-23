@@ -1,125 +1,118 @@
 package workflows
 
-import (
-	"strconv"
-	"time"
+// import (
+// 	"strconv"
+// 	"time"
 
-	"github.com/google/uuid"
-	"github.com/ktenzer/temporal-order-management/activities"
+// 	"temporal-order-management/activities"
 
-	"github.com/ktenzer/temporal-order-management/resources"
-	"go.temporal.io/api/enums/v1"
-	"go.temporal.io/sdk/temporal"
-	"go.temporal.io/sdk/workflow"
-)
+// 	"github.com/google/uuid"
 
-func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
-	logger := workflow.GetLogger(ctx)
-	logger.Info("Processing order started", "orderId", input.OrderId)
+// 	"temporal-order-management/resources"
 
-	// activity options
-	activityOptions := workflow.ActivityOptions{
-		StartToCloseTimeout: 5 * time.Second,
-		RetryPolicy: &temporal.RetryPolicy{
-			InitialInterval:    1 * time.Second,
-			BackoffCoefficient: 2.0,
-			MaximumInterval:    30 * time.Second,
-		},
-	}
-	ctx = workflow.WithActivityOptions(ctx, activityOptions)
+// 	"go.temporal.io/api/enums/v1"
+// 	"go.temporal.io/sdk/temporal"
+// 	"go.temporal.io/sdk/workflow"
+// )
 
-	// local activity options
-	localActivityOptions := workflow.LocalActivityOptions{
-		StartToCloseTimeout: 5 * time.Second,
-	}
-	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
+// func OrderWorkflowChildWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
+// 	logger := workflow.GetLogger(ctx)
+// 	logger.Info("Processing order started", "orderId", input.OrderId)
 
-	// Expose items as query
-	items, err := resources.QueryItems(ctx)
-	if err != nil {
-		return nil, err
-	}
+// 	// activity options
+// 	activityOptions := workflow.ActivityOptions{
+// 		StartToCloseTimeout: 5 * time.Second,
+// 		RetryPolicy: &temporal.RetryPolicy{
+// 			InitialInterval:    1 * time.Second,
+// 			BackoffCoefficient: 2.0,
+// 			MaximumInterval:    30 * time.Second,
+// 		},
+// 	}
+// 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
-	// Expose progress as query
-	progress, err := resources.QueryProgress(ctx)
-	if err != nil {
-		return nil, err
-	}
+// 	// local activity options
+// 	localActivityOptions := workflow.LocalActivityOptions{
+// 		StartToCloseTimeout: 5 * time.Second,
+// 	}
+// 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
-	// Update items
-	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
-	if err != nil {
-		return nil, err
-	}
+// 	// Expose progress as query
+// 	progress, err := resources.SetQueryHandlerForProgress(ctx)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Check Fraud
-	var result1 string
-	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
-	if err != nil {
-		return nil, err
-	}
+// 	// Get items
+// 	items := resources.Items{}
+// 	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	*progress = 25
-	workflow.Sleep(ctx, 3*time.Second)
+// 	// Check Fraud
+// 	var result1 string
+// 	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Prepare Shipment
-	var result2 string
-	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &result2)
-	if err != nil {
-		return nil, err
-	}
+// 	*progress = 25
+// 	workflow.Sleep(ctx, 3*time.Second)
 
-	*progress = 50
-	workflow.Sleep(ctx, 3*time.Second)
+// 	// Prepare Shipment
+// 	var result2 string
+// 	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &result2)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Charge Customer
-	var result3 string
-	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input).Get(ctx, &result3)
-	if err != nil {
-		return nil, err
-	}
+// 	*progress = 50
+// 	workflow.Sleep(ctx, 3*time.Second)
 
-	*progress = 75
-	workflow.Sleep(ctx, 3*time.Second)
+// 	// Charge Customer
+// 	var result3 string
+// 	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input).Get(ctx, &result3)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// Ship Order
-	var shipItems []workflow.Future
-	for _, item := range *items {
-		logger.Info("Shipping item " + item.Description)
+// 	*progress = 75
+// 	workflow.Sleep(ctx, 3*time.Second)
 
-		// set child workflow options
-		childWorkflowOptions := workflow.ChildWorkflowOptions{
-			WorkflowID:        "shipment-" + input.OrderId + "-" + strconv.Itoa(item.Id),
-			ParentClosePolicy: enums.PARENT_CLOSE_POLICY_TERMINATE,
-		}
-		ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
+// 	// Ship Order
+// 	var shipItems []workflow.Future
+// 	for _, item := range items {
+// 		logger.Info("Shipping item " + item.Description)
 
-		// execute and wait on child workflow
-		shipItem := workflow.ExecuteChildWorkflow(ctx, "ShippingChildWorkflow", input)
-		if err != nil {
-			return nil, err
-		}
+// 		// set child workflow options
+// 		childWorkflowOptions := workflow.ChildWorkflowOptions{
+// 			WorkflowID:        "shipment-" + input.OrderId + "-" + strconv.Itoa(item.Id),
+// 			ParentClosePolicy: enums.PARENT_CLOSE_POLICY_TERMINATE,
+// 		}
+// 		ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
 
-		shipItems = append(shipItems, shipItem)
-	}
+// 		// execute and wait on child workflow
+// 		shipItem := workflow.ExecuteChildWorkflow(ctx, "ShippingChildWorkflow", input)
+// 		shipItems = append(shipItems, shipItem)
+// 	}
 
-	// Wait for all items to ship
-	for _, shipItem := range shipItems {
-		err = shipItem.Get(ctx, nil)
-		if err != nil {
-			return nil, err
-		}
-	}
+// 	// Wait for all items to ship
+// 	for _, shipItem := range shipItems {
+// 		err = shipItem.Get(ctx, nil)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	}
 
-	*progress = 100
+// 	*progress = 100
 
-	// Generate Tracking Id
-	trackingId := uuid.New().String()
+// 	// Generate Tracking Id
+// 	trackingId := uuid.New().String()
 
-	output := &resources.OrderOutput{
-		TrackingId: trackingId,
-		Address:    input.Address,
-	}
+// 	output := &resources.OrderOutput{
+// 		TrackingId: trackingId,
+// 		Address:    input.Address,
+// 	}
 
-	return output, nil
-}
+// 	return output, nil
+// }

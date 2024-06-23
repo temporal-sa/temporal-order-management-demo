@@ -6,7 +6,7 @@ import (
 
 const SignalOrderWithAddressChannelName = "UpdateOrder"
 
-func (signal *UpdateOrder) SignalOrderWithAddress(ctx workflow.Context, selector workflow.Selector) {
+func (signal *UpdateOrderInput) SignalOrderWithAddress(ctx workflow.Context, selector workflow.Selector) {
 	log := workflow.GetLogger(ctx)
 
 	addPlayerSignalChan := workflow.GetSignalChannel(ctx, SignalOrderWithAddressChannelName)

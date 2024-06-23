@@ -107,7 +107,7 @@ func SignalApprovalTimer(ctx workflow.Context) (string, bool) {
 
 	// coroutine for signal
 	workflow.Go(ctx, func(gCtx workflow.Context) {
-		signal := UpdateOrder{}
+		signal := UpdateOrderInput{}
 
 		signalSelector := workflow.NewSelector(gCtx)
 		signal.SignalOrderWithAddress(gCtx, signalSelector)

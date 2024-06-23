@@ -1,21 +1,21 @@
 package workflows
 
 import (
+	"temporal-order-management/activities"
+	"temporal-order-management/messages"
+	"temporal-order-management/resources"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ktenzer/temporal-order-management/activities"
-
-	"github.com/ktenzer/temporal-order-management/resources"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
-func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
+func OrderWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
+	name := workflow.GetInfo(ctx).WorkflowType.Name
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
 
-	// activity options
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: 5 * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -26,85 +26,83 @@ func OrderWorkflowHappyPath(ctx workflow.Context, input resources.OrderInput) (*
 	}
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
-	// local activity options
 	localActivityOptions := workflow.LocalActivityOptions{
 		StartToCloseTimeout: 5 * time.Second,
 	}
 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
-	// Expose items as query
-	items, err := resources.QueryItems(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	// Expose progress as query
-	progress, err := resources.QueryProgress(ctx)
+	progress, err := messages.SetQueryHandlerForProgress(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get items
+	items := resources.Items{}
 	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check Fraud
+	// Check fraud
 	var result1 string
 	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
 	if err != nil {
 		return nil, err
 	}
 
-	*progress = 25
-	workflow.Sleep(ctx, 3*time.Second)
+	updateProgress(progress, 25, ctx, 1)
 
-	// Prepare Shipment
+	// Prepare shipment
 	var result2 string
 	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &result2)
 	if err != nil {
 		return nil, err
 	}
 
-	*progress = 50
-	workflow.Sleep(ctx, 3*time.Second)
+	updateProgress(progress, 50, ctx, 1)
 
-	// Charge Customer
+	// Charge customer
 	var result3 string
-	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input).Get(ctx, &result3)
+	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, &result3)
 	if err != nil {
 		return nil, err
 	}
 
-	*progress = 75
-	workflow.Sleep(ctx, 3*time.Second)
+	updateProgress(progress, 75, ctx, 3)
 
-	// Ship Orders
-	var shipItems []workflow.Future
-	for _, item := range *items {
+	// Ship orders
+	var futures []workflow.Future
+	for _, item := range items {
 		logger.Info("Shipping item " + item.Description)
-		shipItem := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item)
-		shipItems = append(shipItems, shipItem)
+		f := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item)
+		futures = append(futures, f)
 	}
 
 	// Wait for all items to ship
-	for _, shipItem := range shipItems {
-		err = shipItem.Get(ctx, nil)
+	for _, future := range futures {
+		err = future.Get(ctx, nil)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	*progress = 100
+	updateProgress(progress, 100, ctx, 1)
 
-	// Generate Tracking Id
+	// Generate trackingId
 	trackingId := uuid.New().String()
-
 	output := &resources.OrderOutput{
 		TrackingId: trackingId,
 		Address:    input.Address,
 	}
 
 	return output, nil
+}
+
+func updateProgress(progress *int, value int, ctx workflow.Context, seconds int) {
+	*progress = value
+	if seconds > 0 {
+		duration := time.Duration(seconds) * time.Second
+		workflow.Sleep(ctx, duration)
+	}
 }
