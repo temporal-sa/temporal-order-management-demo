@@ -11,6 +11,10 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
+const (
+	BUG = "OrderWorkflowRecoverableFailure"
+)
+
 func OrderWorkflowScenarios(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
 	name := workflow.GetInfo(ctx).WorkflowType.Name
 	logger := workflow.GetLogger(ctx)
@@ -70,6 +74,11 @@ func OrderWorkflowScenarios(ctx workflow.Context, input resources.OrderInput) (*
 	}
 
 	updateProgress(progress, 75, ctx, 3)
+
+	if BUG == name {
+		// Simulate bug
+		panic("Simulated bug - fix me!")
+	}
 
 	// Ship orders
 	var futures []workflow.Future
