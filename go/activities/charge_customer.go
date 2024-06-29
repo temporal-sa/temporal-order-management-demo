@@ -3,7 +3,7 @@ package activities
 import (
 	"context"
 	"errors"
-	"temporal-order-management/resources"
+	"temporal-order-management/app"
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/temporal"
@@ -14,7 +14,7 @@ const (
 	ErrorInvalidCreditCard    = "OrderWorkflowNonRecoverableFailure"
 )
 
-func ChargeCustomer(ctx context.Context, input resources.OrderInput, name string) (string, error) {
+func ChargeCustomer(ctx context.Context, input app.OrderInput, name string) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Charge Customer activity started", "orderId", input.OrderId)
 	attempt := activity.GetInfo(ctx).Attempt
@@ -22,6 +22,7 @@ func ChargeCustomer(ctx context.Context, input resources.OrderInput, name string
 	// simulate external API call
 	error := simulateExternalOperationWithError(1000, name, attempt)
 	logger.Info("Simulated call complete", "name", name, "error", error)
+
 	switch error {
 	case ErrorChargeAPIUnavailable:
 		// a transient error, which can be retried
@@ -37,7 +38,7 @@ func ChargeCustomer(ctx context.Context, input resources.OrderInput, name string
 	return input.OrderId, nil
 }
 
-func UndoChargeCustomer(ctx context.Context, input resources.OrderInput) (string, error) {
+func UndoChargeCustomer(ctx context.Context, input app.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Undo Charge Customer activity started", "orderId", input.OrderId)
 

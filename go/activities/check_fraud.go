@@ -2,12 +2,12 @@ package activities
 
 import (
 	"context"
-	"temporal-order-management/resources"
+	"temporal-order-management/app"
 
 	"go.temporal.io/sdk/activity"
 )
 
-func CheckFraud(ctx context.Context, input resources.OrderInput) (string, error) {
+func CheckFraud(ctx context.Context, input app.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Check Fraud activity started", "orderId", input.OrderId)
 

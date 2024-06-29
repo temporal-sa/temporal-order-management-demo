@@ -2,12 +2,12 @@ package activities
 
 import (
 	"context"
-	"temporal-order-management/resources"
+	"temporal-order-management/app"
 
 	"go.temporal.io/sdk/activity"
 )
 
-func PrepareShipment(ctx context.Context, input resources.OrderInput) (string, error) {
+func PrepareShipment(ctx context.Context, input app.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Prepare Shipment activity started", "orderId", input.OrderId)
 
@@ -17,7 +17,7 @@ func PrepareShipment(ctx context.Context, input resources.OrderInput) (string, e
 	return input.OrderId, nil
 }
 
-func UndoPrepareShipment(ctx context.Context, input resources.OrderInput) (string, error) {
+func UndoPrepareShipment(ctx context.Context, input app.OrderInput) (string, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Undo Prepare Shipment activity started", "orderId", input.OrderId)
 

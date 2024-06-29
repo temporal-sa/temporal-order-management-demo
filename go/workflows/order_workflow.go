@@ -2,8 +2,8 @@ package workflows
 
 import (
 	"temporal-order-management/activities"
+	"temporal-order-management/app"
 	"temporal-order-management/messages"
-	"temporal-order-management/resources"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,7 +11,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func OrderWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
+func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (*app.OrderOutput, error) {
 	name := workflow.GetInfo(ctx).WorkflowType.Name
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
@@ -38,15 +38,15 @@ func OrderWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources
 	}
 
 	// Get items
-	items := resources.Items{}
+	items := app.Items{}
 	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check fraud
-	var result1 string
-	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
+	var cfresult string
+	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &cfresult)
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +54,8 @@ func OrderWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources
 	updateProgress(progress, 25, ctx, 1)
 
 	// Prepare shipment
-	var result2 string
-	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &result2)
+	var psresult string
+	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &psresult)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +63,8 @@ func OrderWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources
 	updateProgress(progress, 50, ctx, 1)
 
 	// Charge customer
-	var result3 string
-	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, &result3)
+	var ccresult string
+	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, &ccresult)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func OrderWorkflow(ctx workflow.Context, input resources.OrderInput) (*resources
 
 	// Generate trackingId
 	trackingId := uuid.New().String()
-	output := &resources.OrderOutput{
+	output := &app.OrderOutput{
 		TrackingId: trackingId,
 		Address:    input.Address,
 	}

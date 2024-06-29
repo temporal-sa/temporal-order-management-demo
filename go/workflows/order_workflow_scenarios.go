@@ -2,8 +2,8 @@ package workflows
 
 import (
 	"temporal-order-management/activities"
+	"temporal-order-management/app"
 	"temporal-order-management/messages"
-	"temporal-order-management/resources"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,7 +15,7 @@ const (
 	BUG = "OrderWorkflowRecoverableFailure"
 )
 
-func OrderWorkflowScenarios(ctx workflow.Context, input resources.OrderInput) (*resources.OrderOutput, error) {
+func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output *app.OrderOutput, err error) {
 	name := workflow.GetInfo(ctx).WorkflowType.Name
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
@@ -35,6 +35,15 @@ func OrderWorkflowScenarios(ctx workflow.Context, input resources.OrderInput) (*
 	}
 	laCtx := workflow.WithLocalActivityOptions(ctx, localActivityOptions)
 
+	// Create saga to manage order compensations
+	var saga app.Saga
+	defer func() {
+		if err != nil {
+			disconnectedCtx, _ := workflow.NewDisconnectedContext(ctx)
+			saga.Compensate(disconnectedCtx)
+		}
+	}()
+
 	// Expose progress as query
 	progress, err := messages.SetQueryHandlerForProgress(ctx)
 	if err != nil {
@@ -42,15 +51,15 @@ func OrderWorkflowScenarios(ctx workflow.Context, input resources.OrderInput) (*
 	}
 
 	// Get items
-	items := resources.Items{}
+	items := app.Items{}
 	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check fraud
-	var result1 string
-	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &result1)
+	var cfresult string
+	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &cfresult)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +67,9 @@ func OrderWorkflowScenarios(ctx workflow.Context, input resources.OrderInput) (*
 	updateProgress(progress, 25, ctx, 1)
 
 	// Prepare shipment
-	var result2 string
-	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &result2)
+	saga.AddCompensation(activities.UndoPrepareShipment, input)
+	var psresult string
+	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &psresult)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +77,9 @@ func OrderWorkflowScenarios(ctx workflow.Context, input resources.OrderInput) (*
 	updateProgress(progress, 50, ctx, 1)
 
 	// Charge customer
-	var result3 string
-	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, &result3)
+	saga.AddCompensation(activities.UndoChargeCustomer, input)
+	var ccresult string
+	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, &ccresult)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +111,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, input resources.OrderInput) (*
 
 	// Generate trackingId
 	trackingId := uuid.New().String()
-	output := &resources.OrderOutput{
+	output = &app.OrderOutput{
 		TrackingId: trackingId,
 		Address:    input.Address,
 	}

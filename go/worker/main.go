@@ -33,12 +33,14 @@ func main() {
 	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
 		Name: "OrderWorkflowRecoverableFailure",
 	})
+	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
+		Name: "OrderWorkflowNonRecoverableFailure",
+	})
 
 	// w.RegisterWorkflow(workflows.OrderWorkflowAdvancedVisibility)
 	// w.RegisterWorkflow(workflows.OrderWorkflowChildWorkflow)
 	// w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopSignal)
 	// w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopUpdate)
-	// w.RegisterWorkflow(workflows.OrderWorkflowNonRecoverableFailure)
 	// w.RegisterWorkflow(workflows.ShippingChildWorkflow)
 
 	// activities

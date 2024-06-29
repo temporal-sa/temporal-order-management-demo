@@ -1,4 +1,4 @@
-package resources
+package app
 
 type OrderInput struct {
 	OrderId string
