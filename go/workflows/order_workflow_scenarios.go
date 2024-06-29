@@ -1,18 +1,21 @@
 package workflows
 
 import (
+	"fmt"
 	"temporal-order-management/activities"
 	"temporal-order-management/app"
 	"temporal-order-management/messages"
 	"time"
 
 	"github.com/google/uuid"
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
 const (
-	BUG = "OrderWorkflowRecoverableFailure"
+	BUG   = "OrderWorkflowRecoverableFailure"
+	CHILD = "OrderWorkflowChildWorkflow"
 )
 
 func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output *app.OrderOutput, err error) {
@@ -92,16 +95,15 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 	}
 
 	// Ship orders
-	var futures []workflow.Future
+	var shipFutures []workflow.Future
 	for _, item := range items {
 		logger.Info("Shipping item " + item.Description)
-		f := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item)
-		futures = append(futures, f)
+		shipFutures = append(shipFutures, shipItemAsync(ctx, input, item, name))
 	}
 
 	// Wait for all items to ship
-	for _, future := range futures {
-		err = future.Get(ctx, nil)
+	for _, f := range shipFutures {
+		err = f.Get(ctx, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -117,4 +119,21 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 	}
 
 	return output, nil
+}
+
+func shipItemAsync(ctx workflow.Context, input app.OrderInput, item app.Item, name string) workflow.Future {
+	var f workflow.Future
+	if CHILD == name {
+		// execute an async child wf to ship the item
+		cwo := workflow.ChildWorkflowOptions{
+			WorkflowID:        fmt.Sprintf("shipment-%v-%v", input.OrderId, item.Id),
+			ParentClosePolicy: enums.PARENT_CLOSE_POLICY_TERMINATE,
+		}
+		ctx = workflow.WithChildOptions(ctx, cwo)
+		f = workflow.ExecuteChildWorkflow(ctx, ShippingChildWorkflow, input)
+	} else {
+		// execute an async activity to ship the item
+		f = workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item)
+	}
+	return f
 }

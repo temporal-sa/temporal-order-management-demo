@@ -72,16 +72,16 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (*app.OrderOutput
 	updateProgress(progress, 75, ctx, 3)
 
 	// Ship orders
-	var futures []workflow.Future
+	var shipFutures []workflow.Future
 	for _, item := range items {
 		logger.Info("Shipping item " + item.Description)
 		f := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item)
-		futures = append(futures, f)
+		shipFutures = append(shipFutures, f)
 	}
 
 	// Wait for all items to ship
-	for _, future := range futures {
-		err = future.Get(ctx, nil)
+	for _, f := range shipFutures {
+		err = f.Get(ctx, nil)
 		if err != nil {
 			return nil, err
 		}
