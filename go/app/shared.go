@@ -10,10 +10,6 @@ type OrderOutput struct {
 	Address    string `json:"address"`
 }
 
-type UpdateOrderInput struct {
-	Address string `json:"address"`
-}
-
 type Items []Item
 
 type Item struct {

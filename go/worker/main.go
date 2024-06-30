@@ -43,8 +43,10 @@ func main() {
 	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
 		Name: "OrderWorkflowAdvancedVisibility",
 	})
+	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
+		Name: "OrderWorkflowHumanInLoopSignal",
+	})
 
-	// w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopSignal)
 	// w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopUpdate)
 
 	// activities

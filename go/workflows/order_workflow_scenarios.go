@@ -16,6 +16,7 @@ import (
 const (
 	BUG        = "OrderWorkflowRecoverableFailure"
 	CHILD      = "OrderWorkflowChildWorkflow"
+	SIGNAL     = "OrderWorkflowHumanInLoopSignal"
 	VISIBILITY = "OrderWorkflowAdvancedVisibility"
 )
 
@@ -94,6 +95,17 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 	if BUG == name {
 		// Simulate bug
 		panic("Simulated bug - fix me!")
+	}
+
+	if SIGNAL == name {
+		// Await message to update address
+		logger.Info("Waiting up to 60 seconds for updated address")
+		var updateInput messages.UpdateOrderInput
+		signalChan := workflow.GetSignalChannel(ctx, "UpdateOrder")
+		ok, _ := signalChan.ReceiveWithTimeout(ctx, time.Minute, &updateInput)
+		if ok {
+			input.Address = updateInput.Address
+		}
 	}
 
 	// Ship order items
