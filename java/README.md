@@ -4,7 +4,7 @@ This is an alternate implementation of the Temporal Order Management Demo backen
 using the [Java SDK](https://github.com/temporalio/sdk-java).
 
 All of the scenarios suppported in the Go backend, and outlined in the main README are implemented in
-this Java version. This version is also fully compatible with the Python UI.  See the main README for
+this Java version. This version is also fully compatible with the Python UI. See the main README for
 instructions on how to run the UI, and the instructions below for running the Java backend.
 
 ## Run Worker

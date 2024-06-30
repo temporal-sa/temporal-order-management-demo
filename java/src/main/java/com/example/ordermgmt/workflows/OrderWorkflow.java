@@ -53,7 +53,7 @@ class OrderWorkflowImpl implements OrderWorkflow {
         activities.chargeCustomer(input, type);
         updateProgress(75, 3);
 
-        // Ship orders
+        // Ship order items
         List<Promise<Void>> promiseList = new ArrayList<>();
         for (OrderItem orderItem : orderItems) {
             log.info("Shipping item: {}", orderItem.getDescription());

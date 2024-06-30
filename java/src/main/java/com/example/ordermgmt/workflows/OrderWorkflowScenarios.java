@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrderWorkflowScenarios implements DynamicWorkflow {
+
     private static final String BUG = "OrderWorkflowRecoverableFailure";
     private static final String CHILD = "OrderWorkflowChildWorkflow";
     private static final String SIGNAL = "OrderWorkflowHumanInLoopSignal";
@@ -72,7 +73,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
             throw af;
         }
 
-        updateProgress(75, 3, "Ship Orders");
+        updateProgress(75, 3, "Ship Order");
 
         if (BUG.equals(type)) {
             // Simulate bug
@@ -84,7 +85,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
             waitForUpdatedAddressOrTimeout(input);
         }
 
-        // Ship orders
+        // Ship order items
         List<Promise<Void>> promiseList = new ArrayList<>();
         for (OrderItem orderItem : orderItems) {
             log.info("Shipping item: {}", orderItem.getDescription());
@@ -142,6 +143,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
     }
 
     class OrderWorkflowDynamicListenerImpl implements OrderWorkflowMessages {
+
         @Override
         public int queryProgress() {
             return progress;
