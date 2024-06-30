@@ -14,9 +14,12 @@ import (
 )
 
 const (
-	BUG   = "OrderWorkflowRecoverableFailure"
-	CHILD = "OrderWorkflowChildWorkflow"
+	BUG        = "OrderWorkflowRecoverableFailure"
+	CHILD      = "OrderWorkflowChildWorkflow"
+	VISIBILITY = "OrderWorkflowAdvancedVisibility"
 )
+
+var orderStatusKey = temporal.NewSearchAttributeKeyKeyword("OrderStatus")
 
 func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output *app.OrderOutput, err error) {
 	name := workflow.GetInfo(ctx).WorkflowType.Name
@@ -60,41 +63,40 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 		return nil, err
 	}
 
+	updateProgressWithStatus(progress, 0, ctx, 0, "Check Fraud")
+
 	// Check fraud
-	var cfresult string
-	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &cfresult)
+	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	updateProgress(progress, 25, ctx, 1)
+	updateProgressWithStatus(progress, 25, ctx, 1, "Prepare Shipment")
 
 	// Prepare shipment
 	saga.AddCompensation(activities.UndoPrepareShipment, input)
-	var psresult string
-	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &psresult)
+	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	updateProgress(progress, 50, ctx, 1)
+	updateProgressWithStatus(progress, 50, ctx, 1, "Charge Customer")
 
 	// Charge customer
 	saga.AddCompensation(activities.UndoChargeCustomer, input)
-	var ccresult string
-	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, &ccresult)
+	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	updateProgress(progress, 75, ctx, 3)
+	updateProgressWithStatus(progress, 75, ctx, 3, "Ship Order")
 
 	if BUG == name {
 		// Simulate bug
 		panic("Simulated bug - fix me!")
 	}
 
-	// Ship orders
+	// Ship order items
 	var shipFutures []workflow.Future
 	for _, item := range items {
 		logger.Info("Shipping item " + item.Description)
@@ -109,7 +111,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 		}
 	}
 
-	updateProgress(progress, 100, ctx, 1)
+	updateProgressWithStatus(progress, 100, ctx, 1, "Order Completed")
 
 	// Generate trackingId
 	trackingId := uuid.New().String()
@@ -119,6 +121,13 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 	}
 
 	return output, nil
+}
+
+func updateProgressWithStatus(progress *int, value int, ctx workflow.Context, seconds int, orderStatus string) {
+	updateProgress(progress, value, ctx, seconds)
+	if VISIBILITY == workflow.GetInfo(ctx).WorkflowType.Name {
+		workflow.UpsertTypedSearchAttributes(ctx, orderStatusKey.ValueSet(orderStatus))
+	}
 }
 
 func shipItemAsync(ctx workflow.Context, input app.OrderInput, item app.Item, name string) workflow.Future {

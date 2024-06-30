@@ -40,8 +40,10 @@ func main() {
 		Name: "OrderWorkflowChildWorkflow",
 	})
 	w.RegisterWorkflow(workflows.ShippingChildWorkflow)
+	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
+		Name: "OrderWorkflowAdvancedVisibility",
+	})
 
-	// w.RegisterWorkflow(workflows.OrderWorkflowAdvancedVisibility)
 	// w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopSignal)
 	// w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopUpdate)
 

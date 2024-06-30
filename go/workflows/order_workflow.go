@@ -11,7 +11,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (*app.OrderOutput, error) {
+func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (output *app.OrderOutput, err error) {
 	name := workflow.GetInfo(ctx).WorkflowType.Name
 	logger := workflow.GetLogger(ctx)
 	logger.Info("Processing order started", "orderId", input.OrderId)
@@ -45,8 +45,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (*app.OrderOutput
 	}
 
 	// Check fraud
-	var cfresult string
-	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, &cfresult)
+	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +53,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (*app.OrderOutput
 	updateProgress(progress, 25, ctx, 1)
 
 	// Prepare shipment
-	var psresult string
-	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, &psresult)
+	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -63,15 +61,14 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (*app.OrderOutput
 	updateProgress(progress, 50, ctx, 1)
 
 	// Charge customer
-	var ccresult string
-	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, &ccresult)
+	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	updateProgress(progress, 75, ctx, 3)
 
-	// Ship orders
+	// Ship order items
 	var shipFutures []workflow.Future
 	for _, item := range items {
 		logger.Info("Shipping item " + item.Description)
@@ -91,7 +88,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (*app.OrderOutput
 
 	// Generate trackingId
 	trackingId := uuid.New().String()
-	output := &app.OrderOutput{
+	output = &app.OrderOutput{
 		TrackingId: trackingId,
 		Address:    input.Address,
 	}
