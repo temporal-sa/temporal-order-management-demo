@@ -4,7 +4,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-// Set up query handler for progress
+// "getProgress" query handler
 func SetQueryHandlerForProgress(ctx workflow.Context) (*int, error) {
 	logger := workflow.GetLogger(ctx)
 
@@ -15,7 +15,7 @@ func SetQueryHandlerForProgress(ctx workflow.Context) (*int, error) {
 	})
 	if err != nil {
 		logger.Error("SetQueryHandler failed for getProgress: " + err.Error())
-		return &progress, err
+		return nil, err
 	}
 
 	return &progress, nil

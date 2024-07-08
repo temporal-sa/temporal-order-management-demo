@@ -46,8 +46,9 @@ func main() {
 	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
 		Name: "OrderWorkflowHumanInLoopSignal",
 	})
-
-	// w.RegisterWorkflow(workflows.OrderWorkflowHumanInLoopUpdate)
+	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
+		Name: "OrderWorkflowHumanInLoopUpdate",
+	})
 
 	// activities
 	w.RegisterActivity(activities.GetItems)
