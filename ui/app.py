@@ -15,15 +15,15 @@ order_data = {
 
 # Payment Info
 payment_data = {
-    "name": "Billy Bob",
+    "name": "Alice Jones",
     "card_type": "Visa",
-    "card_number": "1234567890",
+    "card_number": "1111222233334444",
 }
 
 # Shipping Info
 shipping_data = {
-    "name": "Billy Bob",
-    "address": "12345 Dongle Way, Nowhere California",
+    "name": "Alice Jones",
+    "address": "123 Main St. Redwood, CA",
 }
 
 # Scenario choices dropdown

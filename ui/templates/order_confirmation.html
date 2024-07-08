@@ -42,32 +42,40 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-        }        
+            margin: 5px 0;
+        }
     </style>
     <script>
         function reloadMainPage() {
             window.location.href = '/';
         }
-    </script>   
+    </script>
 </head>
 <body>
-    <h2>Order Confirmation</h1>
+    <section style="display: flex; justify-content: center;">
+        <h2>Order Confirmation</h2>
+    </section>
 
-    <table>
-        <tr>
-            <th>Order ID</th>
-            <td>{{ order_id }}</td>
-        </tr>
-        <tr>
-            <th>Tracking ID</th>
-            <td>{{ tracking_id }}</td>
-        </tr>
-        <tr>
-            <th>Address</th>
-            <td>{{ address }}</td>
-        </tr>        
-    </table>
-    <button onclick="reloadMainPage()">Place New Order</button>
+    <section>
+        <table>
+            <tr>
+                <th>Order ID</th>
+                <td>{{ order_id }}</td>
+            </tr>
+            <tr>
+                <th>Tracking ID</th>
+                <td>{{ tracking_id }}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>{{ address }}</td>
+            </tr>        
+        </table>
+    </section>
+
+    <section style="display: flex; justify-content: center;">
+        <button onclick="reloadMainPage()">Place New Order</button>
+    </section>
 </body>
 
 {% endblock %}
