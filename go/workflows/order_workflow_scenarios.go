@@ -65,7 +65,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 		return nil, err
 	}
 
-	updateProgressWithStatus(progress, 0, ctx, 0, "Check Fraud")
+	updateProgress("Check Fraud", progress, 0, ctx, 0)
 
 	// Check fraud
 	err = workflow.ExecuteActivity(ctx, activities.CheckFraud, input).Get(ctx, nil)
@@ -73,7 +73,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 		return nil, err
 	}
 
-	updateProgressWithStatus(progress, 25, ctx, 1, "Prepare Shipment")
+	updateProgress("Prepare Shipment", progress, 25, ctx, 1)
 
 	// Prepare shipment
 	saga.AddCompensation(activities.UndoPrepareShipment, input)
@@ -82,7 +82,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 		return nil, err
 	}
 
-	updateProgressWithStatus(progress, 50, ctx, 1, "Charge Customer")
+	updateProgress("Charge Customer", progress, 50, ctx, 1)
 
 	// Charge customer
 	saga.AddCompensation(activities.UndoChargeCustomer, input)
@@ -91,7 +91,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 		return nil, err
 	}
 
-	updateProgressWithStatus(progress, 75, ctx, 3, "Ship Order")
+	updateProgress("Ship Order", progress, 75, ctx, 3)
 
 	if BUG == name {
 		// Simulate bug
@@ -139,7 +139,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 		}
 	}
 
-	updateProgressWithStatus(progress, 100, ctx, 1, "Order Completed")
+	updateProgress("Order Completed", progress, 100, ctx, 1)
 
 	// Generate trackingId
 	trackingId := uuid.New().String()
@@ -151,8 +151,8 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 	return output, nil
 }
 
-func updateProgressWithStatus(progress *int, value int, ctx workflow.Context, seconds int, orderStatus string) {
-	updateProgress(progress, value, ctx, seconds)
+func updateProgress(orderStatus string, progress *int, value int, ctx workflow.Context, seconds int) {
+	sleep(ctx, seconds, progress, value)
 	if VISIBILITY == workflow.GetInfo(ctx).WorkflowType.Name {
 		workflow.UpsertTypedSearchAttributes(ctx, orderStatusKey.ValueSet(orderStatus))
 	}

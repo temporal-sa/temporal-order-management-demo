@@ -50,7 +50,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (output *app.Orde
 		return nil, err
 	}
 
-	updateProgress(progress, 25, ctx, 1)
+	sleep(ctx, 1, progress, 25)
 
 	// Prepare shipment
 	err = workflow.ExecuteActivity(ctx, activities.PrepareShipment, input).Get(ctx, nil)
@@ -58,7 +58,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (output *app.Orde
 		return nil, err
 	}
 
-	updateProgress(progress, 50, ctx, 1)
+	sleep(ctx, 1, progress, 50)
 
 	// Charge customer
 	err = workflow.ExecuteActivity(ctx, activities.ChargeCustomer, input, name).Get(ctx, nil)
@@ -66,7 +66,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (output *app.Orde
 		return nil, err
 	}
 
-	updateProgress(progress, 75, ctx, 3)
+	sleep(ctx, 3, progress, 75)
 
 	// Ship order items
 	var shipFutures []workflow.Future
@@ -84,7 +84,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (output *app.Orde
 		}
 	}
 
-	updateProgress(progress, 100, ctx, 1)
+	sleep(ctx, 1, progress, 100)
 
 	// Generate trackingId
 	trackingId := uuid.New().String()
@@ -96,7 +96,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (output *app.Orde
 	return output, nil
 }
 
-func updateProgress(progress *int, value int, ctx workflow.Context, seconds int) {
+func sleep(ctx workflow.Context, seconds int, progress *int, value int) {
 	*progress = value
 	if seconds > 0 {
 		duration := time.Duration(seconds) * time.Second
