@@ -50,18 +50,18 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
         // Get items
         List<OrderItem> orderItems = localActivities.getItems();
 
-        updateProgress(0, 0, "Check Fraud");
+        updateProgress("Check Fraud", 0, 0);
 
         // Check fraud
         activities.checkFraud(input);
 
-        updateProgress(25, 1, "Prepare Shipment");
+        updateProgress("Prepare Shipment", 25, 1);
 
         // Prepare shipment
         saga.addCompensation(activities::undoPrepareShipment, input);
         activities.prepareShipment(input);
 
-        updateProgress(50, 1, "Charge Customer");
+        updateProgress("Charge Customer", 50, 1);
 
         // Charge customer
         try {
@@ -73,7 +73,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
             throw af;
         }
 
-        updateProgress(75, 3, "Ship Order");
+        updateProgress("Ship Order", 75, 3);
 
         if (BUG.equals(type)) {
             // Simulate bug
@@ -95,7 +95,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
         // Wait for all items to ship
         Promise.allOf(promiseList).get();
 
-        updateProgress(100, 1, "Order Completed");
+        updateProgress("Order Completed", 100, 1);
 
         // Generate trackingId
         String trackingId = Workflow.randomUUID().toString();
@@ -132,7 +132,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
         }
     }
 
-    private void updateProgress(int progress, int sleep, String orderStatus) {
+    private void updateProgress(String orderStatus, int progress, int sleep) {
         this.progress = progress;
         if (sleep > 0) {
             Workflow.sleep(Duration.ofSeconds(sleep));
