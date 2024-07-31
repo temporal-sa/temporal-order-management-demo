@@ -1,7 +1,7 @@
 import logging
 from datetime import timedelta
 import asyncio
-from typing import Sequence, Any, get_type_hints
+from typing import Sequence, Any
 
 from temporalio import workflow
 from temporalio.common import RawValue, SearchAttributeKey
@@ -61,7 +61,7 @@ class OrderWorkflow:
         for item in order_items:
             workflow.logger.info("Shipping item: " + item.description)
             handles.append(
-                workflow.start_activity_method(
+                workflow.execute_activity_method(
                     OrderActivities.ship_order,
                     args=[input, item],
                     start_to_close_timeout=timedelta(seconds=5),
@@ -160,7 +160,9 @@ class OrderWorkflowScenarios:
         await self.update_progress("Ship Order", 75, 1)
 
         if self.BUG == workflow_type:
-            raise RuntimeError
+            #Simulated bug -- fix me!
+            #raise RuntimeError
+            pass
         
         if self.SIGNAL == workflow_type or self.UPDATE == workflow_type:
             await self.wait_for_signal_or_timeout(input)
@@ -178,18 +180,17 @@ class OrderWorkflowScenarios:
         return OrderOutput(tracking_id, input.Address)
 
 
-    async def ship_items_async(self, input: OrderInput, item: OrderItem, workflow_type: str) -> asyncio.Task[None]:
+    async def ship_items_async(self, input: OrderInput, item: OrderItem, workflow_type: str):
         if self.CHILD == workflow_type:
-            return asyncio.create_task(
-                workflow.start_child_workflow(
-                    ShippingChildWorkflow.execute,
-                    args=[input, item],
-                    id="shipment-" + input.OrderId + "-" + str(item.id),
-                    parent_close_policy=ParentClosePolicy.TERMINATE
-                )
+            return await workflow.execute_child_workflow(
+                ShippingChildWorkflow.execute,
+                args=[input, item],
+                id="shipment-" + input.OrderId + "-" + str(item.id),
+                parent_close_policy=ParentClosePolicy.TERMINATE
             )
+            
         else:
-            return workflow.start_activity_method(
+            return await workflow.execute_activity_method(
                 OrderActivities.ship_order,
                 args=[input, item],
                 start_to_close_timeout=timedelta(seconds=5),
