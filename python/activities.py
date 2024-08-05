@@ -77,7 +77,7 @@ class OrderActivities:
         return input.OrderId
     
     @activity.defn
-    async def ship_order(self, input: OrderInput, item: OrderItem) -> None:
+    def ship_order(self, input: OrderInput, item: OrderItem) -> None:
         activity.logger.info("Ship Order activity started, " + input.OrderId + ", " + str(item.id) + ", " + item.description)
 
         self.simulate_external_operation(1000)

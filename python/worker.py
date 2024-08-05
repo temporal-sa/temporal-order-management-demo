@@ -5,7 +5,9 @@ from temporalio.client import Client
 from temporalio.worker import Worker
 
 from activities import OrderActivities
-from workflows import OrderWorkflow, OrderWorkflowScenarios, ShippingChildWorkflow
+from order_workflow_scenarios import OrderWorkflowScenarios
+from order_workflow import OrderWorkflow
+from shipping_child_workflow import ShippingChildWorkflow
 
 TASK_QUEUE = "orders"
 
