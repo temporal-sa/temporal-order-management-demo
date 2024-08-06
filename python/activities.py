@@ -18,21 +18,21 @@ class OrderActivities:
 
     retry_policy = RetryPolicy(initial_interval=timedelta(seconds=1), backoff_coefficient=2, maximum_interval=timedelta(seconds=30))
 
-    def simulate_external_operation(self, ms: int):
+    async def simulate_external_operation(self, ms: int):
         try:
             time.sleep(ms / 1000)
         except InterruptedError as e:
             print(e.__traceback__)
 
-    def simulate_external_operation_charge(self, ms: int, type: str, attempt: int):
-        self.simulate_external_operation(ms / attempt)
+    async def simulate_external_operation_charge(self, ms: int, type: str, attempt: int):
+        await self.simulate_external_operation(ms / attempt)
         return type if attempt < 5 else "NoError"
     
     @activity.defn
-    def get_items(self) -> list[OrderItem]:
+    async def get_items(self) -> list[OrderItem]:
         activity.logger.info("Getting list of items")
-        
-        self.simulate_external_operation(100)
+
+        await self.simulate_external_operation(100)
 
         items = [
             OrderItem(654300, "Table Top", 1),
@@ -43,23 +43,23 @@ class OrderActivities:
         return items
     
     @activity.defn
-    def check_fraud(self, input: OrderInput) -> str:
+    async def check_fraud(self, input: OrderInput) -> str:
         activity.logger.info("Check Fraud activity started, " + input.OrderId)
 
-        self.simulate_external_operation(1000)
+        await self.simulate_external_operation(1000)
 
         return input.OrderId
     
     @activity.defn
-    def prepare_shipment(self, input: OrderInput) -> str:
+    async def prepare_shipment(self, input: OrderInput) -> str:
         activity.logger.info("Prepare Shipment activity started, " + input.OrderId)
 
-        self.simulate_external_operation(1000)
+        await self.simulate_external_operation(1000)
 
         return input.OrderId
     
     @activity.defn
-    def charge_customer(self, input: OrderInput, type: str) -> str:
+    async def charge_customer(self, input: OrderInput, type: str) -> str:
         activity.logger.info("Charge Customer activity started, " + input.OrderId)
         attempt = activity.info().attempt
 
@@ -77,23 +77,23 @@ class OrderActivities:
         return input.OrderId
     
     @activity.defn
-    def ship_order(self, input: OrderInput, item: OrderItem) -> None:
+    async def ship_order(self, input: OrderInput, item: OrderItem) -> None:
         activity.logger.info("Ship Order activity started, " + input.OrderId + ", " + str(item.id) + ", " + item.description)
 
-        self.simulate_external_operation(1000)
+        await self.simulate_external_operation(1000)
     
     @activity.defn
-    def undo_prepare_shipment(self, input: OrderInput) -> str:
+    async def undo_prepare_shipment(self, input: OrderInput) -> str:
         activity.logger.info("Undo Prepare Shipment activity started, " + input.OrderId)
 
-        self.simulate_external_operation(1000)
+        await self.simulate_external_operation(1000)
 
         return input.OrderId
     
     @activity.defn
-    def undo_charge_customer(self, input: OrderInput) -> str:
+    async def undo_charge_customer(self, input: OrderInput) -> str:
         activity.logger.info("Undo Charge Customer activity started, " + input.OrderId)
 
-        self.simulate_external_operation(1000)
+        await self.simulate_external_operation(1000)
 
         return input.OrderId
