@@ -29,11 +29,6 @@
             border: 1px solid #ddd;
         }
 
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
         th {
             background-color: #f2f2f2;  /* light gray background for headers */
         }
@@ -41,6 +36,7 @@
         th, td {
             padding: 10px;
             text-align: left;
+            width: 50%;
             background-color: #f9f9f9;  /* light gray background for all rows */
         }        
 
@@ -56,6 +52,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin: 5px 0;
         }
     </style>
     <script>
@@ -65,10 +62,12 @@
     </script>    
 </head>
 <body>
-    <h2>Temporal Orders</h1>
-
+    <section style="display: flex; justify-content: center;">
+        <h2>Temporal Orders</h2>
+    </section>
+ 
     <section>
-        <h3>Order Details</h2>
+        <h3>Order Details</h3>
         <table>
             <tr>
                 <th>Quantity</th>
@@ -84,7 +83,7 @@
     </section>
 
     <section>
-        <h3>Payment Information</h2>
+        <h3>Payment Information</h3>
         <table>
             <tr>
                 <td>Name</td>
@@ -102,7 +101,7 @@
     </section>
 
     <section>
-        <h3>Shipping Information</h2>
+        <h3>Shipping Information</h3>
         <table>
             <tr>
                 <td>Name</td>
@@ -116,7 +115,7 @@
     </section>
 
     <section>
-        <h2>Choose Scenario</h2>
+        <h4>Choose Scenario</h4>
         <select id="scenario" name="scenario">
             {% for choice in scenarios %}
                 <option value="{{ choice }}">{{ choice }}</option>
@@ -124,7 +123,7 @@
         </select>        
     </section>
 
-    <section>
+    <section style="display: flex; justify-content: center;">
         <button type="button" onclick="placeOrder()">Place Order</button>
     </section>
 

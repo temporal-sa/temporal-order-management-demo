@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,7 +41,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-        }           
+        }
     </style>
     <script>
         // Declare interval in the global scope
@@ -236,9 +237,10 @@ function signal() {
         }   
     </script>
 </head>
-
 <body>
-    <h2>Order Processing</h1>
+    <section style="display: flex; justify-content: center;">
+        <h2>Order Processing</h2>
+    </section>
 
     <div class="status-bar">
         <div id="progress-bar" class="status-progress" style="width: 0;"></div>

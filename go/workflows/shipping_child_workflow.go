@@ -1,18 +1,17 @@
 package workflows
 
 import (
+	"temporal-order-management/activities"
+	"temporal-order-management/app"
 	"time"
 
-	"github.com/ktenzer/temporal-order-management/activities"
-
-	"github.com/ktenzer/temporal-order-management/resources"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
-func ShippingChildWorkflow(ctx workflow.Context, input resources.OrderInput, item resources.Item) error {
+func ShippingChildWorkflow(ctx workflow.Context, input app.OrderInput, item app.Item) error {
 	logger := workflow.GetLogger(ctx)
-	logger.Info("Processing shipping started", "orderId", input.OrderId)
+	logger.Info("Shipping workflow started", "orderId", input.OrderId)
 
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: 5 * time.Second,
@@ -22,7 +21,6 @@ func ShippingChildWorkflow(ctx workflow.Context, input resources.OrderInput, ite
 			MaximumInterval:    30 * time.Second,
 		},
 	}
-
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
 	err := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item).Get(ctx, nil)

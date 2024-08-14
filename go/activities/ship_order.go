@@ -2,17 +2,17 @@ package activities
 
 import (
 	"context"
-	"time"
+	"temporal-order-management/app"
 
-	"github.com/ktenzer/temporal-order-management/resources"
 	"go.temporal.io/sdk/activity"
 )
 
-func ShipOrder(ctx context.Context, input resources.OrderInput, item resources.Item) error {
+func ShipOrder(ctx context.Context, input app.OrderInput, item app.Item) error {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Ship Order activity started", "orderId", input.OrderId, "ItemId", item.Id, "Item Description", item.Description)
 
-	time.Sleep(1 * time.Second)
+	// simulate external API call
+	simulateExternalOperation(1000)
 
 	return nil
 }

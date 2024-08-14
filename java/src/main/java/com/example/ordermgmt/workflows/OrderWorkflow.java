@@ -43,17 +43,17 @@ class OrderWorkflowImpl implements OrderWorkflow {
 
         // Check fraud
         activities.checkFraud(input);
-        updateProgress(25, 1);
+        sleep(1, 25);
 
         // Prepare shipment
         activities.prepareShipment(input);
-        updateProgress(50, 1);
+        sleep(1, 50);
 
         // Charge customer
         activities.chargeCustomer(input, type);
-        updateProgress(75, 3);
+        sleep(3, 75);
 
-        // Ship orders
+        // Ship order items
         List<Promise<Void>> promiseList = new ArrayList<>();
         for (OrderItem orderItem : orderItems) {
             log.info("Shipping item: {}", orderItem.getDescription());
@@ -62,7 +62,7 @@ class OrderWorkflowImpl implements OrderWorkflow {
 
         // Wait for all items to ship
         Promise.allOf(promiseList).get();
-        updateProgress(100, 1);
+        sleep(1, 100);
 
         // Generate trackingId
         String trackingId = Workflow.randomUUID().toString();
@@ -74,7 +74,7 @@ class OrderWorkflowImpl implements OrderWorkflow {
         return progress;
     }
 
-    private void updateProgress(int progress, int sleep) {
+    private void sleep(int sleep, int progress) {
         this.progress = progress;
         if (sleep > 0) {
             Workflow.sleep(Duration.ofSeconds(sleep));
