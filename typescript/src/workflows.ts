@@ -1,11 +1,64 @@
-import { proxyActivities, WorkflowInterceptorsFactory } from '@temporalio/workflow';
+import { proxyLocalActivities, sleep, workflowInfo, uuid4 } from '@temporalio/workflow';
+import { proxyActivities } from '@temporalio/workflow';
 import type * as activities from './activities';
+import type { RetryPolicy } from '@temporalio/client';
+import type { OrderInput, OrderItem, OrderOutput } from './types';
 
-const { greet } = proxyActivities<typeof activities>({
-  startToCloseTimeout: '1 minute',
+export const DEFAULT_RETRY_POLICY:RetryPolicy = {
+  initialInterval: '1s',
+  backoffCoefficient: 2,
+  maximumInterval: '30s',
+}
+
+const { getItems } = proxyLocalActivities<typeof activities>({
+  startToCloseTimeout: '5s',
+  retry: DEFAULT_RETRY_POLICY
 });
 
-// A workflow that simply calls an activity
-export async function example(name: string): Promise<string> {
-  return await greet(name);
+const { checkFraud, chargeCustomer, prepareShipment, shipOrder } = proxyActivities<typeof activities>({
+  startToCloseTimeout: '5s',
+  retry: DEFAULT_RETRY_POLICY
+})
+
+export async function OrderWorkflow(input: OrderInput): Promise<OrderOutput> {
+  let progress = 0;
+  const {workflowType} = workflowInfo();
+
+  const orderItems = await getItems();
+
+  await checkFraud(input);
+
+  await sleep(1);
+  progress = 25;
+
+  await prepareShipment(input);
+
+  await sleep(1);
+  progress = 50;
+
+  await chargeCustomer(input, workflowType);
+
+  await sleep(3);
+  progress = 75;
+
+  const shipOrderActivites = [];
+
+  for(const anItem of orderItems) {
+    shipOrderActivites.push(
+      shipOrder(input, anItem)
+    )
+  }
+
+  Promise.all(shipOrderActivites);
+
+  await sleep(1);
+  progress = 100;
+
+  const trackingId = uuid4();
+
+  return {trackingId, address: input.Address};
+}
+
+export async function ShippingChildWorkflow(input: OrderInput, item: OrderItem) {
+  await shipOrder(input, item);
 }

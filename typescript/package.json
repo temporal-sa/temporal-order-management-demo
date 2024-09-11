@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc --build && node lib/create-bundle.js",
+    "build": "tsc --build && node lib/scripts/create-bundle.js",
+    "start": "ts-node src/worker.ts",
+    "start.watch": "nodemon src/worker.ts",
     "worker": "ts-node src/worker.ts",
     "sender": "ts-node src/client.ts go",
     "finisher": "ts-node src/client.ts finish"
