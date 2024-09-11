@@ -6,11 +6,10 @@ import com.example.ordermgmt.model.OrderItem;
 import com.example.ordermgmt.model.OrderOutput;
 import io.temporal.spring.boot.WorkflowImpl;
 import io.temporal.workflow.*;
-import org.slf4j.Logger;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
 
 @WorkflowInterface
 public interface OrderWorkflow {
@@ -23,20 +22,25 @@ public interface OrderWorkflow {
 
 @WorkflowImpl(taskQueues = "${ordermgmt.task-queue}")
 class OrderWorkflowImpl implements OrderWorkflow {
+
     private static final Logger log = Workflow.getLogger(OrderWorkflowImpl.class);
 
-    private final OrderActivities activities = Workflow.newActivityStub(OrderActivities.class,
-            OrderActivities.defaultActivityOptions);
+    private final OrderActivities activities = Workflow.newActivityStub(
+        OrderActivities.class,
+        OrderActivities.defaultActivityOptions
+    );
 
-    private final OrderActivities localActivities = Workflow.newLocalActivityStub(OrderActivities.class,
-            OrderActivities.defaultLocalActivityOptions);
+    private final OrderActivities localActivities = Workflow.newLocalActivityStub(
+        OrderActivities.class,
+        OrderActivities.defaultLocalActivityOptions
+    );
 
     private int progress = 0;
 
     @Override
     public OrderOutput execute(OrderInput input) {
         String type = Workflow.getInfo().getWorkflowType();
-        log.info("Order workflow started, type ={}, orderId = {}", type, input.getOrderId());
+        log.info("Order workflow started, type = {}, orderId = {}", type, input.getOrderId());
 
         // Get items
         List<OrderItem> orderItems = localActivities.getItems();
@@ -81,4 +85,3 @@ class OrderWorkflowImpl implements OrderWorkflow {
         }
     }
 }
-
