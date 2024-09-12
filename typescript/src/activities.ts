@@ -1,6 +1,7 @@
 import { ApplicationFailure, Context } from '@temporalio/activity';
 import type { OrderInput, OrderItem } from './types';
 import type { RetryPolicy } from '@temporalio/client';
+
 export const ERROR_CHARGE_API_UNAVAILABLE = 'OrderWorkflowAPIFailure';
 export const ERROR_INVALID_CREDIT_CARD = 'OrderWorkflowNonRecoverableFailure'
 export const NO_ERROR = 'NoError';
@@ -64,8 +65,17 @@ export async function chargeCustomer(input: OrderInput, type: string): Promise<s
 
   switch(error) {
     case ERROR_CHARGE_API_UNAVAILABLE: 
+      throw ApplicationFailure.create({
+        message: 'Charge Customer activity failed, API unavailable'
+      });
     case ERROR_INVALID_CREDIT_CARD:
-      throw Error('')
+      throw ApplicationFailure.create({
+        nonRetryable: true,
+        message: 'Charge Customer activity failed, card is invalid',
+        type: 'InvalidCreditCard'
+      });
+    default:
+      break;
   }
 
   return input.OrderId;
@@ -75,7 +85,7 @@ export async function shipOrder(input: OrderInput, item: OrderItem) {
   await simulateExternalOperation(1000);
 }
 
-export async function undoPrepareShiment(input: OrderInput): Promise<string> {
+export async function undoPrepareShipment(input: OrderInput): Promise<string> {
   await simulateExternalOperation(1000);
 
   return input.OrderId;

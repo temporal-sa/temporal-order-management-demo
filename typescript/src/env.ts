@@ -20,7 +20,7 @@ export async function getConnectionOptions(): Promise<ConnectionOptions> {
   const address = getenv("TEMPORAL_HOST_URL", "localhost:7233");
 
   let tls: ConnectionOptions["tls"] = undefined;
-  if (process.env.TEMPORAL_TLS_CERT) {
+  if (process.env.TEMPORAL_MTLS_TLS_CERT && process.env.TEMPORAL_MTLS_TLS_KEY) {
     const crt = await fs.readFile(getenv("TEMPORAL_MTLS_TLS_CERT"));
     const key = await fs.readFile(getenv("TEMPORAL_MTLS_TLS_KEY"));
 
@@ -42,7 +42,7 @@ export function getWorkflowOptions(): Pick<WorkerOptions, "workflowBundle" | "wo
   if (workflowBundlePath && env == 'production') {
     return { workflowBundle: { codePath: workflowBundlePath } };
   } else {
-    return { workflowsPath: require.resolve("./workflows") };
+    return { workflowsPath: require.resolve("./workflows/index") };
   }
 }
 
