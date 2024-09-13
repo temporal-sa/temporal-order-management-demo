@@ -7,12 +7,12 @@ Demos various aspects of [Temporal](http://temporal.io) using the [Go SDK](https
 | Golang 1.18+       | ✅ | __ | Local Activity |  ✅ | __ | Long-Running        | ✅ |
 | Python 3.11        | ✅ | __ | Timer          | ✅ | __ | Fanout              | ✅ |
 | Poetry 1.3.2       | ✅ | __ | Signal         | ✅ | __ | Continue As New     |   |
-|                    | ✅ | __ | Query          | ✅ | __ | Manual Intervention | ✅ |
-|                    | ✅ | __ | Update         | ✅ | __ | Saga                |   |
-|                    |    | __ | Heartbeat      |  | __ | Long-polling        |   |
-|                    | ✅ | __ | Retry          | ✅ | __ |                     |   |
+| Node 20            | ✅ | __ | Query          | ✅ | __ | Manual Intervention | ✅ |
+|                    |   | __ | Update         | ✅ | __ | Saga                |   |
+|                    |   | __ | Heartbeat      |  | __ | Long-polling        |   |
+|                    |   | __ | Retry          | ✅ | __ |                     |   |
 |                    |   | __ | Data Converter |   | __ |                     |   |
-|                    | ✅ | __ | Polyglot       | ✅ | __ |                     |   |
+|                    |   | __ | Polyglot       | ✅ | __ |                     |   |
 
 
 This demo walks through several scenarios using an order management process. The scenarios are:
@@ -24,6 +24,14 @@ This demo walks through several scenarios using an order management process. The
 - APIFailure
 - RecoverableFailure
 - NonRecoverableFailure
+
+# (Optional) Using Temporal CLI
+
+Execute the following command:
+
+```bash
+temporal server start-dev --dynamic-config-value frontend.enableUpdateWorkflowExecution=true --dynamic-config-value system.forceSearchAttributesCacheRefreshOnRead=false --search-attribute OrderStatus="Keyword"
+```
 
 # Run Worker
 Ensure the following environment variables:
