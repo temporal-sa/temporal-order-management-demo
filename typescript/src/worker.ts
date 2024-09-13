@@ -24,7 +24,7 @@ async function main() {
     await worker.run();
   } finally {
     console.info('🤖: Temporal Worker Shutdown! Beep Boop Beep!');
-    await worker.shutdown();
+    // await worker.shutdown();
   }
 }
 

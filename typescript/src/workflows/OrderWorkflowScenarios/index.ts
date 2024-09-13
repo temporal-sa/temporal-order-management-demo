@@ -8,11 +8,12 @@ import {
   workflowInfo, 
   uuid4, 
   upsertSearchAttributes,
-  SearchAttributes, 
   ActivityFailure,
   executeChild, 
   setHandler,
-  log
+  log,
+  condition,
+  ApplicationFailure
 } from '@temporalio/workflow';
 import type * as activities from '../../activities';
 import type { RetryPolicy } from '@temporalio/client';
@@ -35,19 +36,27 @@ const {
   chargeCustomer,
   undoChargeCustomer,
   prepareShipment, 
-  undoPrepareShipment } = proxyActivities<typeof activities>({
+  undoPrepareShipment,
+  shipOrder } = proxyActivities<typeof activities>({
   startToCloseTimeout: '5s',
   retry: DEFAULT_RETRY_POLICY
 });
 
 const GET_PROGRESS_QUERY = defineQuery<number>('getProgress');
 const UPDATE_ORDER_SIGNAL = defineSignal<[UpdateOrderInput]>('UpdateOrder');
-const UPDATE_ORDER_UPDATE = defineUpdate<UpdateOrderInput, [string]>('UpdateOrder');
+const UPDATE_ORDER_UPDATE = defineUpdate<string, [UpdateOrderInput]>('UpdateOrder');
 
-export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchAttributes> {
+interface Compensation {
+  message: string;
+  fn: () => Promise<void>;
+}
+
+export async function OrderWorkflowScenarios(input: OrderInput): OrderOutput{
   // Defining Workflow's Values
   let progress = 0;
   let orderStatus = '';
+  let signalFired = false;
+  let updateFired = false;
 
   upsertSearchAttributes({
     OrderStatus: [orderStatus]
@@ -55,25 +64,54 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchA
 
   const {workflowType} = workflowInfo();
   const compensations = [];
-  
+
+  log.info(`Dynamic Order workflow started, ${workflowType}, ${input.OrderId}`);
+
   // Defining Workflow's Handlers
   setHandler(GET_PROGRESS_QUERY, () => {
     return progress;
   })
 
   setHandler(UPDATE_ORDER_SIGNAL, (update_input: UpdateOrderInput) => {
+    log.info(`Received update order signal with address: ${update_input.Address}`);
+    signalFired = true;
     input.Address = update_input.Address;
   });
-  const validator = (arg: number) => {
-    if (arg < 0) {
-      throw new Error('Argument must not be negative');
-    }
-  };
 
   setHandler(UPDATE_ORDER_UPDATE, (update_input: UpdateOrderInput) => {
+    log.info(`Received update order update with address: ${update_input.Address}`);
     input.Address = update_input.Address;
     return `Updated address: ${input.Address}`;
-  }, { validator });
+  }, {
+    validator: async (update_input: UpdateOrderInput): Promise<void> => {
+      const { Address } = update_input;
+
+      if(Address.length > 0) {
+        const firstChar = Address[0];
+
+        if(Number(firstChar)) {
+          log.info(`Order update address is valid: ${Address}`);
+          updateFired = true;
+        } else {
+          log.error(`Rejecting order update, invalid address: ${Address}`);
+          
+          throw new Error(`Address must start with a digit`);
+        }
+      } else {
+        log.error(`Rejecting order update, invalid address: ${Address}`);
+
+        throw new Error(`Address can not be blank`);
+      }
+      /*
+      if (input.numNodes <= 0) {
+        throw new Error(`numNodes must be positive (got ${input.numNodes})`);
+      }
+      if (input.jobName === '') {
+        throw new Error('jobName cannot be empty');
+      }*/
+
+    }
+  });
 
   // Start of the Workflow
 
@@ -99,7 +137,9 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchA
 
   compensations.unshift({
     message: prettyErrorMessage('reversing shipment.'),
-    fn: () => undoPrepareShipment(input)
+    fn: async () => { 
+      await undoPrepareShipment(input) 
+    }
   });
 
   await prepareShipment(input);
@@ -115,16 +155,17 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchA
   try {
     compensations.unshift({
       message: prettyErrorMessage('reversing charge.'),
-      fn: () => undoChargeCustomer(input)
+      fn: async () => {
+        await undoChargeCustomer(input)
+      }
     });
 
     await chargeCustomer(input, workflowType);
   } catch (err) {
-    if (err instanceof ActivityFailure && err.cause instanceof ApplicationFailure) {
-      log.error(err.cause.message);
-    } else {
-      log.error(`error while opening account: ${err}`);
-    }
+    log.error(`Failed to charge customer ${err}`);
+    /*if (err instanceof ActivityFailure && err.cause instanceof ApplicationFailure) {
+      log.error(err.message);
+    }*/
     // an error occurred so call compensations
     await compensate(compensations);
     throw err;
@@ -138,15 +179,33 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchA
   });
   await sleep('3s');
 
-  if(workflowType == OrderWorkflowRecoverableFailure.toString()) {
+  if(workflowType == 'OrderWorkflowRecoverableFailure') {
     // Simulate a bug
-    // throw new Error('Workflow bug!');
+    // throw new Error('Simulated bug - fix me!');
+  }
+  
+  // wait_for_updated_address_or_timeout
+  if(workflowType == 'OrderWorkflowHumanInLoopSignal' || 
+    workflowType == 'OrderWorkflowHumanInLoopUpdate') {
+    log.info('Waiting up to 60 seconds for updated address');
+
+    if(await condition(() => signalFired || updateFired, '60s')) {
+      // Signal and Update was fired
+    } else {
+      //throw ApplicationFailure.create({message : 'Updated address was not received within 60 seconds.', type: 'timeout'});
+    }
   }
 
   const shipOrderWorkflows = orderItems.map((anItem) => {
-    return executeChild(ShippingWorkflow, {
-      args:[input, anItem]
-    });
+    log.info(`Shipping item: ${anItem.description}`);
+
+    if(workflowType == 'OrderWorkflowChildWorkflow') {
+      return executeChild(ShippingWorkflow, {
+        args:[input, anItem]
+      });
+    } else {
+      return shipOrder(input, anItem);
+    }
   })
 
   await Promise.all(shipOrderWorkflows);
@@ -159,8 +218,7 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchA
   });
 
   const trackingId = uuid4();
-
-  return workflowInfo().searchAttributes;
+  return {trackingId, address: input.Address};
 }
 
 /**
@@ -198,3 +256,5 @@ export const OrderWorkflowChildWorkflow = OrderWorkflowScenarios;
 export const OrderWorkflowHumanInLoopSignal = OrderWorkflowScenarios;
 export const OrderWorkflowHumanInLoopUpdate = OrderWorkflowScenarios;
 export const OrderWorkflowAdvancedVisibility = OrderWorkflowScenarios;
+export const OrderWorkflowAPIFailure = OrderWorkflowScenarios;
+export const OrderWorkflowNonRecoverableFailure = OrderWorkflowScenarios;

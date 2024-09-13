@@ -1,8 +1,8 @@
-import { proxyActivities, proxyLocalActivities, sleep, workflowInfo, uuid4 } from '@temporalio/workflow';
+import { proxyActivities, log } from '@temporalio/workflow';
 import type * as activities from '../../activities';
-import type { OrderInput, OrderItem, OrderOutput } from '../../types';
+import type { OrderInput, OrderItem } from '../../types';
 
-const { checkFraud, chargeCustomer, prepareShipment, shipOrder } = proxyActivities<typeof activities>({
+const { shipOrder } = proxyActivities<typeof activities>({
   startToCloseTimeout: '5s',
   retry: {
     initialInterval: '1s',
@@ -12,6 +12,8 @@ const { checkFraud, chargeCustomer, prepareShipment, shipOrder } = proxyActiviti
 });
 
 export async function ShippingWorkflow(input: OrderInput, item: OrderItem) {
+  log.info(`Shipping workflow started, orderId ${input.OrderId}`);
+
   await shipOrder(input, item);
 }
 
