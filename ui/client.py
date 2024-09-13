@@ -26,11 +26,11 @@ async def get_client()-> Client:
             ),
             #data_converter=dataclasses.replace(
             #    temporalio.converter.default(), payload_codec=EncryptionCodec()
-            #),            
+            #),
         )
     else:
         client = await Client.connect(
             "localhost:7233",
         )
 
-    return client    
+    return client

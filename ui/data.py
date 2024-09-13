@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 @dataclass
 class OrderInput:
     OrderId: str
@@ -11,5 +12,4 @@ class OrderOutput:
 
 @dataclass
 class UpdateOrder:
-    Address: str    
-
+    Address: str
