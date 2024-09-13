@@ -13,5 +13,12 @@ All of the scenarios suppported in the Go backend, and outlined in the main READ
 ## (Optional) Run Worker in Productionize Build
 
 1. `npm run build` to build out the worker and activites.
-1. `npm run build:workflows` to build the Workflow Code Bundle.
 1. `NODE_ENV=production node lib/worker.js` to run the production Worker.
+
+## (Optional) Using VSCode Debugger
+
+1. Install the [VSCode Debugger](https://temporal.io/blog/temporal-for-vs-code)
+1. `cd typescript/`
+1. `Command + Shift + P` Select `Temporal: Open Panel`
+
+Just be mindful, that the VSCode Debugger doesn't support the `OrderWorkflowHumanInLoopUpdate` use case.

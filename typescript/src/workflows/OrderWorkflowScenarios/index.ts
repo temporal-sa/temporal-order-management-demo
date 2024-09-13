@@ -50,7 +50,7 @@ interface Compensation {
   fn: () => Promise<void>;
 }
 
-export async function OrderWorkflowScenarios(input: OrderInput): OrderOutput{
+export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOutput>{
   // Defining Workflow's Values
   let progress = 0;
   let orderStatus = '';

@@ -19,13 +19,9 @@ async function main() {
     activities: {...activities},
     ...getWorkflowOptions(),
   });
-  try {
-    console.info('🤖: Temporal Worker Online! Beep Boop Beep!');
-    await worker.run();
-  } finally {
-    console.info('🤖: Temporal Worker Shutdown! Beep Boop Beep!');
-    // await worker.shutdown();
-  }
+  
+  console.info('🤖: Temporal Worker Online! Beep Boop Beep!');
+  await worker.run();
 }
 
 main().then(
