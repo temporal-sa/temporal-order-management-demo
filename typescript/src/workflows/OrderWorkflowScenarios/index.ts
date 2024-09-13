@@ -11,7 +11,8 @@ import {
   SearchAttributes, 
   ActivityFailure,
   executeChild, 
-  setHandler
+  setHandler,
+  log
 } from '@temporalio/workflow';
 import type * as activities from '../../activities';
 import type { RetryPolicy } from '@temporalio/client';
@@ -34,8 +35,7 @@ const {
   chargeCustomer,
   undoChargeCustomer,
   prepareShipment, 
-  undoPrepareShipment,
-  shipOrder } = proxyActivities<typeof activities>({
+  undoPrepareShipment } = proxyActivities<typeof activities>({
   startToCloseTimeout: '5s',
   retry: DEFAULT_RETRY_POLICY
 });
@@ -55,7 +55,8 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchA
 
   const {workflowType} = workflowInfo();
   const compensations = [];
-
+  
+  // Defining Workflow's Handlers
   setHandler(GET_PROGRESS_QUERY, () => {
     return progress;
   })
@@ -96,12 +97,12 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchA
   });
   await sleep('1s');
 
-  await prepareShipment(input);
-
   compensations.unshift({
     message: prettyErrorMessage('reversing shipment.'),
     fn: () => undoPrepareShipment(input)
   });
+
+  await prepareShipment(input);
 
   // Charge Customer
   progress = 50;
@@ -111,12 +112,23 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchA
   });
   await sleep('1s');
 
-  await chargeCustomer(input, workflowType);
+  try {
+    compensations.unshift({
+      message: prettyErrorMessage('reversing charge.'),
+      fn: () => undoChargeCustomer(input)
+    });
 
-  compensations.unshift({
-    message: prettyErrorMessage('reversing charge.'),
-    fn: () => undoChargeCustomer(input)
-  });
+    await chargeCustomer(input, workflowType);
+  } catch (err) {
+    if (err instanceof ActivityFailure && err.cause instanceof ApplicationFailure) {
+      log.error(err.cause.message);
+    } else {
+      log.error(`error while opening account: ${err}`);
+    }
+    // an error occurred so call compensations
+    await compensate(compensations);
+    throw err;
+  }
 
   // Ship Order
   progress = 75;
@@ -161,6 +173,22 @@ function prettyErrorMessage(message: string, err?: any) {
   }
   return `${message}: ${errMessage}`;
 }
+
+async function compensate(compensations: Compensation[] = []) {
+  if (compensations.length > 0) {
+    log.info('failures encountered during account opening - compensating');
+    for (const comp of compensations) {
+      try {
+        log.error(comp.message);
+        await comp.fn();
+      } catch (err) {
+        log.error(`failed to compensate: ${prettyErrorMessage('', err)}`, { err });
+        // swallow errors
+      }
+    }
+  }
+}
+
 
 /**
  * "Dyanmic Workflows"

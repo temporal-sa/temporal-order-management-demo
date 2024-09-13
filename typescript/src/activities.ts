@@ -1,4 +1,4 @@
-import { ApplicationFailure, Context } from '@temporalio/activity';
+import { ApplicationFailure, Context, log } from '@temporalio/activity';
 import type { OrderInput, OrderItem } from './types';
 import type { RetryPolicy } from '@temporalio/client';
 
@@ -22,6 +22,8 @@ async function simulateExternalOperationCharge(ms: number, type: string, attempt
 }
 
 export async function getItems(): Promise<Array<OrderItem>> {
+  log.info(`Getting list of items`);
+
   await simulateExternalOperation(100);
 
   const items = [
@@ -46,25 +48,33 @@ export async function getItems(): Promise<Array<OrderItem>> {
 }
 
 export async function checkFraud(input: OrderInput): Promise<string> {
+  log.info(`Check Fraud activity started, ${input.OrderId}`);
+
   await simulateExternalOperation(1000);
 
   return input.OrderId;
 }
 
 export async function prepareShipment(input: OrderInput): Promise<string> {
+  log.info(`"Prepare Shipment activity started, ${input.OrderId}`);
+  
   await simulateExternalOperation(1000);
 
   return input.OrderId;
 }
 
 export async function chargeCustomer(input: OrderInput, type: string): Promise<string> {
+  log.info(`Charge Customer activity started, ${input.OrderId}`);
+
   const context = Context.current();
   const { attempt } = context.info;
 
   const error = await simulateExternalOperationCharge(1000, type, attempt);
+  log.info(`Simulated call complete, ${type}, ${error}`);
 
   switch(error) {
     case ERROR_CHARGE_API_UNAVAILABLE: 
+      log.error(`Charge Customer API unavailable, ${attempt}`);
       throw ApplicationFailure.create({
         message: 'Charge Customer activity failed, API unavailable'
       });
@@ -82,16 +92,22 @@ export async function chargeCustomer(input: OrderInput, type: string): Promise<s
 }
 
 export async function shipOrder(input: OrderInput, item: OrderItem) {
+  log.info(`Ship Order activity started, ${input.OrderId}, ${item.id}, ${item.description}`);
+  
   await simulateExternalOperation(1000);
 }
 
 export async function undoPrepareShipment(input: OrderInput): Promise<string> {
+  log.info(`Undo Prepare Shipment activity started, ${input.OrderId}`);
+  
   await simulateExternalOperation(1000);
 
   return input.OrderId;
 }
 
 export async function undoChargeCustomer(input: OrderInput): Promise<string> {
+  log.info(`Undo Charge Customer activity started, ${input.OrderId}`);
+  
   await simulateExternalOperation(1000);
 
   return input.OrderId;
