@@ -1,4 +1,11 @@
-import { proxyActivities, proxyLocalActivities, sleep, workflowInfo, uuid4 } from '@temporalio/workflow';
+import { 
+  proxyActivities, 
+  proxyLocalActivities, 
+  sleep, 
+  workflowInfo, 
+  defineQuery, 
+  setHandler, 
+  uuid4 } from '@temporalio/workflow';
 import type * as activities from '../../activities';
 import type { RetryPolicy } from '@temporalio/client';
 import type { OrderInput, OrderOutput } from '../../types';
@@ -19,17 +26,26 @@ const { checkFraud, chargeCustomer, prepareShipment, shipOrder } = proxyActiviti
   retry: DEFAULT_RETRY_POLICY
 });
 
+const GET_PROGRESS_QUERY = defineQuery<number>('getProgress');
+
 export async function OrderWorkflow(input: OrderInput): Promise<OrderOutput> {
   let progress = 0;
-  const {workflowType} = workflowInfo();
+  const { workflowType } = workflowInfo();
 
+  setHandler(GET_PROGRESS_QUERY, () => {
+    return progress;
+  })
+
+  // Get Items
   const orderItems = await getItems();
 
+  // Check Fraud
   await checkFraud(input);
 
   await sleep(1);
   progress = 25;
 
+  // Prepare Shipment
   await prepareShipment(input);
 
   await sleep(1);
@@ -57,3 +73,5 @@ export async function OrderWorkflow(input: OrderInput): Promise<OrderOutput> {
 
   return {trackingId, address: input.Address};
 }
+
+export const OrderWorkflowHappyPath = OrderWorkflow;

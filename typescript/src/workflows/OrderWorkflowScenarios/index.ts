@@ -40,9 +40,9 @@ const {
   retry: DEFAULT_RETRY_POLICY
 });
 
-export const GET_PROGRESS_QUERY = defineQuery<number>('getProgress');
-export const UPDATE_ORDER_SIGNAL = defineSignal<[UpdateOrderInput]>('UpdateOrder');
-export const UPDATE_ORDER_UPDATE = defineUpdate<UpdateOrderInput, [string]>('UpdateOrder');
+const GET_PROGRESS_QUERY = defineQuery<number>('getProgress');
+const UPDATE_ORDER_SIGNAL = defineSignal<[UpdateOrderInput]>('UpdateOrder');
+const UPDATE_ORDER_UPDATE = defineUpdate<UpdateOrderInput, [string]>('UpdateOrder');
 
 export async function OrderWorkflowScenarios(input: OrderInput): Promise<SearchAttributes> {
   // Defining Workflow's Values
