@@ -7,7 +7,7 @@ import {
   setHandler,
   log, 
   uuid4 } from '@temporalio/workflow';
-import type * as activities from '../../activities';
+import type * as activities from '../../activities/index';
 import type { RetryPolicy } from '@temporalio/client';
 import type { OrderInput, OrderOutput } from '../../types';
 

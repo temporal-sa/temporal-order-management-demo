@@ -1,5 +1,5 @@
 import { NativeConnection, Runtime, Worker } from '@temporalio/worker';
-import * as activities from './activities';
+import * as activities from './activities/index';
 import { getWorkflowOptions, getConnectionOptions, getTelemetryOptions, namespace, taskQueue } from './env';
 
 async function main() {

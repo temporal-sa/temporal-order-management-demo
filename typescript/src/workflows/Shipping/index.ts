@@ -1,5 +1,5 @@
 import { proxyActivities, log } from '@temporalio/workflow';
-import type * as activities from '../../activities';
+import type * as activities from '../../activities/index';
 import type { OrderInput, OrderItem } from '../../types';
 
 const { shipOrder } = proxyActivities<typeof activities>({

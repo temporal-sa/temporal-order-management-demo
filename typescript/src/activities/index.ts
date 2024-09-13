@@ -1,5 +1,5 @@
 import { ApplicationFailure, Context, log } from '@temporalio/activity';
-import type { OrderInput, OrderItem } from './types';
+import type { OrderInput, OrderItem } from '../types';
 import type { RetryPolicy } from '@temporalio/client';
 
 export const ERROR_CHARGE_API_UNAVAILABLE = 'OrderWorkflowAPIFailure';

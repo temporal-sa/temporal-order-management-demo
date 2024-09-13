@@ -13,9 +13,8 @@ import {
   setHandler,
   log,
   condition,
-  ApplicationFailure
 } from '@temporalio/workflow';
-import type * as activities from '../../activities';
+import type * as activities from '../../activities/index';
 import type { RetryPolicy } from '@temporalio/client';
 import type { OrderInput, OrderOutput, UpdateOrderInput } from '../../types';
 import { ShippingWorkflow } from '../Shipping';
@@ -82,8 +81,8 @@ export async function OrderWorkflowScenarios(input: OrderInput): OrderOutput{
     log.info(`Received update order update with address: ${update_input.Address}`);
     input.Address = update_input.Address;
     return `Updated address: ${input.Address}`;
-  }, {
-    validator: async (update_input: UpdateOrderInput): Promise<void> => {
+  }, { 
+    validator: (update_input: UpdateOrderInput): void => {
       const { Address } = update_input;
 
       if(Address.length > 0) {
@@ -102,15 +101,7 @@ export async function OrderWorkflowScenarios(input: OrderInput): OrderOutput{
 
         throw new Error(`Address can not be blank`);
       }
-      /*
-      if (input.numNodes <= 0) {
-        throw new Error(`numNodes must be positive (got ${input.numNodes})`);
-      }
-      if (input.jobName === '') {
-        throw new Error('jobName cannot be empty');
-      }*/
-
-    }
+    } 
   });
 
   // Start of the Workflow
@@ -181,7 +172,7 @@ export async function OrderWorkflowScenarios(input: OrderInput): OrderOutput{
 
   if(workflowType == 'OrderWorkflowRecoverableFailure') {
     // Simulate a bug
-    // throw new Error('Simulated bug - fix me!');
+    throw new Error('Simulated bug - fix me!');
   }
   
   // wait_for_updated_address_or_timeout
