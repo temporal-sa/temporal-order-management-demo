@@ -13,6 +13,7 @@ import {
   log,
   uuid4,
   condition,
+  ParentClosePolicy,
 } from '@temporalio/workflow';
 import type * as activities from '../../activities/index';
 import type { RetryPolicy } from '@temporalio/client';
@@ -141,7 +142,7 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOu
     // Await message to update address
     await waitForUpdatedAddressOrTimeout();
   }
-  
+
   // Ship Order
   const shipOrderPromises = [];
   for (const orderItem of orderItems) {
@@ -152,7 +153,7 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOu
   // Wait for all items to ship
   await Promise.all(shipOrderPromises);
 
-  progress = await updateProgress('Order Completed' , 100, 1);
+  progress = await updateProgress('Order Completed', 100, 1);
 
   const trackingId = uuid4();
   return { trackingId, address: input.Address };
@@ -160,7 +161,7 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOu
   async function waitForUpdatedAddressOrTimeout() {
     log.info('Waiting up to 60 seconds for updated address');
 
-    if (await condition(() => updatedAddress != '', '10s')) {
+    if (await condition(() => updatedAddress != '', '60s')) {
       input.Address = updatedAddress;
     } else {
       // Do nothing - use the original address
@@ -174,6 +175,8 @@ async function shipItemAsync(input: OrderInput, orderItem: OrderItem, type: stri
   if (WF_TYPES.CHILD == type) {
     return executeChild(ShippingWorkflow, {
       args: [input, orderItem],
+      workflowId: `shipment-${input.OrderId}-${orderItem.id}`,
+      parentClosePolicy: ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE,
     });
   } else {
     return shipOrder(input, orderItem);
