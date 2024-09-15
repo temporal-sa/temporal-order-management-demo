@@ -140,3 +140,5 @@ lib/
 
 lib
 node_modules
+
+.tool-versions

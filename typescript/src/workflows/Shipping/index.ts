@@ -7,8 +7,8 @@ const { shipOrder } = proxyActivities<typeof activities>({
   retry: {
     initialInterval: '1s',
     backoffCoefficient: 2.0,
-    maximumInterval: '30s'
-  }
+    maximumInterval: '30s',
+  },
 });
 
 export async function ShippingWorkflow(input: OrderInput, item: OrderItem) {
@@ -16,4 +16,3 @@ export async function ShippingWorkflow(input: OrderInput, item: OrderItem) {
 
   await shipOrder(input, item);
 }
-

@@ -1,9 +1,9 @@
-import fs from "fs/promises";
-import type * as client from "@temporalio/client";
-import type { RuntimeOptions, WorkerOptions } from "@temporalio/worker";
+import fs from 'fs/promises';
+import type * as client from '@temporalio/client';
+import type { RuntimeOptions, WorkerOptions } from '@temporalio/worker';
 
 // Common set of connection options that can be used for both the client and worker connections.
-export type ConnectionOptions = Pick<client.ConnectionOptions, "tls" | "address">;
+export type ConnectionOptions = Pick<client.ConnectionOptions, 'tls' | 'address'>;
 
 export function getenv(key: string, defaultValue?: string): string {
   const value = process.env[key];
@@ -17,17 +17,17 @@ export function getenv(key: string, defaultValue?: string): string {
 }
 
 export async function getConnectionOptions(): Promise<ConnectionOptions> {
-  const address = getenv("TEMPORAL_HOST_URL", "localhost:7233");
+  const address = getenv('TEMPORAL_HOST_URL', 'localhost:7233');
 
-  let tls: ConnectionOptions["tls"] = undefined;
+  let tls: ConnectionOptions['tls'] = undefined;
   if (process.env.TEMPORAL_MTLS_TLS_CERT && process.env.TEMPORAL_MTLS_TLS_KEY) {
-    const crt = await fs.readFile(getenv("TEMPORAL_MTLS_TLS_CERT"));
-    const key = await fs.readFile(getenv("TEMPORAL_MTLS_TLS_KEY"));
+    const crt = await fs.readFile(getenv('TEMPORAL_MTLS_TLS_CERT'));
+    const key = await fs.readFile(getenv('TEMPORAL_MTLS_TLS_KEY'));
 
     tls = { clientCertPair: { crt, key } };
     console.info('🤖: Connecting to Temporal Cloud ⛅');
   } else {
-    console.info('🤖: Connecting to Local Temporal'); 
+    console.info('🤖: Connecting to Local Temporal');
   }
 
   return {
@@ -36,13 +36,13 @@ export async function getConnectionOptions(): Promise<ConnectionOptions> {
   };
 }
 
-export function getWorkflowOptions(): Pick<WorkerOptions, "workflowBundle" | "workflowsPath"> {
+export function getWorkflowOptions(): Pick<WorkerOptions, 'workflowBundle' | 'workflowsPath'> {
   const workflowBundlePath = getenv('WORKFLOW_BUNDLE_PATH', 'lib/workflow-bundle.js');
-  
+
   if (workflowBundlePath && env == 'production') {
     return { workflowBundle: { codePath: workflowBundlePath } };
   } else {
-    return { workflowsPath: require.resolve("./workflows/index") };
+    return { workflowsPath: require.resolve('./workflows/index') };
   }
 }
 
@@ -51,39 +51,39 @@ export function getTelemetryOptions(): RuntimeOptions {
   const port = getenv('TEMPORAL_WORKER_METRICS_PORT', '9464');
   let telemetryOptions = {};
 
-  switch(metrics) {
+  switch (metrics) {
     case 'PROMETHEUS':
       const bindAddress = getenv('TEMPORAL_METRICS_PROMETHEUS_ADDRESS', `0.0.0.0:${port}`);
       telemetryOptions = {
         metrics: {
           prometheus: {
             bindAddress,
-          }
-        }
-      }
+          },
+        },
+      };
       console.info('🤖: Prometheus Metrics 🔥', bindAddress);
       break;
     case 'OTEL':
       telemetryOptions = {
-        metrics : {
+        metrics: {
           otel: {
             url: getenv('TEMPORAL_METRICS_OTEL_URL'),
             headers: {
-              'api-key': getenv('TEMPORAL_METRICS_OTEL_API_KEY')
-            }
-          }
-        }
-      }
+              'api-key': getenv('TEMPORAL_METRICS_OTEL_API_KEY'),
+            },
+          },
+        },
+      };
       console.info('🤖: OTEL Metrics 📈');
       break;
     default:
       console.info('🤖: No Metrics');
       break;
   }
-  
+
   return { telemetryOptions };
 }
 
-export const namespace = getenv("TEMPORAL_NAMESPACE", "default");
-export const taskQueue = getenv("TEMPORAL_TASK_QUEUE", "orders");
+export const namespace = getenv('TEMPORAL_NAMESPACE', 'default');
+export const taskQueue = getenv('TEMPORAL_TASK_QUEUE', 'orders');
 export const env = getenv('NODE_ENV', 'development');

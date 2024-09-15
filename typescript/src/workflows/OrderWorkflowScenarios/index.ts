@@ -1,220 +1,197 @@
-import { 
-  proxyActivities, 
-  proxyLocalActivities, 
-  sleep, 
+import {
+  proxyActivities,
+  proxyLocalActivities,
+  sleep,
+  workflowInfo,
   defineQuery,
-  defineSignal, 
+  defineSignal,
   defineUpdate,
-  workflowInfo, 
-  uuid4, 
   upsertSearchAttributes,
   ActivityFailure,
-  executeChild, 
+  executeChild,
   setHandler,
   log,
+  uuid4,
   condition,
 } from '@temporalio/workflow';
 import type * as activities from '../../activities/index';
 import type { RetryPolicy } from '@temporalio/client';
-import type { OrderInput, OrderOutput, UpdateOrderInput } from '../../types';
+import type { OrderInput, OrderItem, OrderOutput, UpdateOrderInput } from '../../types';
 import { ShippingWorkflow } from '../Shipping';
 
-const DEFAULT_RETRY_POLICY:RetryPolicy = {
+const DEFAULT_RETRY_POLICY: RetryPolicy = {
   initialInterval: '1s',
   backoffCoefficient: 2,
   maximumInterval: '30s',
-}
+};
 
 const { getItems } = proxyLocalActivities<typeof activities>({
   startToCloseTimeout: '5s',
-  retry: DEFAULT_RETRY_POLICY
+  retry: DEFAULT_RETRY_POLICY,
 });
 
-const { 
-  checkFraud, 
-  chargeCustomer,
-  undoChargeCustomer,
-  prepareShipment, 
-  undoPrepareShipment,
-  shipOrder } = proxyActivities<typeof activities>({
-  startToCloseTimeout: '5s',
-  retry: DEFAULT_RETRY_POLICY
-});
+const { checkFraud, chargeCustomer, undoChargeCustomer, prepareShipment, undoPrepareShipment, shipOrder } =
+  proxyActivities<typeof activities>({
+    startToCloseTimeout: '5s',
+    retry: DEFAULT_RETRY_POLICY,
+  });
 
-const GET_PROGRESS_QUERY = defineQuery<number>('getProgress');
-const UPDATE_ORDER_SIGNAL = defineSignal<[UpdateOrderInput]>('UpdateOrder');
-const UPDATE_ORDER_UPDATE = defineUpdate<string, [UpdateOrderInput]>('UpdateOrder');
+const getProgressQuery = defineQuery<number>('getProgress');
+const updateOrderSignal = defineSignal<[UpdateOrderInput]>('UpdateOrder');
+const updateOrderUpdate = defineUpdate<string, [UpdateOrderInput]>('UpdateOrder');
 
 interface Compensation {
   message: string;
   fn: () => Promise<void>;
 }
 
-export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOutput>{
-  // Defining Workflow's Values
+export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOutput> {
   let progress = 0;
-  let orderStatus = '';
-  let signalFired = false;
-  let updateFired = false;
+  let updatedAddress = '';
 
-  upsertSearchAttributes({
-    OrderStatus: [orderStatus]
-  });
+  const { workflowType } = workflowInfo();
+  log.info(`Scenario Order workflow started, ${workflowType}, ${input.OrderId}`);
 
-  const {workflowType} = workflowInfo();
+  // Saga compensations
   const compensations = [];
 
-  log.info(`Dynamic Order workflow started, ${workflowType}, ${input.OrderId}`);
-
-  // Defining Workflow's Handlers
-  setHandler(GET_PROGRESS_QUERY, () => {
+  // getProgress query handler
+  setHandler(getProgressQuery, () => {
     return progress;
-  })
-
-  setHandler(UPDATE_ORDER_SIGNAL, (update_input: UpdateOrderInput) => {
-    log.info(`Received update order signal with address: ${update_input.Address}`);
-    signalFired = true;
-    input.Address = update_input.Address;
   });
 
-  setHandler(UPDATE_ORDER_UPDATE, (update_input: UpdateOrderInput) => {
-    log.info(`Received update order update with address: ${update_input.Address}`);
-    input.Address = update_input.Address;
-    return `Updated address: ${input.Address}`;
-  }, { 
-    validator: (update_input: UpdateOrderInput): void => {
-      const { Address } = update_input;
+  setHandler(updateOrderSignal, (update_input: UpdateOrderInput) => {
+    log.info(`Received update order signal with address: ${update_input.Address}`);
+    updatedAddress = update_input.Address;
+  });
 
-      if(Address.length > 0) {
-        const firstChar = Address[0];
+  setHandler(
+    updateOrderUpdate,
+    (update_input: UpdateOrderInput) => {
+      log.info(`Received update order update with address: ${update_input.Address}`);
+      updatedAddress = update_input.Address;
+      return `Updated address: ${update_input.Address}`;
+    },
+    {
+      validator: (update_input: UpdateOrderInput): void => {
+        const { Address } = update_input;
 
-        if(Number(firstChar)) {
-          log.info(`Order update address is valid: ${Address}`);
-          updateFired = true;
+        if (Address.length > 0) {
+          const firstChar = Address[0];
+
+          if (Number(firstChar)) {
+            log.info(`Order update address is valid: ${Address}`);
+          } else {
+            log.error(`Rejecting order update, invalid address: ${Address}`);
+            throw new Error(`Address must start with a digit`);
+          }
         } else {
           log.error(`Rejecting order update, invalid address: ${Address}`);
-          
-          throw new Error(`Address must start with a digit`);
+          throw new Error(`Address can not be blank`);
         }
-      } else {
-        log.error(`Rejecting order update, invalid address: ${Address}`);
-
-        throw new Error(`Address can not be blank`);
-      }
-    } 
-  });
-
-  // Start of the Workflow
+      },
+    },
+  );
 
   // Get Items
   const orderItems = await getItems();
 
-  // Check Fraud
-  progress = 0;
-  orderStatus = "Check Fraud";
-  upsertSearchAttributes({
-    OrderStatus: [orderStatus]
-  });
+  progress = await updateProgress('Check Fraud', 0, 0);
 
+  // Check Fraud
   await checkFraud(input);
 
-  // Prepare Shipment
-  progress = 25;
-  orderStatus = 'Prepare Shipment';
-  upsertSearchAttributes({
-    OrderStatus: [orderStatus]
-  });
-  await sleep('1s');
+  progress = await updateProgress('Prepare Shipment', 25, 1);
 
+  // Prepare Shipment
   compensations.unshift({
     message: prettyErrorMessage('reversing shipment.'),
-    fn: async () => { 
-      await undoPrepareShipment(input) 
-    }
+    fn: async () => {
+      await undoPrepareShipment(input);
+    },
   });
-
   await prepareShipment(input);
 
-  // Charge Customer
-  progress = 50;
-  orderStatus = 'Charge Customer';
-  upsertSearchAttributes({
-    OrderStatus: [orderStatus]
-  });
-  await sleep('1s');
+  progress = await updateProgress('Charge Customer', 50, 1);
 
+  // Charge Customer
   try {
     compensations.unshift({
       message: prettyErrorMessage('reversing charge.'),
       fn: async () => {
-        await undoChargeCustomer(input)
-      }
+        await undoChargeCustomer(input);
+      },
     });
-
     await chargeCustomer(input, workflowType);
   } catch (err) {
     log.error(`Failed to charge customer ${err}`);
-    /*if (err instanceof ActivityFailure && err.cause instanceof ApplicationFailure) {
-      log.error(err.message);
-    }*/
     // an error occurred so call compensations
     await compensate(compensations);
     throw err;
   }
 
-  // Ship Order
-  progress = 75;
-  orderStatus = 'Ship Order';
-  upsertSearchAttributes({
-    OrderStatus: [orderStatus]
-  });
-  await sleep('3s');
+  progress = await updateProgress('Ship Order', 75, 3);
 
-  if(workflowType == 'OrderWorkflowRecoverableFailure') {
+  if (WF_TYPES.BUG == workflowType) {
     // Simulate a bug
     throw new Error('Simulated bug - fix me!');
   }
-  
-  // wait_for_updated_address_or_timeout
-  if(workflowType == 'OrderWorkflowHumanInLoopSignal' || 
-    workflowType == 'OrderWorkflowHumanInLoopUpdate') {
-    log.info('Waiting up to 60 seconds for updated address');
 
-    if(await condition(() => signalFired || updateFired, '60s')) {
-      // Signal and Update was fired
-    } else {
-      //throw ApplicationFailure.create({message : 'Updated address was not received within 60 seconds.', type: 'timeout'});
-    }
+  if (WF_TYPES.SIGNAL == workflowType || WF_TYPES.UPDATE == workflowType) {
+    // Await message to update address
+    await waitForUpdatedAddressOrTimeout();
+  }
+  
+  // Ship Order
+  const shipOrderPromises = [];
+  for (const orderItem of orderItems) {
+    log.info(`Shipping item: ${orderItem.description}`);
+    shipOrderPromises.push(shipItemAsync(input, orderItem, workflowType));
   }
 
-  const shipOrderWorkflows = orderItems.map((anItem) => {
-    log.info(`Shipping item: ${anItem.description}`);
+  // Wait for all items to ship
+  await Promise.all(shipOrderPromises);
 
-    if(workflowType == 'OrderWorkflowChildWorkflow') {
-      return executeChild(ShippingWorkflow, {
-        args:[input, anItem]
-      });
-    } else {
-      return shipOrder(input, anItem);
-    }
-  })
-
-  await Promise.all(shipOrderWorkflows);
-
-  // Order Completed
-  progress = 100;
-  orderStatus = 'Order Completed';
-  upsertSearchAttributes({
-    OrderStatus: [orderStatus]
-  });
+  progress = await updateProgress('Order Completed' , 100, 1);
 
   const trackingId = uuid4();
-  return {trackingId, address: input.Address};
+  return { trackingId, address: input.Address };
+
+  async function waitForUpdatedAddressOrTimeout() {
+    log.info('Waiting up to 60 seconds for updated address');
+
+    if (await condition(() => updatedAddress != '', '10s')) {
+      input.Address = updatedAddress;
+    } else {
+      // Do nothing - use the original address
+      // In other cases, you may want to throw an exception on timeout, e.g.
+      //   throw ApplicationFailure.create({message : 'Updated address was not received within 60 seconds.', type: 'timeout'});
+    }
+  }
 }
 
-/**
- * Helper Methods  
- */
+async function shipItemAsync(input: OrderInput, orderItem: OrderItem, type: string): Promise<void> {
+  if (WF_TYPES.CHILD == type) {
+    return executeChild(ShippingWorkflow, {
+      args: [input, orderItem],
+    });
+  } else {
+    return shipOrder(input, orderItem);
+  }
+}
+
+async function updateProgress(orderStatus: string, progress: number, seconds: number): Promise<number> {
+  if (seconds > 0) {
+    await sleep(`${seconds}s`);
+  }
+  if (WF_TYPES.VISIBILITY == workflowInfo().workflowType) {
+    upsertSearchAttributes({
+      OrderStatus: [orderStatus],
+    });
+  }
+  return progress;
+}
+
 function prettyErrorMessage(message: string, err?: any) {
   let errMessage = err && err.message ? err.message : '';
   if (err && err instanceof ActivityFailure) {
@@ -238,10 +215,7 @@ async function compensate(compensations: Compensation[] = []) {
   }
 }
 
-
-/**
- * "Dyanmic Workflows"
- */
+// Exported Workflow Scenarios
 export const OrderWorkflowRecoverableFailure = OrderWorkflowScenarios;
 export const OrderWorkflowChildWorkflow = OrderWorkflowScenarios;
 export const OrderWorkflowHumanInLoopSignal = OrderWorkflowScenarios;
@@ -249,3 +223,11 @@ export const OrderWorkflowHumanInLoopUpdate = OrderWorkflowScenarios;
 export const OrderWorkflowAdvancedVisibility = OrderWorkflowScenarios;
 export const OrderWorkflowAPIFailure = OrderWorkflowScenarios;
 export const OrderWorkflowNonRecoverableFailure = OrderWorkflowScenarios;
+
+const WF_TYPES = {
+  BUG: 'OrderWorkflowRecoverableFailure',
+  CHILD: 'OrderWorkflowChildWorkflow',
+  SIGNAL: 'OrderWorkflowHumanInLoopSignal',
+  UPDATE: 'OrderWorkflowHumanInLoopUpdate',
+  VISIBILITY: 'OrderWorkflowAdvancedVisibility',
+} as const;

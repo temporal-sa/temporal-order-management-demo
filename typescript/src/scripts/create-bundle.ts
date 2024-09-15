@@ -5,7 +5,7 @@ import path from 'path';
 async function bundle() {
   const { code } = await bundleWorkflowCode({
     workflowsPath: require.resolve('../workflows/index'),
-    workflowInterceptorModules: [] 
+    workflowInterceptorModules: [],
   });
 
   const codePath = path.join(__dirname, '../workflow-bundle.js');

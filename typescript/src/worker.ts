@@ -5,7 +5,7 @@ import { getWorkflowOptions, getConnectionOptions, getTelemetryOptions, namespac
 async function main() {
   const telemetryOptions = getTelemetryOptions();
 
-  if(telemetryOptions) {
+  if (telemetryOptions) {
     Runtime.install(telemetryOptions);
   }
 
@@ -16,10 +16,10 @@ async function main() {
     connection,
     namespace,
     taskQueue,
-    activities: {...activities},
+    activities: { ...activities },
     ...getWorkflowOptions(),
   });
-  
+
   console.info('🤖: Temporal Worker Online! Beep Boop Beep!');
   await worker.run();
 }
@@ -29,5 +29,5 @@ main().then(
   (err) => {
     console.error(err);
     process.exit(1);
-  }
+  },
 );
