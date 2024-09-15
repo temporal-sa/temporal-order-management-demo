@@ -20,13 +20,15 @@ class OrderWorkflow:
     @workflow.run
     async def execute(self, input: OrderInput) -> OrderOutput:
         workflow_type = workflow.info().workflow_type
-        workflow.logger.info("Order workflow started, " + workflow_type + ", " + input.OrderId)
+        workflow.logger.info(f"Order workflow started, type = {workflow_type}, orderId = {input.OrderId}")
 
+        # Get items
         order_items = await workflow.execute_local_activity_method(
             OrderActivities.get_items,
             start_to_close_timeout=timedelta(seconds=5)
         )
 
+        # Check fraud
         await workflow.execute_activity_method(
             OrderActivities.check_fraud,
             input,
@@ -35,6 +37,7 @@ class OrderWorkflow:
         )
         await self.sleep(1, 25)
 
+        # Prepare shipment
         await workflow.execute_activity_method(
             OrderActivities.prepare_shipment,
             input,
@@ -43,6 +46,7 @@ class OrderWorkflow:
         )
         await self.sleep(1, 50)
 
+        # Charge customer
         await workflow.execute_activity_method(
             OrderActivities.charge_customer,
             args=[input, workflow_type],
@@ -51,9 +55,10 @@ class OrderWorkflow:
         )
         await self.sleep(3, 75)
 
+        # Ship order items
         handles = []
         for item in order_items:
-            workflow.logger.info("Shipping item: " + item.description)
+            workflow.logger.info(f"Shipping item: {item.description}")
             handles.append(
                 workflow.execute_activity_method(
                     OrderActivities.ship_order,
@@ -63,9 +68,11 @@ class OrderWorkflow:
                 )
             )
 
+        # Wait for all items to ship
         await asyncio.gather(*handles)
         await self.sleep(1, 100)
 
+        # Generate trackingId
         tracking_id = str(workflow.uuid4())
         return OrderOutput(tracking_id, input.Address)
 
