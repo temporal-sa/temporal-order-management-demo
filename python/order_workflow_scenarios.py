@@ -25,7 +25,7 @@ class OrderWorkflowScenarios:
     VISIBILITY = "OrderWorkflowAdvancedVisibility"
 
     ORDER_STATUS_SA = SearchAttributeKey.for_keyword("OrderStatus")
-    
+
     def __init__(self) -> None:
         self.progress = 0
         self.updated_address = None
@@ -35,10 +35,12 @@ class OrderWorkflowScenarios:
     async def execute(self, args: Sequence[RawValue]) -> Any:
         input = workflow.payload_converter().from_payload(args[0].payload, OrderInput)
         workflow_type = workflow.info().workflow_type
-        workflow.logger.info("Dynamic Order workflow started, " + workflow_type + ", " + input.OrderId)
+        workflow.logger.info(f"Dynamic Order workflow started, type = {workflow_type}, orderId = {input.OrderId}")
 
+        # Saga compensations
         compensations = []
 
+        # Get items
         order_items = await workflow.execute_local_activity_method(
             OrderActivities.get_items,
             start_to_close_timeout=timedelta(seconds=5)
@@ -46,6 +48,7 @@ class OrderWorkflowScenarios:
 
         await self.update_progress("Check Fraud", 0, 0)
 
+        # Check fraud
         await workflow.execute_activity_method(
             OrderActivities.check_fraud,
             input,
@@ -55,6 +58,7 @@ class OrderWorkflowScenarios:
 
         await self.update_progress("Prepare Shipment", 25, 1)
 
+        # Prepare shipment
         compensations.append(OrderActivities.undo_prepare_shipment)
         await workflow.execute_activity_method(
             OrderActivities.prepare_shipment,
@@ -65,6 +69,7 @@ class OrderWorkflowScenarios:
 
         await self.update_progress("Charge Customer", 50, 1)
 
+        # Charge customer
         try:
             compensations.append(OrderActivities.undo_charge_customer)
             await workflow.execute_activity_method(
@@ -87,36 +92,40 @@ class OrderWorkflowScenarios:
         await self.update_progress("Ship Order", 75, 3)
 
         if self.BUG == workflow_type:
-            #Simulated bug -- fix me!
-            #raise RuntimeError
+            # Simulate bug
+            raise RuntimeError("Simulated bug - fix me!")
             pass
-        
+
         if self.SIGNAL == workflow_type or self.UPDATE == workflow_type:
+            # Await message to update address
             await self.wait_for_updated_address_or_timeout(input)
 
+        # Ship order items
         handles = []
         for item in order_items:
-            workflow.logger.info("Shipping item: " + item.description)
+            workflow.logger.info(f"Shipping item: {item.description}")
             handles.append(self.ship_item_async(input, item, workflow_type))
-        
+
+        # Wait for all items to ship
         await asyncio.gather(*handles)
 
         await self.update_progress("Order Completed", 100, 1)
 
+        # Generate trackingId
         tracking_id = str(workflow.uuid4())
         return OrderOutput(tracking_id, input.Address)
 
-    async def ship_item_async(self, input: OrderInput, item: OrderItem, workflow_type: str):
+    def ship_item_async(self, input: OrderInput, item: OrderItem, workflow_type: str) -> Any:
         if self.CHILD == workflow_type:
-            return await workflow.execute_child_workflow(
+            return workflow.execute_child_workflow(
                 ShippingChildWorkflow.execute,
                 args=[input, item],
                 id="shipment-" + input.OrderId + "-" + str(item.id),
                 parent_close_policy=ParentClosePolicy.TERMINATE
             )
-            
+
         else:
-            return await workflow.execute_activity_method(
+            return workflow.execute_activity_method(
                 OrderActivities.ship_order,
                 args=[input, item],
                 start_to_close_timeout=timedelta(seconds=5),
@@ -145,18 +154,18 @@ class OrderWorkflowScenarios:
 
     @workflow.signal(name="UpdateOrder")
     def update_order_signal(self, update_input: UpdateOrderInput):
-        workflow.logger.info("Received update order signal with address: " + update_input.Address)
+        workflow.logger.info(f"Received update order signal with address: {update_input.Address}")
         self.updated_address = update_input.Address
 
     @workflow.update(name="UpdateOrder")
     def update_order_update(self, update_input: UpdateOrderInput) -> str:
-        workflow.logger.info("Received update order signal with address: " + update_input.Address)
+        workflow.logger.info(f"Received update order signal with address: {update_input.Address}")
         self.updated_address = update_input.Address
         return "Updated address: " + update_input.Address
 
     @update_order_update.validator
     def update_order_validator(self, update_input: UpdateOrderInput):
         if not update_input.Address[0].isdigit():
-            workflow.logger.info("Rejecting order update, invalid address: " + update_input.Address)
+            workflow.logger.info(f"Rejecting order update, invalid address: {update_input.Address}")
             raise ApplicationError("Address must start with a digit", type="invalid-address")
-        workflow.logger.info("Order update address is valid: " + update_input.Address)
+        workflow.logger.info(f"Order update address is valid: {update_input.Address}")

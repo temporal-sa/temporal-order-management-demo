@@ -17,8 +17,9 @@ class ShippingChildWorkflow:
 
     @workflow.run
     async def execute(self, input: OrderInput, item: OrderItem):
-        workflow.logger.info("Shipping workflow started, orderId " + input.OrderId)
+        workflow.logger.info(f"Shipping workflow started, orderId = {input.OrderId}")
 
+        # Ship order
         await workflow.start_activity_method(
             OrderActivities.ship_order,
             args=[input, item],

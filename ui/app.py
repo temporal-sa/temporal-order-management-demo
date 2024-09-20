@@ -57,14 +57,14 @@ async def process_order():
     input = OrderInput(
         OrderId= order_id,
         Address=shipping_data["address"],
-    )               
+    )
 
     await client.start_workflow(
         "OrderWorkflow"+selected_scenario,
         input,
         id=f'order-{order_id}',
-        task_queue=os.getenv("TEMPORAL_TASK_QUEUE"),
-    )    
+        task_queue=os.getenv("TEMPORAL_TASK_QUEUE", "orders"),
+    )
 
     return render_template('process_order.html', selected_scenario=selected_scenario, oder_id=order_id)
 
@@ -75,7 +75,7 @@ async def order_confirmation():
     client = await get_client()
     order_workflow = client.get_workflow_handle(f'order-{order_id}')
     order_output = await order_workflow.result()
-    
+
     tracking_id = order_output["trackingId"]
     address = order_output["address"]
 
@@ -95,7 +95,7 @@ async def get_progress():
         if desc.status == 3:
             error_message = "Workflow failed: order-{order_id}"
             print(f"Error in get_progress route: {error_message}")
-            return jsonify({"error": error_message}), 500            
+            return jsonify({"error": error_message}), 500
 
         return jsonify({"progress": progress_percent})
     except:
@@ -104,11 +104,11 @@ async def get_progress():
 @app.route('/signal', methods=['POST'])
 async def signal():
     order_id = request.args.get('order_id')
-    address = request.json.get('address') 
+    address = request.json.get('address')
 
     SignalOrderInput = UpdateOrder(
         Address=address
-    )  
+    )
 
     try:
         client = await get_client()
@@ -116,18 +116,18 @@ async def signal():
         await order_workflow.signal("UpdateOrder", SignalOrderInput)
     except Exception as e:
         print(f"Error sending signal: {str(e)}")
-        return jsonify({"error": str(e)}), 500       
+        return jsonify({"error": str(e)}), 500
 
     return 'Signal received successfully', 200
 
 @app.route('/update', methods=['POST'])
 async def update():
     order_id = request.args.get('order_id')
-    address = request.json.get('address') 
+    address = request.json.get('address')
 
     UpdateOrderInput = UpdateOrder(
         Address=address
-    )  
+    )
 
     update_result = None
     try:
@@ -146,4 +146,4 @@ async def update():
     return jsonify(result=result)
 
 if __name__ == '__main__':
-    app.run(debug=True)    
+    app.run(debug=True)
