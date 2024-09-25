@@ -1,0 +1,5 @@
+export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
+export TEMPORAL_NAMESPACE=<namespace>.<accountId>
+export TEMPORAL_MTLS_TLS_CERT="/path/to/cert.pem"
+export TEMPORAL_MTLS_TLS_KEY="/path/to/key.key"
+export TEMPORAL_TASK_QUEUE=orders
