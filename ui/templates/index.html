@@ -43,6 +43,12 @@
         select {
             width: 100%;
             padding: 10px;
+            /* margin-bottom: 20px; */
+        }
+
+        input {
+            width: 100%;
+            padding: 5px;
         }
 
         button {
@@ -54,6 +60,35 @@
             cursor: pointer;
             margin: 5px 0;
         }
+
+        .flexCenter {
+            display: flex; 
+            justify-content: center;
+        }
+
+        .flexCol {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .show {
+            display: flex;
+        }
+
+        .show div {
+            flex-grow: 1; 
+            flex-basis: 0;
+            padding: 0px 10px 0px 0px;
+        }
+
+        .show div div {
+            flex-grow: 1;
+        }
+
     </style>
     <script>
         function placeOrder() {
@@ -66,53 +101,55 @@
         <h2>Temporal Orders</h2>
     </section>
  
-    <section>
-        <h3>Order Details</h3>
-        <table>
-            <tr>
-                <th>Quantity</th>
-                <th>Description</th>
-            </tr>
-            {% for key, value in order_data.items() %}
+    <div id="orders">
+        <section>
+            <h3>Order Details</h3>
+            <table>
                 <tr>
-                    <td>{{ value['quantity'] }}</td>
-                    <td>{{ value['item'] }}</td>
+                    <th>Quantity</th>
+                    <th>Description</th>
                 </tr>
-            {% endfor %}
-        </table>
-    </section>
+                {% for key, value in order_data.items() %}
+                    <tr>
+                        <td>{{ value['quantity'] }}</td>
+                        <td>{{ value['item'] }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </section>
 
-    <section>
-        <h3>Payment Information</h3>
-        <table>
-            <tr>
-                <td>Name</td>
-                <td>{{ payment_data['name'] }}</td>
-            </tr>
-            <tr>
-                <td>Credit Card Type</td>
-                <td>{{ payment_data['card_type'] }}</td>
-            </tr>
-            <tr>
-                <td>Credit Card Number</td>
-                <td>{{ payment_data['card_number'] }}</td>
-            </tr>
-        </table>
-    </section>
+        <section>
+            <h3>Payment Information</h3>
+            <table>
+                <tr>
+                    <td>Name</td>
+                    <td>{{ payment_data['name'] }}</td>
+                </tr>
+                <tr>
+                    <td>Credit Card Type</td>
+                    <td>{{ payment_data['card_type'] }}</td>
+                </tr>
+                <tr>
+                    <td>Credit Card Number</td>
+                    <td>{{ payment_data['card_number'] }}</td>
+                </tr>
+            </table>
+        </section>
 
-    <section>
-        <h3>Shipping Information</h3>
-        <table>
-            <tr>
-                <td>Name</td>
-                <td>{{ shipping_data['name'] }}</td>
-            </tr>
-            <tr>
-                <td>Address</td>
-                <td>{{ shipping_data['address'] }}</td>
-            </tr>
-        </table>
-    </section>
+        <section>
+            <h3>Shipping Information</h3>
+            <table>
+                <tr>
+                    <td>Name</td>
+                    <td>{{ shipping_data['name'] }}</td>
+                </tr>
+                <tr>
+                    <td>Address</td>
+                    <td>{{ shipping_data['address'] }}</td>
+                </tr>
+            </table>
+        </section>
+    </div>
 
     <section>
         <h4>Choose Scenario</h4>
@@ -123,7 +160,37 @@
         </select>        
     </section>
 
-    <section style="display: flex; justify-content: center;">
+    <section class="hidden" id="apikeybox" style="margin: 30px 0px 10px 0px;">
+        <div class="flexCol" style="border-right: 1px solid #ddd;">
+            <div>
+                <h3>Update Key</h3>
+            </div>
+
+            <div>
+                <input id="apikey" name="apikey" value="{{ api_key }}"/>
+            </div>
+            
+            <div class="flexCenter">
+                <button type="button" onclick="updateAPIKey(false)">Update Worker API Key</button>
+            </div>
+        </div>
+
+        <div class="flexCol" style="padding-left: 10px;">
+            <div>
+                <h3>Remove Key</h3>
+            </div>
+
+            <div style="padding-bottom: 10px;">
+                This will result in the worker being unable to connect to the Temporal namesapce.
+            </div>
+
+            <div class="flexCenter">
+                <button type="button" onclick="updateAPIKey(true)" style="background: red;">Remove Worker API Key</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="placeOrder" class="flexCenter">
         <button type="button" onclick="placeOrder()">Place Order</button>
     </section>
 
@@ -142,6 +209,58 @@
             // Redirect to order processing page with the selected scenario as a query parameter
             window.location.href = '/process_order?scenario=' + encodeURIComponent(selectedScenario) + '&order_id=' + encodeURIComponent(order_id);
         }
+
+        async function updateAPIKey(clearKey) {
+            var apikey = "";
+
+            if (!clearKey) {
+                apikey = document.getElementById('apikey').value;
+            }
+
+            const url = "http://127.0.0.1:3333";
+
+            try {
+                const response = await fetch(url, {
+                    method: "PUT",
+                    body: apikey
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Response status: ${response.status}`);
+                } else {
+                    alert(`API key ${clearKey ? "cleared" : "updated"}`);
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+
+        function showHideKeyInput() {
+            var orders = document.getElementById('orders');
+            var apikeybox = document.getElementById('apikeybox');
+            var orderButton = document.getElementById('placeOrder');
+
+            if (document.getElementById('scenario').value == "APIKeyRotation") {
+                // show API key details
+                apikeybox.classList.remove("hidden");
+                apikeybox.classList.add("show");
+                
+                // hide order details
+                orders.classList.add("hidden");
+                orderButton.classList.add("hidden");
+            } else {
+                // hide API key details
+                apikeybox.classList.add("hidden");
+                apikeybox.classList.remove("show");
+
+                // show order details
+                orders.classList.remove("hidden");
+                orderButton.classList.remove("hidden");
+            }
+        }
+
+        document.getElementById("scenario").onchange = showHideKeyInput;
     </script>
 </body>
 

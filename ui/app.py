@@ -38,10 +38,15 @@ scenarios = [
     "NonRecoverableFailure",
 ]
 
+api_key = os.getenv("TEMPORAL_APIKEY")
+
+if api_key:
+    scenarios.append("APIKeyRotation")
+
 @app.route('/', methods=['GET', 'POST'])
 async def main_order_page():
-    order_id = str(uuid.uuid4().int)[:6]
-    return render_template('index.html', order_data=order_data, payment_data=payment_data, shipping_data=shipping_data, scenarios=scenarios, order_id=order_id)
+    order_id = str(uuid.uuid4().int)[:6] 
+    return render_template('index.html', order_data=order_data, payment_data=payment_data, shipping_data=shipping_data, scenarios=scenarios, order_id=order_id, api_key=api_key)
 
 @app.route('/process_order')
 async def process_order():

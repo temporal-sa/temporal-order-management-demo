@@ -4,7 +4,17 @@ import os
 
 async def get_client()-> Client:
 
-    if (
+    if (os.getenv("TEMPORAL_APIKEY") is not None):
+        print(os.getenv("TEMPORAL_APIKEY"), os.getenv("TEMPORAL_NAMESPACE"), os.getenv("TEMPORAL_HOST_URL"))
+
+        client = await Client.connect(
+            os.getenv("TEMPORAL_HOST_URL"),
+            namespace=os.getenv("TEMPORAL_NAMESPACE"),
+            rpc_metadata={"temporal-namespace": os.getenv("TEMPORAL_NAMESPACE")},
+            api_key=os.getenv("TEMPORAL_APIKEY"),
+            tls=True,
+        )
+    elif (
         os.getenv("TEMPORAL_MTLS_TLS_CERT")
         and os.getenv("TEMPORAL_MTLS_TLS_KEY") is not None
     ):
