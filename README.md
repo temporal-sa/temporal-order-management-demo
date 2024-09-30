@@ -13,6 +13,7 @@ Demos various aspects of [Temporal](http://temporal.io) using the [Go SDK](https
 |                    |   | __ | Retry          | ✅ | __ |                     |   |
 |                    |   | __ | Data Converter |   | __ |                     |   |
 |                    |   | __ | Polyglot       | ✅ | __ |                     |   |
+|                    |   | __ | API Keys       | ✅ | __ |                     |   |
 
 
 This demo walks through several scenarios using an order management process. The scenarios are:
@@ -34,14 +35,24 @@ temporal server start-dev --dynamic-config-value frontend.enableUpdateWorkflowEx
 ```
 
 # Run Worker
-Ensure the following environment variables:
+Ensure the following environment variables are set:
+```bash
+$ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
+$ export TEMPORAL_WORKER_METRICS_PORT=9090
+$ export TEMPORAL_TASK_QUEUE=orders
+```
+
+If using mTLS authentication, set the following environment variables:
 ```bash
 $ export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
 $ export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
 $ export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
-$ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-$ export TEMPORAL_WORKER_METRICS_PORT=9090
-$ export TEMPORAL_TASK_QUEUE=orders
+```
+
+If using API key authentication, set the following environment variables:
+```bash
+$ export TEMPORAL_HOST_URL=<region>.<cloudProvider>.api.temporal.io:7233
+$ export TEMPORAL_APIKEY=eyABCD1234.eyABCD1234.ABCD-EFGH
 ```
 
 ```bash
@@ -56,11 +67,21 @@ $ go run worker/main.go
 # Run UI
 Ensure the following environment variables:
 ```bash
+$ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
+$ export TEMPORAL_TASK_QUEUE=orders
+```
+
+If using mTLS authentication, set the following environment variables:
+```bash
 $ export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
 $ export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
 $ export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
-$ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-$ export TEMPORAL_TASK_QUEUE=orders
+```
+
+If using API key authentication, set the following environment variables:
+```bash
+$ export TEMPORAL_HOST_URL=<region>.<cloudProvider>.api.temporal.io:7233
+$ export TEMPORAL_APIKEY=eyABCD1234.eyABCD1234.ABCD-EFGH
 ```
 
 Install [Poetry](https://python-poetry.org/)
@@ -178,3 +199,16 @@ Divide(1, 0)
 This scenario follows Happy Path, however after instead of executing ChargeCustomer this workflow will execute ChargeCustomerNonREcoverableFailure activity. This activity throws a non-retryable application error which causes the workflow to fail.
 
 ![Workflow Failed](ui/static/workflow-failed.png)
+
+# Live API Key Rotation
+![Live API Key Rotation](ui/static/api-key-rotation.png)
+
+This scenario demonstrates updating the API key for the worker without the need to restart the worker. Steps;
+1. Invalidate the worker API key with `Remove Worker API Key`
+    - This doesn't disable/revoke the key with the Temporal server, it just sets a blank key on the worker.
+    - Alternatively, you could diable/revoke the key on the Temporal server.
+2. Start the `HappyPath` scenario. The workflow will fail to make progress.
+3. In a new browser tab/window, open the Order Management UI (http://127.0.0.1:5000) and update the worker API key.
+    - The predefined value in the `Update Key` text field is the value of the `TEMPORAL_APIKEY` environment variable. If you used `Remove Worker API Key` earlier, then this key will still work fine.
+    - Alternatively, if you have disabled/revoked the key on the Temporal server then you will need to make sure you provide a vaild key here.
+4. Return to the in-flight `HappyPath` scenario. The workflow will now progress/complete.
