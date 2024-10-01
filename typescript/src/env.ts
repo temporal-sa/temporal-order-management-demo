@@ -1,9 +1,10 @@
 import fs from 'fs/promises';
 import type * as client from '@temporalio/client';
 import type { RuntimeOptions, WorkerOptions } from '@temporalio/worker';
+import { NativeConnectionOptions } from '@temporalio/worker';
 
 // Common set of connection options that can be used for both the client and worker connections.
-export type ConnectionOptions = Pick<client.ConnectionOptions, 'tls' | 'address'>;
+export type ConnectionOptions = Pick<NativeConnectionOptions, 'tls' | 'address' | 'apiKey' | 'metadata'>;
 
 export function getenv(key: string, defaultValue?: string): string {
   const value = process.env[key];
@@ -20,12 +21,23 @@ export async function getConnectionOptions(): Promise<ConnectionOptions> {
   const address = getenv('TEMPORAL_HOST_URL', 'localhost:7233');
 
   let tls: ConnectionOptions['tls'] = undefined;
+  let apiKey: string | undefined = undefined;
+  let metadata: Record<string, string> = {};
+
   if (process.env.TEMPORAL_MTLS_TLS_CERT && process.env.TEMPORAL_MTLS_TLS_KEY) {
     const crt = await fs.readFile(getenv('TEMPORAL_MTLS_TLS_CERT'));
     const key = await fs.readFile(getenv('TEMPORAL_MTLS_TLS_KEY'));
 
     tls = { clientCertPair: { crt, key } };
-    console.info('🤖: Connecting to Temporal Cloud ⛅');
+    console.info('🤖: Connecting to Temporal Cloud (mTLS) ⛅');
+  } else if (process.env.TEMPORAL_APIKEY) {
+    apiKey = getenv('TEMPORAL_APIKEY');
+    tls = true;
+    metadata = {
+      'temporal-namespace': getenv('TEMPORAL_NAMESPACE'),
+    }
+
+    console.info('🤖: Connecting to Temporal Cloud (API key) ⛅');
   } else {
     console.info('🤖: Connecting to Local Temporal');
   }
@@ -33,6 +45,8 @@ export async function getConnectionOptions(): Promise<ConnectionOptions> {
   return {
     address,
     tls,
+    apiKey,
+    metadata
   };
 }
 

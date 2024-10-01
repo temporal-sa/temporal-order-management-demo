@@ -1,6 +1,7 @@
 import { NativeConnection, Runtime, Worker } from '@temporalio/worker';
 import * as activities from './activities/index';
 import { getWorkflowOptions, getConnectionOptions, getTelemetryOptions, namespace, taskQueue } from './env';
+import { createApiKeyServer } from './apikey-server';
 
 async function main() {
   const telemetryOptions = getTelemetryOptions();
@@ -11,6 +12,12 @@ async function main() {
 
   const connectionOptions = await getConnectionOptions();
   const connection = await NativeConnection.connect(connectionOptions);
+
+  if (process.env.TEMPORAL_APIKEY) {
+    createApiKeyServer(connection).listen(3333, () => {
+      console.log('API Key server is running on http://localhost:3333');
+    });
+  }
 
   const worker = await Worker.create({
     connection,
