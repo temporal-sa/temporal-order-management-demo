@@ -66,7 +66,19 @@ $ go run worker/main.go
 2024/02/20 14:05:21 INFO  Started Worker Namespace helloworld.sdvdw TaskQueue orders WorkerID 485217@fedora@
 ```
 
-# Run Nexus Worker
+# Create Nexus Endpoint (Optional)
+This is only required for NexusOperation scenario.
+
+```bash
+$ tcld nexus endpoint create \
+  --name shipping-endpoint \
+  --target-task-queue orders \
+  --target-namespace helloworld.sdvdw\
+  --allow-namespace helloworld.sdvdw \
+  --description-file description.md
+```
+
+# Run Nexus Worker (Optional)
 This is only required for NexusOperation scenario.
 
 ```bash
