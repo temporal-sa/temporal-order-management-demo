@@ -9,9 +9,9 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func ShippingChildWorkflow(ctx workflow.Context, input app.OrderInput, item app.Item) error {
+func ShippingWorkflow(ctx workflow.Context, input app.ShippingInput) (string, error) {
 	logger := workflow.GetLogger(ctx)
-	logger.Info("Shipping workflow started", "orderId", input.OrderId)
+	logger.Info("Shipping workflow started", "orderId", input.Order.OrderId)
 
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: 5 * time.Second,
@@ -23,10 +23,10 @@ func ShippingChildWorkflow(ctx workflow.Context, input app.OrderInput, item app.
 	}
 	ctx = workflow.WithActivityOptions(ctx, activityOptions)
 
-	err := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item).Get(ctx, nil)
+	err := workflow.ExecuteActivity(ctx, activities.ShipOrder, input).Get(ctx, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return "", nil
 }

@@ -22,6 +22,7 @@ This demo walks through several scenarios using an order management process. The
 - HumanInLoopSignal
 - HumanInLoopUpdate
 - ChildWorkflow
+- NexusOperation
 - APIFailure
 - RecoverableFailure
 - NonRecoverableFailure
@@ -40,6 +41,7 @@ Ensure the following environment variables are set:
 $ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
 $ export TEMPORAL_WORKER_METRICS_PORT=9090
 $ export TEMPORAL_TASK_QUEUE=orders
+$ export NEXUS_SHIPPING_ENDPOINT=shipping-endpoint
 ```
 
 If using mTLS authentication, set the following environment variables:
@@ -62,6 +64,16 @@ $ go run worker/main.go
 2024/02/20 14:05:20 prometheus metrics scope created
 2024/02/20 14:05:20 INFO  No logger configured for temporal client. Created default one.
 2024/02/20 14:05:21 INFO  Started Worker Namespace helloworld.sdvdw TaskQueue orders WorkerID 485217@fedora@
+```
+
+# Run Nexus Worker
+This is only required for NexusOperation scenario.
+
+```bash
+$ cd go
+$ go run nexus/worker/worker.go
+
+time=2024-10-17T12:03:34.341-07:00 level=INFO msg="Started Worker" Namespace=helloworld.sdvdw TaskQueue=orders WorkerID=22156@keiths-mbp.lan@
 ```
 
 # Run UI
@@ -175,6 +187,15 @@ This scenario follows Happy Path and in addition adds human in the loop. During 
 This scenario follows Happy Path but instead of shipping the items using parallel activities it does so using child workflows instead.
 
 ![Shipping Workflows](ui/static/shipping-workflows.png)
+
+# NexusOperation
+![Nexus Operation](ui/static/nexus.png)
+
+This scenario follows Happy Path but instead of shipping items using parallel activities or Child Workflows, it does so using Nexus Operations to trigger the Shipping Workflow.
+
+Note: This scenario is currently only supported using Go.
+
+![Shipping Workflows](ui/static/nexus-workflows.png)
 
 # API Failure
 ![API Failure](ui/static/api-failure.png)

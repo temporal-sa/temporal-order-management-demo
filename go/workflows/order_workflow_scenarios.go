@@ -2,6 +2,7 @@ package workflows
 
 import (
 	"fmt"
+	"os"
 	"temporal-order-management/activities"
 	"temporal-order-management/app"
 	"temporal-order-management/messages"
@@ -16,6 +17,7 @@ import (
 const (
 	BUG        = "OrderWorkflowRecoverableFailure"
 	CHILD      = "OrderWorkflowChildWorkflow"
+	NEXUS      = "OrderWorkflowNexusOperation"
 	SIGNAL     = "OrderWorkflowHumanInLoopSignal"
 	UPDATE     = "OrderWorkflowHumanInLoopUpdate"
 	VISIBILITY = "OrderWorkflowAdvancedVisibility"
@@ -93,10 +95,10 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 
 	updateProgress("Ship Order", progress, 75, ctx, 3)
 
-	if BUG == name {
-		// Simulate bug
-		panic("Simulated bug - fix me!")
-	}
+	//if BUG == name {
+	//	// Simulate bug
+	//	panic("Simulated bug - fix me!")
+	//}
 
 	if SIGNAL == name {
 		// Await signal message to update address
@@ -159,7 +161,14 @@ func updateProgress(orderStatus string, progress *int, value int, ctx workflow.C
 }
 
 func shipItemAsync(ctx workflow.Context, input app.OrderInput, item app.Item, name string) workflow.Future {
+	logger := workflow.GetLogger(ctx)
 	var f workflow.Future
+
+	shippingInput := app.ShippingInput{
+		Order: input,
+		Item:  item,
+	}
+
 	if CHILD == name {
 		// execute an async child wf to ship the item
 		cwo := workflow.ChildWorkflowOptions{
@@ -167,10 +176,21 @@ func shipItemAsync(ctx workflow.Context, input app.OrderInput, item app.Item, na
 			ParentClosePolicy: enums.PARENT_CLOSE_POLICY_TERMINATE,
 		}
 		ctx = workflow.WithChildOptions(ctx, cwo)
-		f = workflow.ExecuteChildWorkflow(ctx, ShippingChildWorkflow, input)
+		f = workflow.ExecuteChildWorkflow(ctx, ShippingWorkflow, shippingInput)
+		logger.Info("Started Child Workflow: " + cwo.WorkflowID)
+	} else if NEXUS == name {
+		var op workflow.NexusOperationExecution
+		service := workflow.NewNexusClient(os.Getenv("NEXUS_SHIPPING_ENDPOINT"), app.ShippingServiceName)
+
+		nf := service.ExecuteOperation(ctx, app.ShippingOperationName, shippingInput, workflow.NexusOperationOptions{})
+		f = nf
+
+		nf.GetNexusOperationExecution().Get(ctx, &op)
+		logger.Info(" Started Nexus Operation: " + op.OperationID)
 	} else {
 		// execute an async activity to ship the item
-		f = workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item)
+		f = workflow.ExecuteActivity(ctx, activities.ShipOrder, shippingInput)
+		logger.Info("Started Activity: ShipOrder ")
 	}
 	return f
 }

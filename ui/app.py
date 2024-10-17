@@ -33,6 +33,7 @@ scenarios = [
     "HumanInLoopSignal",
     "HumanInLoopUpdate",
     "ChildWorkflow",
+    "NexusOperation",
     "APIFailure",
     "RecoverableFailure",
     "NonRecoverableFailure",
