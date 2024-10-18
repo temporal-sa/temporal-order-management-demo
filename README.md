@@ -32,7 +32,12 @@ This demo walks through several scenarios using an order management process. The
 Execute the following command:
 
 ```bash
-temporal server start-dev --dynamic-config-value frontend.enableUpdateWorkflowExecution=true --dynamic-config-value system.forceSearchAttributesCacheRefreshOnRead=false --search-attribute OrderStatus="Keyword"
+$ temporal server start-dev --http-port 7243 --dynamic-config-value frontend.enableUpdateWorkflowExecution=true --dynamic-config-value system.forceSearchAttributesCacheRefreshOnRead=false --dynamic-config-value system.enableNexus=true --search-attribute OrderStatus="Keyword"
+```
+
+# (Optional) Create Nexus Endpoint Temporal CLI
+```bash
+$ temporal operator nexus --address 127.0.0.1:7233 --namespace default endpoint create --name shipping-endpoint --target-namespace default --target-task-queue orders
 ```
 
 # Run Worker
@@ -66,7 +71,7 @@ $ go run worker/main.go
 2024/02/20 14:05:21 INFO  Started Worker Namespace helloworld.sdvdw TaskQueue orders WorkerID 485217@fedora@
 ```
 
-# Create Nexus Endpoint (Optional)
+# (Optional) Create Nexus Endpoint Cloud
 This is only required for NexusOperation scenario.
 
 ```bash
@@ -78,7 +83,7 @@ $ tcld nexus endpoint create \
   --description-file description.md
 ```
 
-# Run Nexus Worker (Optional)
+# (Optional) Run Nexus Worker
 This is only required for NexusOperation scenario.
 
 ```bash
