@@ -1,5 +1,7 @@
 import asyncio
 
+import os
+
 from temporalio.client import Client
 from temporalio.worker import Worker
 
@@ -7,8 +9,6 @@ from activities import OrderActivities
 from order_workflow_scenarios import OrderWorkflowScenarios
 from order_workflow import OrderWorkflow
 from shipping_child_workflow import ShippingChildWorkflow
-
-TASK_QUEUE = "orders"
 
 
 async def main():
@@ -18,7 +18,7 @@ async def main():
 
     worker = Worker(
         client,
-        task_queue=TASK_QUEUE,
+        task_queue=os.getenv("TEMPORAL_TASK_QUEUE", "orders"),
         workflows=[
             OrderWorkflow,
             OrderWorkflowScenarios,
