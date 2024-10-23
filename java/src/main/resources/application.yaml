@@ -1,5 +1,5 @@
 ordermgmt:
-  task-queue: orders
+  task-queue: ${TEMPORAL_TASK_QUEUE:orders}
 
 spring:
   application:
