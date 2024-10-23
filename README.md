@@ -37,7 +37,7 @@ $ temporal server start-dev --http-port 7243 --dynamic-config-value frontend.ena
 
 # (Optional) Create Nexus Endpoint Temporal CLI
 ```bash
-$ temporal operator nexus --address 127.0.0.1:7233 --namespace default endpoint create --name shipping-endpoint --target-namespace default --target-task-queue orders
+$ temporal operator nexus --address 127.0.0.1:7233 --namespace default endpoint create --name shipping-endpoint --target-namespace default --target-task-queue shipping
 ```
 
 # Run Worker
@@ -46,6 +46,7 @@ Ensure the following environment variables are set:
 $ export TEMPORAL_NAMESPACE=<namespace>.<accountId>
 $ export TEMPORAL_WORKER_METRICS_PORT=9090
 $ export TEMPORAL_TASK_QUEUE=orders
+$ export TEMPORAL_NEXUS_TASK_QUEUE=shipping
 $ export NEXUS_SHIPPING_ENDPOINT=shipping-endpoint
 ```
 
@@ -77,7 +78,7 @@ This is only required for NexusOperation scenario.
 ```bash
 $ tcld nexus endpoint create \
   --name shipping-endpoint \
-  --target-task-queue orders \
+  --target-task-queue shipping \
   --target-namespace helloworld.sdvdw\
   --allow-namespace helloworld.sdvdw \
   --description-file description.md
@@ -90,7 +91,7 @@ This is only required for NexusOperation scenario.
 $ cd go
 $ go run nexus/worker/worker.go
 
-time=2024-10-17T12:03:34.341-07:00 level=INFO msg="Started Worker" Namespace=helloworld.sdvdw TaskQueue=orders WorkerID=22156@keiths-mbp.lan@
+time=2024-10-17T12:03:34.341-07:00 level=INFO msg="Started Worker" Namespace=helloworld.sdvdw TaskQueue=shipping WorkerID=22156@keiths-mbp.lan@
 ```
 
 # Run UI

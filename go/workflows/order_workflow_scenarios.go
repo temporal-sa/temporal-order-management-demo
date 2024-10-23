@@ -2,7 +2,6 @@ package workflows
 
 import (
 	"fmt"
-	"os"
 	"temporal-order-management/activities"
 	"temporal-order-management/app"
 	"temporal-order-management/messages"
@@ -180,7 +179,7 @@ func shipItemAsync(ctx workflow.Context, input app.OrderInput, item app.Item, na
 		logger.Info("Started Child Workflow: " + cwo.WorkflowID)
 	} else if NEXUS == name {
 		var op workflow.NexusOperationExecution
-		service := workflow.NewNexusClient(os.Getenv("NEXUS_SHIPPING_ENDPOINT"), app.ShippingServiceName)
+		service := workflow.NewNexusClient(app.GetEnv("NEXUS_SHIPPING_ENDPOINT", "shipping-endpoint"), app.ShippingServiceName)
 
 		nf := service.ExecuteOperation(ctx, app.ShippingOperationName, shippingInput, workflow.NexusOperationOptions{})
 		f = nf

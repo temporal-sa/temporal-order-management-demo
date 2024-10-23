@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 	"temporal-order-management/activities"
 	"temporal-order-management/app"
 	"temporal-order-management/workflows"
@@ -19,7 +18,7 @@ func main() {
 	}
 	defer c.Close()
 
-	w := worker.New(c, os.Getenv("TEMPORAL_TASK_QUEUE"), worker.Options{})
+	w := worker.New(c, app.GetEnv("TEMPORAL_TASK_QUEUE", "orders"), worker.Options{})
 
 	// workflows
 	w.RegisterWorkflowWithOptions(workflows.OrderWorkflow, workflow.RegisterOptions{

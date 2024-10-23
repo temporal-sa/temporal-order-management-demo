@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -15,10 +14,6 @@ import (
 	"github.com/nexus-rpc/sdk-go/nexus"
 )
 
-const (
-	taskQueue = "my-handler-task-queue"
-)
-
 func main() {
 	c, err := client.Dial(app.GetClientOptions())
 	if err != nil {
@@ -26,7 +21,7 @@ func main() {
 	}
 	defer c.Close()
 
-	w := worker.New(c, os.Getenv("TEMPORAL_TASK_QUEUE"), worker.Options{})
+	w := worker.New(c, app.GetEnv("TEMPORAL_NEXUS_TASK_QUEUE", "shipping"), worker.Options{})
 	service := nexus.NewService(app.ShippingServiceName)
 	err = service.Register(handler.ShippingOperation)
 	if err != nil {
