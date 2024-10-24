@@ -26,17 +26,16 @@ cp setcloudenv.example setcloudenv.sh
 Edit setcloudenv.sh to match your Temporal Cloud account:
 
 ```bash
-export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
+export TEMPORAL_ADDRESS=<namespace>.<accountId>.tmprl.cloud:7233
 export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-export TEMPORAL_MTLS_TLS_CERT="/path/to/cert.pem"
-export TEMPORAL_MTLS_TLS_KEY="/path/to/key.key"
+export TEMPORAL_CERT_PATH="/path/to/cert.pem"
+export TEMPORAL_KEY_PATH="/path/to/key.key"
 export TEMPORAL_TASK_QUEUE=orders
 ```
 
 Then start the UX. Instructions can be found in the [README](../README.md).
 
 ```bash
-# run the worker 
+# run the worker
 ./startcloudworker.sh
 ```
-

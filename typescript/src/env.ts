@@ -18,15 +18,15 @@ export function getenv(key: string, defaultValue?: string): string {
 }
 
 export async function getConnectionOptions(): Promise<ConnectionOptions> {
-  const address = getenv('TEMPORAL_HOST_URL', 'localhost:7233');
+  const address = getenv('TEMPORAL_ADDRESS', 'localhost:7233');
 
   let tls: ConnectionOptions['tls'] = undefined;
   let apiKey: string | undefined = undefined;
   let metadata: Record<string, string> = {};
 
-  if (process.env.TEMPORAL_MTLS_TLS_CERT && process.env.TEMPORAL_MTLS_TLS_KEY) {
-    const crt = await fs.readFile(getenv('TEMPORAL_MTLS_TLS_CERT'));
-    const key = await fs.readFile(getenv('TEMPORAL_MTLS_TLS_KEY'));
+  if (process.env.TEMPORAL_CERT_PATH && process.env.TEMPORAL_KEY_PATH) {
+    const crt = await fs.readFile(getenv('TEMPORAL_CERT_PATH'));
+    const key = await fs.readFile(getenv('TEMPORAL_KEY_PATH'));
 
     tls = { clientCertPair: { crt, key } };
     console.info('🤖: Connecting to Temporal Cloud (mTLS) ⛅');
@@ -35,7 +35,7 @@ export async function getConnectionOptions(): Promise<ConnectionOptions> {
     tls = true;
     metadata = {
       'temporal-namespace': getenv('TEMPORAL_NAMESPACE'),
-    }
+    };
 
     console.info('🤖: Connecting to Temporal Cloud (API key) ⛅');
   } else {
@@ -46,7 +46,7 @@ export async function getConnectionOptions(): Promise<ConnectionOptions> {
     address,
     tls,
     apiKey,
-    metadata
+    metadata,
   };
 }
 

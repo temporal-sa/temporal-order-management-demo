@@ -3,10 +3,10 @@ using Microsoft.Extensions.Logging;
 using Temporalio.Client;
 using Temporalio.Worker;
 
-var address = GetEnvVarWithDefault("TEMPORAL_HOST_URL", "127.0.0.1:7233");
+var address = GetEnvVarWithDefault("TEMPORAL_ADDRESS", "127.0.0.1:7233");
 var temporalNamespace = GetEnvVarWithDefault("TEMPORAL_NAMESPACE", "default");
-var tlsCertPath = GetEnvVarWithDefault("TEMPORAL_MTLS_TLS_CERT", "");
-var tlsKeyPath = GetEnvVarWithDefault("TEMPORAL_MTLS_TLS_KEY", "");
+var tlsCertPath = GetEnvVarWithDefault("TEMPORAL_CERT_PATH", "");
+var tlsKeyPath = GetEnvVarWithDefault("TEMPORAL_KEY_PATH", "");
 var taskQueue = GetEnvVarWithDefault("TEMPORAL_TASK_QUEUE", "orders");
 TlsOptions? tls = null;
 if (!string.IsNullOrEmpty(tlsCertPath) && !string.IsNullOrEmpty(tlsKeyPath))

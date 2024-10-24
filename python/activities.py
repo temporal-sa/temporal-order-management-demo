@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 from datetime import timedelta
@@ -20,7 +21,7 @@ class OrderActivities:
 
     async def simulate_external_operation(self, ms: int):
         try:
-            time.sleep(ms / 1000)
+            await asyncio.sleep(ms / 1000)
         except InterruptedError as e:
             print(e.__traceback__)
 

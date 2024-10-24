@@ -52,14 +52,14 @@ $ export NEXUS_SHIPPING_ENDPOINT=shipping-endpoint
 
 If using mTLS authentication, set the following environment variables:
 ```bash
-$ export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
-$ export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
-$ export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
+$ export TEMPORAL_ADDRESS=<namespace>.<accountId>.tmprl.cloud:7233
+$ export TEMPORAL_CERT_PATH=/home/ktenzer/temporal/certs/ca.pem
+$ export TEMPORAL_KEY_PATH=/home/ktenzer/temporal/certs/ca.key
 ```
 
 If using API key authentication, set the following environment variables:
 ```bash
-$ export TEMPORAL_HOST_URL=<region>.<cloudProvider>.api.temporal.io:7233
+$ export TEMPORAL_ADDRESS=<region>.<cloudProvider>.api.temporal.io:7233
 $ export TEMPORAL_APIKEY=eyABCD1234.eyABCD1234.ABCD-EFGH
 ```
 
@@ -103,14 +103,14 @@ $ export TEMPORAL_TASK_QUEUE=orders
 
 If using mTLS authentication, set the following environment variables:
 ```bash
-$ export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
-$ export TEMPORAL_MTLS_TLS_CERT=/home/ktenzer/temporal/certs/ca.pem
-$ export TEMPORAL_MTLS_TLS_KEY=/home/ktenzer/temporal/certs/ca.key
+$ export TEMPORAL_ADDRESS=<namespace>.<accountId>.tmprl.cloud:7233
+$ export TEMPORAL_CERT_PATH=/home/ktenzer/temporal/certs/ca.pem
+$ export TEMPORAL_KEY_PATH=/home/ktenzer/temporal/certs/ca.key
 ```
 
 If using API key authentication, set the following environment variables:
 ```bash
-$ export TEMPORAL_HOST_URL=<region>.<cloudProvider>.api.temporal.io:7233
+$ export TEMPORAL_ADDRESS=<region>.<cloudProvider>.api.temporal.io:7233
 $ export TEMPORAL_APIKEY=eyABCD1234.eyABCD1234.ABCD-EFGH
 ```
 

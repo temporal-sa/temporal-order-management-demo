@@ -1,21 +1,14 @@
 [tool.poetry]
-name = "order-management-app-python-backend"
+name = "order-management-app-python"
 version = "0.1.0"
 description = "Python Backend for Simple Order Management App"
-authors = ["Sean Sullivan <seantsullivan04@gmail.com>"]
+authors = ["Temporal SA"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
+temporalio = "^1.7.1"
 
-[tool.poetry.group.encryption]
-optional = true
-dependencies = { cryptography = "^38.0.1", aiohttp = "^3.8.1" }
-
-[tool.poetry.dev-dependencies]
-
-[tool.poetry.group.dev.dependencies]
-temporalio = "^1.7.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

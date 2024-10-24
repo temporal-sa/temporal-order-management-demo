@@ -2,7 +2,7 @@ spring:
   temporal:
     namespace: ${TEMPORAL_NAMESPACE}
     connection:
-      target: ${TEMPORAL_HOST_URL}
+      target: ${TEMPORAL_ADDRESS}
       mtls:
-        key-file: ${TEMPORAL_MTLS_TLS_KEY_PKCS8}
-        cert-chain-file: ${TEMPORAL_MTLS_TLS_CERT}
+        key-file: ${TEMPORAL_KEY_PKCS8_PATH}
+        cert-chain-file: ${TEMPORAL_CERT_PATH}

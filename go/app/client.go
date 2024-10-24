@@ -22,7 +22,7 @@ func GetClientOptions() client.Options {
 	}))
 	slog.SetDefault(logger)
 
-	address := GetEnv("TEMPORAL_HOST_URL", "localhost:7233")
+	address := GetEnv("TEMPORAL_ADDRESS", "localhost:7233")
 	namespace := GetEnv("TEMPORAL_NAMESPACE", "default")
 	clientOptions := client.Options{
 		HostPort:  address,
@@ -31,8 +31,8 @@ func GetClientOptions() client.Options {
 	}
 
 	apiKey := GetEnv("TEMPORAL_APIKEY", "")
-	tlsCertPath := GetEnv("TEMPORAL_MTLS_TLS_CERT", "")
-	tlsKeyPath := GetEnv("TEMPORAL_MTLS_TLS_KEY", "")
+	tlsCertPath := GetEnv("TEMPORAL_CERT_PATH", "")
+	tlsKeyPath := GetEnv("TEMPORAL_KEY_PATH", "")
 
 	switch {
 	case apiKey != "":

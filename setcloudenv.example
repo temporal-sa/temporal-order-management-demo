@@ -1,5 +1,16 @@
-export TEMPORAL_HOST_URL=<namespace>.<accountId>.tmprl.cloud:7233
-export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-export TEMPORAL_MTLS_TLS_CERT="/path/to/cert.pem"
-export TEMPORAL_MTLS_TLS_KEY="/path/to/key.key"
-export TEMPORAL_TASK_QUEUE=orders
+#!/bin/sh
+
+TEMPORAL_ENV="<cli_env_name>"
+
+export TEMPORAL_ADDRESS=$(temporal env get --env ${TEMPORAL_ENV} --key address -o json | jq -r '.[].value')
+export TEMPORAL_NAMESPACE=$(temporal env get --env ${TEMPORAL_ENV} --key namespace -o json | jq -r '.[].value')
+export TEMPORAL_CERT_PATH=$(temporal env get --env ${TEMPORAL_ENV} --key tls-cert-path -o json | jq -r '.[].value')
+export TEMPORAL_KEY_PATH=$(temporal env get --env ${TEMPORAL_ENV} --key tls-key-path -o json | jq -r '.[].value')
+
+# if you have a specific pkcs8 key for java
+# export TEMPORAL_KEY_PKCS8_PATH=$(temporal env get --env ${TEMPORAL_ENV} --key tls-key-pkcs8-path -o json | jq -r '.[].value')
+
+# optional
+# export TEMPORAL_TASK_QUEUE=orders
+# export TEMPORAL_NEXUS_TASK_QUEUE=shipping
+# export NEXUS_SHIPPING_ENDPOINT=shipping-endpoint

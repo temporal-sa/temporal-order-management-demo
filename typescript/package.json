@@ -7,8 +7,6 @@
     "start": "ts-node src/worker.ts",
     "start.watch": "nodemon src/worker.ts",
     "worker": "ts-node src/worker.ts",
-    "sender": "ts-node src/client.ts go",
-    "finisher": "ts-node src/client.ts finish"
   },
   "dependencies": {
     "@temporalio/activity": "^1.11.1",
