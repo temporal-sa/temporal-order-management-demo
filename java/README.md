@@ -22,4 +22,4 @@ cd java
 ```
 
 
-Adding Nexus support for Java
+Adding Nexus support for Java.
