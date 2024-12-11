@@ -20,3 +20,6 @@ cd java
 cd java
 ./gradlew bootRun --args='--spring.profiles.active=tc'
 ```
+
+
+Adding Nexus support for Java
