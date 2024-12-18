@@ -1,5 +1,12 @@
 ordermgmt:
-  task-queue: ${TEMPORAL_TASK_QUEUE:orders}
+  task-queue: "${TEMPORAL_TASK_QUEUE:orders}"
+  task-queue-shipping: "${TEMPORAL_SHIPPING_TASK_QUEUE:shipping}"
+
+nexus:
+  worker:
+    target-endpoint: "127.0.0.1:7233"
+    namespace: "default"
+    endpoint: "${TEMPORAL_SHIPPING_NEXUS_ENDPOINT:<SHIPPING NEXUS ENDPOINT>}"
 
 spring:
   application:

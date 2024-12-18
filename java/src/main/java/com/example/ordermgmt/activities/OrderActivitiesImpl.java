@@ -6,6 +6,7 @@ import io.temporal.activity.Activity;
 import io.temporal.failure.ApplicationFailure;
 import io.temporal.spring.boot.ActivityImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,6 +18,11 @@ import java.util.concurrent.TimeUnit;
 public class OrderActivitiesImpl implements OrderActivities {
     private static final String ERROR_CHARGE_API_UNAVAILABLE = "OrderWorkflowAPIFailure";
     private static final String ERROR_INVALID_CREDIT_CARD = "OrderWorkflowNonRecoverableFailure";
+    @Value("${ordermgmt.task-queue-shipping}")
+    private String taskQueueShipping;
+
+    @Value("${nexus.worker.endpoint}")
+    private String shippingEndpoint;
 
     private static void simulateExternalOperation(long ms) {
         try {
@@ -114,5 +120,16 @@ public class OrderActivitiesImpl implements OrderActivities {
         simulateExternalOperation(1000);
 
         return input.getOrderId();
+    }
+
+    @Override
+    public String getShippingTaskQueue() {
+        return taskQueueShipping;
+    }
+
+    @Override
+    public String getShippingServiceEndpoint()
+    {
+        return shippingEndpoint;
     }
 }

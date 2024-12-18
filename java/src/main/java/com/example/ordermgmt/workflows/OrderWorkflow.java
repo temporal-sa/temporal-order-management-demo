@@ -64,6 +64,7 @@ class OrderWorkflowImpl implements OrderWorkflow {
             promiseList.add(Async.procedure(activities::shipOrder, input, orderItem));
         }
 
+        log.info("Waiting for shipping promises to finish.");
         // Wait for all items to ship
         Promise.allOf(promiseList).get();
         sleep(1, 100);
