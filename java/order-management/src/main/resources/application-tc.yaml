@@ -1,10 +1,5 @@
 nexus:
   worker:
-    client-cert-file: "${TEMPORAL_SHIPPING_CERT_PATH:<PATH/TO/MY/CLIENT/CERT>}"
-    client-key-file: "${TEMPORAL_SHIPPING_KEY_PATH:</PATH/TO/MY/CLIENT/PRIVATE/KEY>}"
-    target-endpoint: "${TEMPORAL_SHIPPING_ADDRESS:<namespace>.<ACCOUNT_ID>.tmprl.cloud:7233}"
-    refresh-period: "${TEMPORAL_SHIPPING_CERT_RELOAD_PERIOD:30}"
-    namespace: "${TEMPORAL_SHIPPING_NAMESPACE:<NAMESPACE>.<ACCOUNT_ID>}"
     endpoint: "${TEMPORAL_SHIPPING_NEXUS_ENDPOINT:<SHIPPING NEXUS ENDPOINT>}"
 
 spring:
