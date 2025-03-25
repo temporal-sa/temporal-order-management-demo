@@ -1,7 +1,5 @@
-package com.example.ordermgmt.nexus.service;
+package com.example.ordermgmt.nexus.handler;
 
-import com.example.ordermgmt.model.OrderInput;
-import com.example.ordermgmt.model.OrderItem;
 import com.example.ordermgmt.model.OrderOutput;
 import com.example.ordermgmt.model.ShippingInput;
 import io.nexusrpc.Operation;

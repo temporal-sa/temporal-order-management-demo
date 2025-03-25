@@ -2,7 +2,7 @@ package com.example.ordermgmt.workflows;
 
 import com.example.ordermgmt.activities.OrderActivities;
 import com.example.ordermgmt.model.*;
-import com.example.ordermgmt.nexus.service.ShippingService;
+import com.example.ordermgmt.nexus.handler.ShippingService;
 import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.common.SearchAttributeKey;
 import io.temporal.common.converter.EncodedValues;
@@ -33,9 +33,9 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
     private final OrderActivities localActivities = Workflow.newLocalActivityStub(OrderActivities.class,
             OrderActivities.defaultLocalActivityOptions);
 
+
     private int progress = 0;
     private String updatedAddress = null;
-    private String taskQueueShipping;
     private String shippingServiceEndpoint;
 
 
@@ -80,6 +80,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
 
         if (BUG.equals(type)) {
             // Simulate bug
+            log.info("Throwing Exception to simulate a bug.  FIX to resolve.");
             throw new RuntimeException("Simulated bug - fix me!");
         }
 
@@ -89,8 +90,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
         }
 
         // Ship order items
-        taskQueueShipping = localActivities.getShippingTaskQueue();  // Activty is a managed bean so using to get the taskqueue from config
-        shippingServiceEndpoint = localActivities.getShippingServiceEndpoint();
+        shippingServiceEndpoint = localActivities.getShippingServiceEndpoint();// Activty is a managed bean so using to get the taskqueue from config
 
         List<Promise<Void>> promiseList = new ArrayList<>();
         for (OrderItem orderItem : orderItems) {
@@ -112,18 +112,18 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
     private Promise<Void> shipItemAsync(OrderInput input, OrderItem orderItem, String type) {
         Promise<Void> promise;
         if (CHILD.equals(type)) {
-
+            ShippingInput shippingInput = new ShippingInput(input, orderItem);
             // execute an async child wf to ship the item
-            ShippingChildWorkflow orderShippingChild = Workflow.newChildWorkflowStub(ShippingChildWorkflow.class,
+            ShippingWorkflow orderShippingChild = Workflow.newChildWorkflowStub(ShippingWorkflow.class,
                     ChildWorkflowOptions.newBuilder()
                             .setWorkflowId("shipment-" + input.getOrderId() + "-" + orderItem.getId())
                             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
                             .build());
-            promise = Async.procedure(orderShippingChild::execute, input, orderItem);
+            promise = Async.procedure(orderShippingChild::execute, shippingInput);
 
         } else if (NEXUS.equals(type)) {
             ShippingInput shippingInput = new ShippingInput(input, orderItem);
-            log.info("*** Child workflow starting with task queue {}", taskQueueShipping);
+            log.info("*** Nexus Child workflow starting");
             ShippingService shippingService =
                     Workflow.newNexusServiceStub(
                             ShippingService.class,
