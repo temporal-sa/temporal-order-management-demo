@@ -1,5 +1,6 @@
 package com.example.ordermgmt.customize;
 
+import io.temporal.workflow.NexusServiceOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +24,10 @@ import java.util.Collections;
 
 @Configuration
 public class TemporalOptionsConfig {
-    @Value("${ordermgmt.task-queue}")
-    String taskQueue;
+
+    @Value("${nexus.worker.endpoint}")
+    private String shippingEndpoint;
+
     @Bean
     public WorkerOptionsCustomizer customWorkerOptions() {
         return new WorkerOptionsCustomizer() {
@@ -104,6 +107,13 @@ public class TemporalOptionsConfig {
             public WorkflowImplementationOptions.Builder customize(
                     @Nonnull WorkflowImplementationOptions.Builder optionsBuilder) {
                 // set options on optionsBuilder such as per-activity options
+
+                optionsBuilder.setNexusServiceOptions(
+                        Collections.singletonMap(
+                                "ShippingService",
+                                NexusServiceOptions.newBuilder().setEndpoint(shippingEndpoint).build()
+                        )
+                ).build();
                 return optionsBuilder;
             }
         };

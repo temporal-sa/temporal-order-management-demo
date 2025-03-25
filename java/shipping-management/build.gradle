@@ -22,7 +22,7 @@ repositories {
 }
 
 ext {
-    javaSDKVersion = '1.27.0'
+    javaSDKVersion = '1.27.1'
 }
 
 dependencies {

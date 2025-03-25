@@ -1,5 +1,5 @@
 ordermgmt:
-  task-queue: "${TEMPORAL_TASK_QUEUE:orders}"
+  task-queue: "${TEMPORAL_TASK_QUEUE:shipping}"
   task-queue-shipping: "${TEMPORAL_SHIPPING_TASK_QUEUE:shipping}"
 
 nexus:
@@ -10,16 +10,18 @@ nexus:
 
 spring:
   application:
-    name: temporal-ordermgmt
+    name: temporal-shippingmgmt
   temporal:
     namespace: default
     connection:
       target: 127.0.0.1:7233
     workersAutoDiscovery:
       packages:
-        - com.example.ordermgmt.workflows
-        - com.example.ordermgmt.activities
+        - com.example.shippingmgmt
+        - com.example.ordermgmt
     start-workers: false
+    workers:
+
 
 #logging:
 #  pattern:

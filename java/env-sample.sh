@@ -24,15 +24,9 @@ export TEMPORAL_KEY_PKCS8_PATH=${TEMPORAL_KEY_PATH}
 # *************************************************************************************************
 # Additional env vars for using nexus to demonstrate the shipping fulfillment in another namespace.
 # Notes:
-# - For self hosted this will default to using the default namespace
-# - Nexus only allows unique endpoints in an account so you may need to change this to a 
-#   Unique value to match the endpoint you created.  All code references are from this env var.
+# To start the Shipping workflow application it uses the env vars as above but they should be set to
+# values for the shipping namespace.
 # *************************************************************************************************
-export TEMPORAL_SHIPPING_NAMESPACE=<Your SHIPPING Namespace>.<Account ID>
 export TEMPORAL_SHIPPING_TASK_QUEUE=shipping
-export TEMPORAL_SHIPPING_ADDRESS=<Namespace>.<account id>.tmprl.cloud:7233
-export TEMPORAL_SHIPPING_CERT_PATH=<Path>/<To>/<Client public certificate for Shipping NS>.pem
-export TEMPORAL_SHIPPING_KEY_PATH=<Path>/<To>/<Client private key file for Shipping NS>
-export TEMPORAL_SHIPPING_CERT_RELOAD_PERIOD=30   # Refresh period for certificaPath>/<To>/<Client ptes (in minutes)
 export TEMPORAL_SHIPPING_NEXUS_ENDPOINT=shipping-endpoint
 

@@ -7,14 +7,7 @@ validate()
 	  exit 1
         else
 		TEMPORAL_ENV=$1
-  fi
-  if [ -z "$2" ]
-     then
-	echo "You must supply the Temporal Nexus endpoint to use for the shipping service."
-	exit 1
-     else
-	export TEMPORAL_SHIPPING_NEXUS_ENDPOINT=$2
-  fi
+	fi
 
         if ! command -v temporal 2>&1 > /dev/null
         then
@@ -42,8 +35,9 @@ validate()
         fi
 
 }
-validate $1 $2
+validate $1
 source ../setcloudenv.sh ${TEMPORAL_ENV}
-export TEMPORAL_TASK_QUEUE=orders
+# donald-nexus-shipping-demo
+export TEMPORAL_TASK_QUEUE=shipping
 env | grep TEMP
-./gradlew :order-management:bootRun --args='--spring.profiles.active=tc'
+./gradlew :shipping-management:bootRun --args='--spring.profiles.active=tc'
