@@ -1,10 +1,8 @@
 package com.example.ordermgmt.workflows;
 
 import com.example.ordermgmt.activities.OrderActivities;
-import com.example.ordermgmt.model.OrderInput;
-import com.example.ordermgmt.model.OrderItem;
-import com.example.ordermgmt.model.OrderOutput;
-import com.example.ordermgmt.model.UpdateOrderInput;
+import com.example.ordermgmt.model.*;
+import com.example.ordermgmt.nexus.handler.ShippingService;
 import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.common.SearchAttributeKey;
 import io.temporal.common.converter.EncodedValues;
@@ -24,6 +22,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
     private static final String SIGNAL = "OrderWorkflowHumanInLoopSignal";
     private static final String UPDATE = "OrderWorkflowHumanInLoopUpdate";
     private static final String VISIBILITY = "OrderWorkflowAdvancedVisibility";
+    private static final String NEXUS = "OrderWorkflowNexusOperation";
 
     private static final Logger log = Workflow.getLogger(OrderWorkflowScenarios.class);
 
@@ -34,8 +33,12 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
     private final OrderActivities localActivities = Workflow.newLocalActivityStub(OrderActivities.class,
             OrderActivities.defaultLocalActivityOptions);
 
+
     private int progress = 0;
     private String updatedAddress = null;
+    private String shippingServiceEndpoint;
+
+
 
     @Override
     public Object execute(EncodedValues args) {
@@ -77,6 +80,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
 
         if (BUG.equals(type)) {
             // Simulate bug
+            log.info("Throwing Exception to simulate a bug.  FIX to resolve.");
             throw new RuntimeException("Simulated bug - fix me!");
         }
 
@@ -86,12 +90,15 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
         }
 
         // Ship order items
+        shippingServiceEndpoint = localActivities.getShippingServiceEndpoint();// Activty is a managed bean so using to get the taskqueue from config
+
         List<Promise<Void>> promiseList = new ArrayList<>();
         for (OrderItem orderItem : orderItems) {
             log.info("Shipping item: {}", orderItem.getDescription());
             promiseList.add(shipItemAsync(input, orderItem, type));
         }
 
+        log.info("Waiting for promises to complete in the scenarios workflow");
         // Wait for all items to ship
         Promise.allOf(promiseList).get();
 
@@ -105,14 +112,33 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
     private Promise<Void> shipItemAsync(OrderInput input, OrderItem orderItem, String type) {
         Promise<Void> promise;
         if (CHILD.equals(type)) {
+            ShippingInput shippingInput = new ShippingInput(input, orderItem);
             // execute an async child wf to ship the item
-            ShippingChildWorkflow orderShippingChild = Workflow.newChildWorkflowStub(ShippingChildWorkflow.class,
+            ShippingWorkflow orderShippingChild = Workflow.newChildWorkflowStub(ShippingWorkflow.class,
                     ChildWorkflowOptions.newBuilder()
                             .setWorkflowId("shipment-" + input.getOrderId() + "-" + orderItem.getId())
                             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
                             .build());
-            promise = Async.procedure(orderShippingChild::execute, input, orderItem);
-        } else {
+            promise = Async.procedure(orderShippingChild::execute, shippingInput);
+
+        } else if (NEXUS.equals(type)) {
+            ShippingInput shippingInput = new ShippingInput(input, orderItem);
+            log.info("*** Nexus Child workflow starting");
+            ShippingService shippingService =
+                    Workflow.newNexusServiceStub(
+                            ShippingService.class,
+                            NexusServiceOptions.newBuilder()
+                                    .setOperationOptions(
+                                            NexusOperationOptions.newBuilder()
+                                                    .setScheduleToCloseTimeout(Duration.ofSeconds(30))
+                                                    .build())
+                                    .setEndpoint(shippingServiceEndpoint)
+                                    .build());
+
+            
+            promise = Async.procedure(shippingService::execute,shippingInput);
+
+    } else{
             // execute an async activity to ship the item
             promise = Async.procedure(activities::shipOrder, input, orderItem);
         }

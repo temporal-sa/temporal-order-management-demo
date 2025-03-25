@@ -1,1 +1,5 @@
 rootProject.name = 'temporal-ordermgmt'
+
+include 'common'
+include 'order-management'
+include 'shipping-management'

@@ -48,4 +48,10 @@ public interface OrderActivities {
 
     @ActivityMethod
     String undoChargeCustomer(OrderInput input);
+
+    @ActivityMethod
+    String getShippingTaskQueue();
+
+    @ActivityMethod
+    public String getShippingServiceEndpoint();
 }

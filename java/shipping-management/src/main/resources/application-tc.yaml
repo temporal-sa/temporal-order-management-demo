@@ -1,8 +1,12 @@
+nexus:
+  worker:
+    endpoint: "${TEMPORAL_SHIPPING_NEXUS_ENDPOINT:<SHIPPING NEXUS ENDPOINT>}"
+
 spring:
   temporal:
     namespace: ${TEMPORAL_NAMESPACE}
     connection:
       target: ${TEMPORAL_ADDRESS}
       mtls:
-        key-file: ${TEMPORAL_KEY_PKCS8_PATH}
+        key-file: ${TEMPORAL_KEY_PATH}
         cert-chain-file: ${TEMPORAL_CERT_PATH}
