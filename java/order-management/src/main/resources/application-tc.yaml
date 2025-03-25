@@ -14,5 +14,4 @@ spring:
       target: ${TEMPORAL_ADDRESS}
       mtls:
         key-file: ${TEMPORAL_KEY_PATH}
-#        key-file: ${TEMPORAL_KEY_PKCS8_PATH}
         cert-chain-file: ${TEMPORAL_CERT_PATH}
