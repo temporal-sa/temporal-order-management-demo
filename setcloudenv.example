@@ -1,6 +1,10 @@
 #!/bin/sh
 
-TEMPORAL_ENV="<cli_env_name>"
+# The start program can call this script to set the necessary namespace connectivity details to 
+# setup the environment variables needed.  If passed in with the first parameter being the environment
+# name the command line has been setup with.
+TEMPORAL_ENV=$1 
+
 
 export TEMPORAL_ADDRESS=$(temporal env get --env ${TEMPORAL_ENV} --key address -o json | jq -r '.[].value')
 export TEMPORAL_NAMESPACE=$(temporal env get --env ${TEMPORAL_ENV} --key namespace -o json | jq -r '.[].value')

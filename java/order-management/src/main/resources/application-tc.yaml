@@ -1,3 +1,7 @@
+nexus:
+  worker:
+    endpoint: "${TEMPORAL_SHIPPING_NEXUS_ENDPOINT:<SHIPPING NEXUS ENDPOINT>}"
+
 spring:
   temporal:
     namespace: ${TEMPORAL_NAMESPACE}
@@ -6,4 +10,3 @@ spring:
       mtls:
         key-file: ${TEMPORAL_KEY_PATH}
         cert-chain-file: ${TEMPORAL_CERT_PATH}
-      
