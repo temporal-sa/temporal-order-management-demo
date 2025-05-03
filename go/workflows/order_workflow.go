@@ -84,7 +84,7 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (output *app.Orde
 		}
 	}
 
-	sleep(ctx, 1, progress, 100)
+	sleep(ctx, 0, progress, 100)
 
 	// Generate trackingId
 	trackingId := uuid.New().String()

@@ -70,7 +70,7 @@ class OrderWorkflow:
 
         # Wait for all items to ship
         await asyncio.gather(*handles)
-        await self.sleep(1, 100)
+        await self.sleep(0, 100)
 
         # Generate trackingId
         tracking_id = str(workflow.uuid4())
@@ -81,5 +81,6 @@ class OrderWorkflow:
         return self.progress
 
     async def sleep(self, seconds: int, progress: int):
-        await asyncio.sleep(seconds)
+        if seconds > 0:
+            await asyncio.sleep(seconds)
         self.progress = progress

@@ -109,7 +109,7 @@ class OrderWorkflowScenarios:
         # Wait for all items to ship
         await asyncio.gather(*handles)
 
-        await self.update_progress("Order Completed", 100, 1)
+        await self.update_progress("Order Completed", 100, 0)
 
         # Generate trackingId
         tracking_id = str(workflow.uuid4())

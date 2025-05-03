@@ -6,7 +6,7 @@
     "build": "tsc --build && node lib/scripts/create-bundle.js",
     "start": "ts-node src/worker.ts",
     "start.watch": "nodemon src/worker.ts",
-    "worker": "ts-node src/worker.ts",
+    "worker": "ts-node src/worker.ts"
   },
   "dependencies": {
     "@temporalio/activity": "^1.11.1",

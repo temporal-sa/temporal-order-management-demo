@@ -153,7 +153,7 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOu
   // Wait for all items to ship
   await Promise.all(shipOrderPromises);
 
-  progress = await updateProgress('Order Completed', 100, 1);
+  progress = await updateProgress('Order Completed', 100, 0);
 
   const trackingId = uuid4();
   return { trackingId, address: input.Address };

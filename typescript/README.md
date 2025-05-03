@@ -3,12 +3,14 @@
 This is an alternate implementation of the Temporal Order Management Demo backend
 using the [Typescript SDK](https://typescript.temporal.io/)
 
-All of the scenarios suppported in the Go backend, and outlined in the main README are implemented in this Typescript version. This version is also fully compatible with the Python UI. See the main README for instructions on how to run the UI, and the instructions below for running the Typescript backend.
+All of the scenarios suppported in the Go backend, and outlined in the main README are implemented in this Typescript version.
+This version is also fully compatible with the Python UI. See the main README for instructions on how to run the UI, and the
+instructions below for running the Typescript backend.
 
 ## Run Worker
-
-1. `npm install` to install dependencies.
-1. `npm run start.watch` to start the Worker.
+```bash
+./startlocalworker.sh
+```
 
 ## (Optional) Run Worker in Productionize Build
 

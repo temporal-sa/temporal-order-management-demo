@@ -94,10 +94,10 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 
 	updateProgress("Ship Order", progress, 75, ctx, 3)
 
-	//if BUG == name {
-	//	// Simulate bug
-	//	panic("Simulated bug - fix me!")
-	//}
+	if BUG == name {
+		// Simulate bug
+		panic("Simulated bug - fix me!")
+	}
 
 	if SIGNAL == name {
 		// Await signal message to update address
@@ -140,7 +140,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output 
 		}
 	}
 
-	updateProgress("Order Completed", progress, 100, ctx, 1)
+	updateProgress("Order Completed", progress, 100, ctx, 0)
 
 	// Generate trackingId
 	trackingId := uuid.New().String()
@@ -179,7 +179,7 @@ func shipItemAsync(ctx workflow.Context, input app.OrderInput, item app.Item, na
 		logger.Info("Started Child Workflow: " + cwo.WorkflowID)
 	} else if NEXUS == name {
 		var op workflow.NexusOperationExecution
-		service := workflow.NewNexusClient(app.GetEnv("NEXUS_SHIPPING_ENDPOINT", "shipping-endpoint"), app.ShippingServiceName)
+		service := workflow.NewNexusClient(app.GetEnv("TEMPORAL_NEXUS_SHIPPING_ENDPOINT", "shipping-endpoint"), app.ShippingServiceName)
 
 		nf := service.ExecuteOperation(ctx, app.ShippingOperationName, shippingInput, workflow.NexusOperationOptions{})
 		f = nf

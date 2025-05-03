@@ -64,14 +64,16 @@ export async function OrderWorkflow(input: OrderInput): Promise<OrderOutput> {
 
   // Wait for all items to ship
   await Promise.all(shipOrderPromises);
-  progress = await doSleep(1, 100);
+  progress = await doSleep(0, 100);
 
   const trackingId = uuid4();
   return { trackingId, address: input.Address };
 }
 
 async function doSleep(seconds: number, progress: number): Promise<number> {
-  await sleep(`${seconds}s`);
+  if (seconds > 0) {
+    await sleep(`${seconds}s`);
+  }
   return progress;
 }
 

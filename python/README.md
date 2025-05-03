@@ -10,6 +10,5 @@ instructions on how to run the UI, and the instructions below for running the Py
 ## Run Worker
 
 ```bash
-poetry install --no-root
-poetry run python worker.py
+./startlocalworker.sh
 ```
