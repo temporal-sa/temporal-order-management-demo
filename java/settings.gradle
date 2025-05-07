@@ -1,5 +1,3 @@
-rootProject.name = 'temporal-ordermgmt'
-
-include 'common'
-include 'order-management'
-include 'shipping-management'
+rootProject.name = 'temporal-order-management'
+include 'core'
+include 'shipping-service'

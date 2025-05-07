@@ -1,0 +1,22 @@
+orders:
+  task-queue: "${TEMPORAL_TASK_QUEUE:orders}"
+
+shipping:
+  task-queue: "${TEMPORAL_TASK_QUEUE:orders}"
+
+spring:
+  application:
+    name: temporal-ordermgmt-core
+  temporal:
+    namespace: default
+    connection:
+      target: local
+    workersAutoDiscovery:
+      packages:
+        - com.example.ordermgmt.workflows
+        - com.example.ordermgmt.activities
+    start-workers: false
+
+#logging:
+#  pattern:
+#    console: "%d{HH:mm:ss.SSS} {%X{WorkflowId} %X{ActivityId}} [%thread] %-5level %logger{36} - %msg %n"

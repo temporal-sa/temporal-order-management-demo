@@ -1,0 +1,24 @@
+orders:
+  task-queue: "${TEMPORAL_TASK_QUEUE:shipping}"
+
+shipping:
+  task-queue: "${TEMPORAL_NEXUS_TASK_QUEUE:shipping}"
+
+spring:
+  application:
+    name: temporal-ordermgmt-shipping
+  temporal:
+    namespace: default
+    connection:
+      target: local
+    workers:
+      - task-queue: ${TEMPORAL_NEXUS_TASK_QUEUE:shipping}
+        workflow-classes:
+          - com.example.ordermgmt.workflows.ShippingWorkflowImpl
+        activity-beans:
+          - orderActivitiesImpl
+    start-workers: false
+
+#logging:
+#  pattern:
+#    console: "%d{HH:mm:ss.SSS} {%X{WorkflowId} %X{ActivityId}} [%thread] %-5level %logger{36} - %msg %n"

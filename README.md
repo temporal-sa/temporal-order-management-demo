@@ -33,13 +33,13 @@ This demo can be run against a Local Temporal Dev Server, or Temporal Cloud.
 
 ## Start the server
 ```bash
-$ cd ui
-$ ./starttemporalserver.sh
+cd ui
+./starttemporalserver.sh
 ```
 
 ## (Optional) Create Nexus Endpoint
 ```bash
-$ temporal operator nexus endpoint create \
+temporal operator nexus endpoint create \
     --name shipping-endpoint \
     --target-task-queue shipping \
     --target-namespace default
@@ -47,20 +47,20 @@ $ temporal operator nexus endpoint create \
 
 ## Run Worker
 ```bash
-$ cd <sdk>
-$ ./startlocalworker.sh
+cd <sdk>
+./startlocalworker.sh
 ```
 
 ## (Optional) Run Worker for Nexus Service
 ```bash
-$ cd <sdk>
-$ ./startlocalworker_nexus.sh
+cd <sdk>
+./startlocalworker_nexus.sh
 ```
 
 ## Run Web UI
 ```bash
-$ cd ui
-$ ./startlocalwebui.sh
+cd ui
+./startlocalwebui.sh
 ```
 
 # Temporal Cloud Setup
@@ -69,20 +69,20 @@ $ ./startlocalwebui.sh
 * Choose mTLS or API Key authentication
 * Create Search Attribute `OrderStatus` as `Keyword` through UI or tcld CLI
 ```bash
-$ tcld namespace search-attributes add \
+tcld namespace search-attributes add \
     -n <namespace>.<accountId> \
     --sa "OrderStatus=Keyword"
 ```
 
 ## Set Your Environment for Cloud
 ```bash
-$ cp setcloudenv.example setcloudenv.sh
-$ vi setcloudenv.sh # edit as needed
+cp setcloudenv.example setcloudenv.sh
+vi setcloudenv.sh # edit as needed
 ```
 
 # (Optional) Create Nexus Endpoint for Cloud
 ```bash
-$ tcld nexus endpoint create \
+tcld nexus endpoint create \
     --name <your-shipping-endpoint> \
     --target-task-queue shipping \
     --target-namespace <namespace>.<accountId> \
@@ -91,20 +91,20 @@ $ tcld nexus endpoint create \
 
 ## Run Worker
 ```bash
-$ cd <sdk>
-$ ./startcloudworker.sh
+cd <sdk>
+./startcloudworker.sh
 ```
 
 ## (Optional) Run Worker for Nexus Service
 ```bash
-$ cd <sdk>
-$ ./startcloudworker_nexus.sh
+cd <sdk>
+./startcloudworker_nexus.sh
 ```
 
 ## Run Web UI
 ```bash
-$ cd ui
-$ ./startcloudwebui.sh
+cd ui
+./startcloudwebui.sh
 ```
 
 # Scenarios
