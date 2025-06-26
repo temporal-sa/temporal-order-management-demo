@@ -1,9 +1,8 @@
-class OrderItem
-  attr_accessor :id, :description, :quantity
+require 'json/add/struct'
+require_relative 'serialization'
 
-  def initialize(id:, description:, quantity:)
-    @id = id
-    @description = description
-    @quantity = quantity
+module Models
+  OrderItem = Struct.new(:id, :description, :quantity) do
+    include Serialization
   end
 end

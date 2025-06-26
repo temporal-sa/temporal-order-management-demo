@@ -1,7 +1,8 @@
-class UpdateOrderInput
-  attr_accessor :address
+require 'json/add/struct'
+require_relative 'serialization'
 
-  def initialize(address:)
-    @address = address
+module Models
+  UpdateOrderInput = Struct.new(:address) do
+    include Serialization
   end
 end

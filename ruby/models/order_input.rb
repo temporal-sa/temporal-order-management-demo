@@ -1,8 +1,8 @@
-class OrderInput
-  attr_accessor :order_id, :address
+require 'json/add/struct'
+require_relative 'serialization'
 
-  def initialize(order_id:, address:)
-    @order_id = order_id
-    @address = address
+module Models
+  OrderInput = Struct.new(:order_id, :address) do
+    include Serialization
   end
 end

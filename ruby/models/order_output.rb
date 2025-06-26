@@ -1,8 +1,8 @@
-class OrderOutput
-  attr_accessor :tracking_id, :address
+require 'json/add/struct'
+require_relative 'serialization'
 
-  def initialize(tracking_id:, address:)
-    @tracking_id = tracking_id
-    @address = address
+module Models
+  OrderOutput = Struct.new(:tracking_id, :address) do
+    include Serialization
   end
 end
