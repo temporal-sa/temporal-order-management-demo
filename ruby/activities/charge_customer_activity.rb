@@ -7,7 +7,7 @@ module Activities
     ERROR_INVALID_CREDIT_CARD = "OrderWorkflowNonRecoverableFailure"
 
     def execute(input, type)
-      attempt = 1
+      attempt = Temporalio::Activity::Context.current.info.attempt
       error = simulate_external_operation_charge(1, type, attempt)
       case error
       when ERROR_CHARGE_API_UNAVAILABLE

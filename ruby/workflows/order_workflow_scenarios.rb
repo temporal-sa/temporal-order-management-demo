@@ -76,7 +76,7 @@ module Workflows
 
       update_progress("Ship Order", 75, 3)
 
-      raise "Simulated bug - fix me!" if workflow_type == BUG
+      # raise "Simulated bug - fix me!" if workflow_type == BUG
 
       wait_for_updated_address_or_timeout(input) if [SIGNAL, UPDATE].include?(workflow_type)
 
