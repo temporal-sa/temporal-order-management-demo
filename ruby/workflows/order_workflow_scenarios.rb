@@ -2,7 +2,6 @@ require 'temporalio/workflow'
 require 'temporalio/error'
 require_relative '../shared_objects'
 require_relative 'shipping_child_workflow'
-require 'securerandom'
 
 module Workflows
   class OrderWorkflowScenarios < OrderWorkflow
@@ -84,14 +83,12 @@ module Workflows
       handles = []
       order_items.each do |item|
         logger.info("Shipping item: #{item.description}")
-        handles << ship_item_async(input, item, workflow_type)
+        ship_item_async(input, item, workflow_type)
       end
-
-      handles.each(&:wait)
 
       update_progress("Order Completed", 100, 0)
 
-      tracking_id = SecureRandom.uuid
+      tracking_id = Temporalio::Workflow.random.uuid
       OrderOutput.new(tracking_id, input.address)
     end
 

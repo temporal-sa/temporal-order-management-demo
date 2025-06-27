@@ -1,6 +1,5 @@
 require 'temporalio/workflow'
 require_relative '../shared_objects'
-require 'securerandom'
 
 module Workflows
   class OrderWorkflow < Temporalio::Workflow::Definition
@@ -48,7 +47,7 @@ module Workflows
       handles = []
       order_items.each do |item|
         logger.info("Shipping item: #{item.description}")
-        handles << Temporalio::Workflow.execute_activity(
+        Temporalio::Workflow.execute_activity(
           Activities::ShipOrderActivity,
           input, item,
           start_to_close_timeout: 5,
@@ -56,10 +55,9 @@ module Workflows
         )
       end
 
-      handles.each(&:wait)
       sleep_fn(0, 100)
 
-      tracking_id = SecureRandom.uuid
+      tracking_id = Temporalio::Workflow.random.uuid
       OrderOutput.new(tracking_id, input.address)
     end
 

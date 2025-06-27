@@ -93,7 +93,7 @@ class OrderWorkflowScenarios:
 
         if self.BUG == workflow_type:
             # Simulate bug
-            raise RuntimeError("Simulated bug - fix me!")
+            # raise RuntimeError("Simulated bug - fix me!")
             pass
 
         if self.SIGNAL == workflow_type or self.UPDATE == workflow_type:
