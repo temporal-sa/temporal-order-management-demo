@@ -1,7 +1,6 @@
 require 'temporalio/client'
 require 'temporalio/worker'
 require 'logger'
-require_relative 'shared_objects'
 require_relative 'activities/get_items_activity'
 require_relative 'activities/check_fraud_activity'
 require_relative 'activities/prepare_shipment_activity'

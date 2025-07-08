@@ -1,6 +1,5 @@
-require 'temporalio/workflow'
+require_relative 'order_workflow'
 require 'temporalio/error'
-require_relative '../shared_objects'
 require_relative 'shipping_child_workflow'
 
 module Workflows
@@ -21,7 +20,7 @@ module Workflows
     end
 
     def execute(input)
-      input = OrderInput.new(input['OrderId'], input['Address']) if input.is_a?(Hash)
+      input = Models::OrderInput.new(input['OrderId'], input['Address']) if input.is_a?(Hash)
       workflow_type = Temporalio::Workflow.info.workflow_type
       logger.info("Dynamic Order workflow started, type = #{workflow_type}, orderId = #{input.order_id}")
 
@@ -62,8 +61,9 @@ module Workflows
           retry_policy: @retry_policy
         )
       rescue StandardError => ex
-        logger.error("Failed to charge customer", ex)
+        logger.error("Failed to charge customer: #{ex.message}")
         compensations.reverse.each do |comp|
+          logger.error("Compensating: #{comp}")
           Temporalio::Workflow.execute_activity(
             comp,
             input,
@@ -76,11 +76,10 @@ module Workflows
 
       update_progress("Ship Order", 75, 3)
 
-      # raise "Simulated bug - fix me!" if workflow_type == BUG
+      raise "Simulated bug - fix me!" if workflow_type == BUG
 
       wait_for_updated_address_or_timeout(input) if [SIGNAL, UPDATE].include?(workflow_type)
 
-      handles = []
       order_items.each do |item|
         logger.info("Shipping item: #{item.description}")
         ship_item_async(input, item, workflow_type)
@@ -89,10 +88,10 @@ module Workflows
       update_progress("Order Completed", 100, 0)
 
       tracking_id = Temporalio::Workflow.random.uuid
-      OrderOutput.new(tracking_id, input.address)
+      Models::OrderOutput.new(tracking_id, input.address).deep_camelize_keys
     end
 
-    def ship_item_async(input, item, workflow_type)
+    def ship_item_async(input, item, workflow_type) # Async not working correctly. TODO Fix
       if workflow_type == CHILD
         Temporalio::Workflow.execute_child_workflow(
           Workflows::ShippingChildWorkflow,
@@ -124,7 +123,15 @@ module Workflows
       @progress = progress
       sleep(sleep_time) if sleep_time > 0
       if workflow_type == VISIBILITY
-        Temporalio::Workflow.upsert_search_attributes('OrderStatus' => order_status)
+        logger.error("Updating search attributes with order status: #{order_status}")
+        key = Temporalio::SearchAttributes::Key.new(
+          "OrderStatus",
+          Temporalio::SearchAttributes::IndexedValueType::KEYWORD
+        )
+
+        update = key.value_set(order_status)
+
+        Temporalio::Workflow.upsert_search_attributes(update)
       end
     end
 
@@ -136,13 +143,13 @@ module Workflows
     workflow_signal(name: 'UpdateOrderSignal')
     def update_order_signal(update_input)
       logger.info("Received update order signal with address: #{update_input.address}")
-      @updated_address = update_input.address
+      @updated_address = update_input
     end
 
     workflow_update(name: 'UpdateOrder')
     def update_order_update(update_input)
       logger.info("Received update order update with address: #{update_input.address}")
-      @updated_address = update_input.address
+      @updated_address = update_input
       "Updated address: #{@updated_address}"
     end
 

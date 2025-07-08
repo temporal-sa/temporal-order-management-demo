@@ -1,5 +1,4 @@
 require 'temporalio/activity'
-require_relative '../shared_objects'
 
 module Activities
   class ChargeCustomerActivity < Temporalio::Activity::Definition
@@ -13,7 +12,7 @@ module Activities
       when ERROR_CHARGE_API_UNAVAILABLE
         raise StandardError.new("Charge Customer activity failed, API unavailable")
       when ERROR_INVALID_CREDIT_CARD
-        raise StandardError.new("Charge Customer activity failed, card is invalid")
+        raise Temporalio::Error::ApplicationError.new("Charge Customer activity failed, card is invalid", non_retryable: true)
       end
       'SUCCESS'
     end
@@ -29,4 +28,8 @@ module Activities
       attempt < 5 ? type : "NoError"
     end
   end
+  def logger
+    @logger ||= Temporalio::Workflow.logger
+  end
+
 end 

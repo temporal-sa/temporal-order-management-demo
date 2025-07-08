@@ -1,5 +1,7 @@
 require 'temporalio/workflow'
-require_relative '../shared_objects'
+require_relative '../models/order_input'
+require_relative '../models/order_output'
+require_relative '../models/update_order_input'
 
 module Workflows
   class OrderWorkflow < Temporalio::Workflow::Definition
@@ -11,7 +13,7 @@ module Workflows
     end
 
     def execute(input)
-      input = OrderInput.new(input['OrderId'], input['Address']) if input.is_a?(Hash)
+      input = Models::OrderInput.new(input['OrderId'], input['Address']) if input.is_a?(Hash)
       workflow_type = Temporalio::Workflow.info.workflow_type
       logger.info("Order workflow started, type = #{workflow_type}, orderId = #{input.order_id}")
 
@@ -58,7 +60,7 @@ module Workflows
       sleep_fn(0, 100)
 
       tracking_id = Temporalio::Workflow.random.uuid
-      OrderOutput.new(tracking_id, input.address)
+      Models::OrderOutput.new(tracking_id, input.address).deep_camelize_keys
     end
 
     workflow_query(name: 'getProgress')

@@ -1,5 +1,4 @@
 require 'temporalio/activity'
-require_relative '../shared_objects'
 
 module Activities
   class PrepareShipmentActivity < Temporalio::Activity::Definition

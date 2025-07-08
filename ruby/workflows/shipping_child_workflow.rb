@@ -1,5 +1,4 @@
 require 'temporalio/workflow'
-require_relative '../shared_objects'
 
 module Workflows
   class ShippingChildWorkflow < Temporalio::Workflow::Definition
