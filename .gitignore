@@ -20,3 +20,5 @@ bin/
 setcloudenv.sh
 java/bin/
 java/env.sh
+.vscode/
+ruby/.rspec
