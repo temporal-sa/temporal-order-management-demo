@@ -7,6 +7,8 @@ All of the scenarios supported in the Go backend, and outlined in the main READM
 this Ruby version. This version is also fully compatible with the UI. See the main README for
 instructions on how to run the UI, and the instructions below for running the Ruby backend.
 
+Caveats: This SDK is still Alpha, and not all features exist. Of note, only one of update_order (signal) or update_orders_update(update) will work at a time, as they both cannot have the 'UpdateOrder' workflow_signal or update_signal annotation
+Also, the validation is not working for the update, even though it's implemented per the docs. `workflow_update_validator(:update_order_update)`
 ## Run Worker
 
 ```bash
