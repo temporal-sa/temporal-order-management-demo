@@ -31,7 +31,8 @@ class Worker
         Activities::ShipOrderActivity,
         Activities::UndoPrepareShipmentActivity,
         Activities::UndoChargeCustomerActivity
-      ]
+      ],
+      workflow_payload_codec_thread_pool: Temporalio::Worker::ThreadPool.default
     ).run
   end
 
@@ -43,9 +44,17 @@ class Worker
 
   def temporal_client
     @client ||= begin
-      options = { logger: logger }
-      options.merge!(tls_options) if using_tls?
-      options.merge!(encryption_options) if encrypt_payloads?
+      options = {
+        logger: logger
+      }.tap do |options|
+        options.merge!(tls_options) if using_tls?
+        options.merge!(encryption_options) if encrypt_payloads?
+      end
+      logger.info("Connecting to Temporal at #{temporal_address}")
+      logger.info("Using namespace #{temporal_namespace}")
+      logger.info("Using task queue #{task_queue}")
+      logger.info("Using api key: #{api_key}")
+
       Temporalio::Client.connect(temporal_address, temporal_namespace, **options)
     end
   end
@@ -53,6 +62,7 @@ class Worker
   def tls_options
     if api_key
       {
+
         tls: true,
         api_key: api_key,
         rpc_metadata: { 'temporal-namespace' => temporal_namespace }
@@ -70,7 +80,13 @@ class Worker
   end
 
   def encryption_options
-    {}
+    return {} unless encrypt_payloads?
+
+    {
+      data_converter: Temporalio::Converters::DataConverter.new(
+        payload_codec: Security::EncryptionCodec.new
+      )
+    }
   end
 
   def temporal_address
@@ -82,7 +98,7 @@ class Worker
   end
 
   def task_queue
-    ENV.fetch('TEMPORAL_TASK_QUEUE', 'orders')
+    ENV.fetch('TEMPORAL_MONEYTRANSFER_TASKQUEUE', 'MoneyTransfer')
   end
 
   def api_key

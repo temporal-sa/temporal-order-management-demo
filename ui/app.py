@@ -139,6 +139,7 @@ async def update():
             arg=UpdateOrderInput,
         )
     except Exception as e:
+        print(f"Error sending signal: {str(e)}")
         result = f"Update for order_id {order_id} rejected, not a valid address! {str(e)}"
         return jsonify(result=result)
 

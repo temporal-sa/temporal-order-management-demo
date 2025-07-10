@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     bigdecimal (3.2.2)
+    diff-lcs (1.6.2)
     google-protobuf (4.31.1)
       bigdecimal
       rake (>= 13)
@@ -31,6 +32,19 @@ GEM
       rake (>= 13)
     logger (1.7.0)
     rake (13.3.0)
+    rspec (3.13.1)
+      rspec-core (~> 3.13.0)
+      rspec-expectations (~> 3.13.0)
+      rspec-mocks (~> 3.13.0)
+    rspec-core (3.13.5)
+      rspec-support (~> 3.13.0)
+    rspec-expectations (3.13.5)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-mocks (3.13.5)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-support (3.13.4)
     temporalio (0.4.0)
       google-protobuf (>= 3.25.0)
       logger
@@ -67,6 +81,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  rspec
   temporalio
 
 BUNDLED WITH
