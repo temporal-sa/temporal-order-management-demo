@@ -150,7 +150,7 @@ module Workflows
       @updated_address = update_input['Address']
     end
 
-    # TODO This won't work. Only one of these can be annotated with a specific name, unlike other SDKs where "UpdateOrder" is the name for all three
+    # TODO This won't work. Only one of these can be decorated with a specific name, unlike other SDKs where "UpdateOrder" is the name for all three
     # Only one of these will work at a time, and do so by making its name 'UpdateOrder' as that's what the UI calls. Not going to change all the otehr SDKs just for Ruby, which is still in Alpha
     workflow_update(name: 'UpdateOrderUpdate')
     def update_order_update(update_input)
