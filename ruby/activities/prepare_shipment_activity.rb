@@ -7,4 +7,4 @@ module Activities
       'SUCCESS'
     end
   end
-end 
+end

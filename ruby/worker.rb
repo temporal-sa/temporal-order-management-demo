@@ -48,7 +48,6 @@ class Worker
         logger: logger
       }.tap do |options|
         options.merge!(tls_options) if using_tls?
-        options.merge!(encryption_options) if encrypt_payloads?
       end
       logger.info("Connecting to Temporal at #{temporal_address}")
       logger.info("Using namespace #{temporal_namespace}")
@@ -79,16 +78,6 @@ class Worker
     end
   end
 
-  def encryption_options
-    return {} unless encrypt_payloads?
-
-    {
-      data_converter: Temporalio::Converters::DataConverter.new(
-        payload_codec: Security::EncryptionCodec.new
-      )
-    }
-  end
-
   def temporal_address
     ENV.fetch('TEMPORAL_ADDRESS', 'localhost:7233')
   end
@@ -98,7 +87,7 @@ class Worker
   end
 
   def task_queue
-    ENV.fetch('TEMPORAL_MONEYTRANSFER_TASKQUEUE', 'MoneyTransfer')
+    ENV.fetch('TEMPORAL_TASK_QUEUE', 'orders')
   end
 
   def api_key
@@ -115,10 +104,6 @@ class Worker
 
   def using_tls?
     api_key || (cert_path && key_path)
-  end
-
-  def encrypt_payloads?
-    ENV['ENCRYPT_PAYLOADS']&.downcase == 'true'
   end
 end
 

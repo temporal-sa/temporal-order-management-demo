@@ -1,21 +1,25 @@
-require_relative 'order_workflow'
+require 'temporalio/workflow'
 require 'temporalio/error'
+require_relative '../models/order_input'
+require_relative '../models/order_output'
+require_relative '../models/update_order_input'
 require_relative 'shipping_child_workflow'
 
 module Workflows
-  class OrderWorkflowScenarios < OrderWorkflow
+  class OrderWorkflowScenarios < Temporalio::Workflow::Definition
     workflow_dynamic
 
-    BUG = "OrderWorkflowRecoverableFailure"
-    CHILD = "OrderWorkflowChildWorkflow"
-    SIGNAL = "OrderWorkflowHumanInLoopSignal"
-    UPDATE = "OrderWorkflowHumanInLoopUpdate"
-    VISIBILITY = "OrderWorkflowAdvancedVisibility"
+    BUG = 'OrderWorkflowRecoverableFailure'
+    CHILD = 'OrderWorkflowChildWorkflow'
+    SIGNAL = 'OrderWorkflowHumanInLoopSignal'
+    UPDATE = 'OrderWorkflowHumanInLoopUpdate'
+    VISIBILITY = 'OrderWorkflowAdvancedVisibility'
 
     attr_accessor :progress, :updated_address, :retry_policy
 
     def initialize
-      super
+      @progress = 0
+      @retry_policy = nil
       @updated_address = nil
     end
 
@@ -31,7 +35,7 @@ module Workflows
         start_to_close_timeout: 5
       )
 
-      update_progress("Check Fraud", 0, 0)
+      update_progress('Check Fraud', 0, 0)
 
       Temporalio::Workflow.execute_activity(
         Activities::CheckFraudActivity,
@@ -40,7 +44,7 @@ module Workflows
         retry_policy: @retry_policy
       )
 
-      update_progress("Prepare Shipment", 25, 1)
+      update_progress('Prepare Shipment', 25, 1)
 
       compensations << Activities::UndoPrepareShipmentActivity
       Temporalio::Workflow.execute_activity(
@@ -50,7 +54,7 @@ module Workflows
         retry_policy: @retry_policy
       )
 
-      update_progress("Charge Customer", 50, 1)
+      update_progress('Charge Customer', 50, 1)
 
       begin
         compensations << Activities::UndoChargeCustomerActivity
@@ -74,13 +78,13 @@ module Workflows
         raise ex
       end
 
-      update_progress("Ship Order", 75, 3)
+      update_progress('Ship Order', 75, 3)
 
-      raise "Simulated bug - fix me!" if workflow_type == BUG
+      raise 'Simulated bug - fix me!' if workflow_type == BUG
 
       wait_for_updated_address_or_timeout(input) if [SIGNAL, UPDATE].include?(workflow_type)
 
-      #TODO These is not working asynchronously
+      # TODO: These is not working asynchronously
       activity_handles = order_items.map do |item|
         logger.info("Shipping item: #{item.description}")
         if workflow_type == CHILD
@@ -89,7 +93,7 @@ module Workflows
               Workflows::ShippingChildWorkflow,
               input, item,
               id: "shipment-#{input.order_id}-#{item.id}",
-              parent_close_policy: :terminate
+              parent_close_policy: Temporalio::Workflow::ParentClosePolicy::TERMINATE
             )
           end
         else
@@ -107,19 +111,19 @@ module Workflows
       # Wait for all futures to complete
       results = activity_handles.map(&:wait)
 
-      update_progress("Order Completed", 100, 0)
+      update_progress('Order Completed', 100, 0)
 
       tracking_id = Temporalio::Workflow.random.uuid
       Models::OrderOutput.new(tracking_id, input.address).deep_camelize_keys
     end
 
     def wait_for_updated_address_or_timeout(input)
-      logger.info("Waiting up to 60 seconds for updated address")
+      logger.info('Waiting up to 60 seconds for updated address')
       begin
         Temporalio::Workflow.timeout(60) { Temporalio::Workflow.wait_condition { @updated_address } }
         input.address = @updated_address
       rescue Timeout::Error
-        logger.info("Updated address was not received within 60 seconds")
+        logger.info('Updated address was not received within 60 seconds')
       end
     end
 
@@ -129,7 +133,7 @@ module Workflows
       if workflow_type == VISIBILITY
         logger.error("Updating search attributes with order status: #{order_status}")
         key = Temporalio::SearchAttributes::Key.new(
-          "OrderStatus",
+          'OrderStatus',
           Temporalio::SearchAttributes::IndexedValueType::KEYWORD
         )
 
@@ -144,13 +148,13 @@ module Workflows
       @progress
     end
 
-   workflow_signal(name: 'UpdateOrder')
+    workflow_signal(name: 'UpdateOrder')
     def update_order(update_input)
       logger.info("Received update order signal with address: #{update_input}")
       @updated_address = update_input['Address']
     end
 
-    # TODO This won't work. Only one of these can be decorated with a specific name, unlike other SDKs where "UpdateOrder" is the name for all three
+    # TODO: This won't work. Only one of these can be decorated with a specific name, unlike other SDKs where "UpdateOrder" is the name for all three
     # Only one of these will work at a time, and do so by making its name 'UpdateOrder' as that's what the UI calls. Not going to change all the otehr SDKs just for Ruby, which is still in Alpha
     workflow_update(name: 'UpdateOrderUpdate')
     def update_order_update(update_input)
@@ -164,7 +168,7 @@ module Workflows
       puts("Validating address: #{update_input}")
       unless update_input['Address'][0] =~ /\d/
         logger.info("Rejecting order update, invalid address: #{update_input['Address']}")
-        raise Temporalio::Error::ApplicationError.new("Address must start with a digit", type: "invalid-address")
+        raise Temporalio::Error::ApplicationError.new('Address must start with a digit', type: 'invalid-address')
       end
       logger.info("Order update address is valid: #{update_input['Address']}")
     end
@@ -173,6 +177,10 @@ module Workflows
 
     def workflow_type
       Temporalio::Workflow.info.workflow_type
+    end
+
+    def logger
+      @logger ||= Temporalio::Workflow.logger
     end
   end
 end

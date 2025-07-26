@@ -5,6 +5,7 @@ require_relative '../models/update_order_input'
 
 module Workflows
   class OrderWorkflow < Temporalio::Workflow::Definition
+    workflow_name 'OrderWorkflowHappyPath'
     attr_accessor :progress, :retry_policy
 
     def initialize
@@ -46,16 +47,20 @@ module Workflows
       )
       sleep_fn(3, 75)
 
-      handles = []
-      order_items.each do |item|
+      activity_handles = order_items.map do |item|
         logger.info("Shipping item: #{item.description}")
-        Temporalio::Workflow.execute_activity(
-          Activities::ShipOrderActivity,
-          input, item,
-          start_to_close_timeout: 5,
-          retry_policy: @retry_policy
-        )
+        Temporalio::Workflow::Future.new do
+          Temporalio::Workflow.execute_activity(
+            Activities::ShipOrderActivity,
+            input, item,
+            start_to_close_timeout: 5,
+            retry_policy: @retry_policy
+          )
+        end
       end
+
+      # Wait for all futures to complete
+      results = activity_handles.map(&:wait)
 
       sleep_fn(0, 100)
 

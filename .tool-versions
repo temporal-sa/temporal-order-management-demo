@@ -5,3 +5,4 @@ python 3.12.6
 poetry 1.8.3
 dotnet 8.0.401
 pnpm 9.10.0
+ruby 3.4.5

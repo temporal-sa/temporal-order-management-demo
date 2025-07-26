@@ -1,3 +1,3 @@
 #!/bin/bash
-eval "$(rbenv init -)"
-ruby worker.rb
+bundle install
+bundle exec ruby worker.rb
