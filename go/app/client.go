@@ -9,8 +9,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
+	prom "github.com/prometheus/client_golang/prometheus"
+	"github.com/uber-go/tally/v4"
+	"github.com/uber-go/tally/v4/prometheus"
 	"go.temporal.io/sdk/client"
+	sdktally "go.temporal.io/sdk/contrib/tally"
 	tlog "go.temporal.io/sdk/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -28,6 +33,10 @@ func GetClientOptions() client.Options {
 		HostPort:  address,
 		Namespace: namespace,
 		Logger:    tlog.NewStructuredLogger(logger),
+		MetricsHandler: sdktally.NewMetricsHandler(newPrometheusScope(prometheus.Configuration{
+			ListenAddress: "0.0.0.0:9090",
+			TimerType:     "histogram",
+		})),
 	}
 
 	apiKey := GetEnv("TEMPORAL_APIKEY", "")
@@ -120,4 +129,29 @@ func GetEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func newPrometheusScope(c prometheus.Configuration) tally.Scope {
+	reporter, err := c.NewReporter(
+		prometheus.ConfigurationOptions{
+			Registry: prom.NewRegistry(),
+			OnError: func(err error) {
+				log.Println("error in prometheus reporter", err)
+			},
+		},
+	)
+	if err != nil {
+		log.Fatalln("error creating prometheus reporter", err)
+	}
+	scopeOpts := tally.ScopeOptions{
+		CachedReporter:  reporter,
+		Separator:       prometheus.DefaultSeparator,
+		SanitizeOptions: &sdktally.PrometheusSanitizeOptions,
+		Prefix:          "temporal_samples",
+	}
+	scope, _ := tally.NewRootScope(scopeOpts, time.Second)
+	scope = sdktally.NewPrometheusNamingScope(scope)
+
+	log.Println("prometheus metrics scope created")
+	return scope
 }

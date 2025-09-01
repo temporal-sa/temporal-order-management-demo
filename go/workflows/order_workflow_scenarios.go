@@ -178,14 +178,14 @@ func shipItemAsync(ctx workflow.Context, input app.OrderInput, item app.Item, na
 		f = workflow.ExecuteChildWorkflow(ctx, ShippingWorkflow, shippingInput)
 		logger.Info("Started Child Workflow: " + cwo.WorkflowID)
 	} else if NEXUS == name {
-		var op workflow.NexusOperationExecution
-		service := workflow.NewNexusClient(app.GetEnv("TEMPORAL_NEXUS_SHIPPING_ENDPOINT", "shipping-endpoint"), app.ShippingServiceName)
+		client := workflow.NewNexusClient(app.GetEnv("TEMPORAL_NEXUS_SHIPPING_ENDPOINT", "shipping-endpoint"), app.ShippingServiceName)
 
-		nf := service.ExecuteOperation(ctx, app.ShippingOperationName, shippingInput, workflow.NexusOperationOptions{})
-		f = nf
+		fut := client.ExecuteOperation(ctx, app.ShippingOperationName, shippingInput, workflow.NexusOperationOptions{})
+		f = fut
 
-		nf.GetNexusOperationExecution().Get(ctx, &op)
-		logger.Info(" Started Nexus Operation: " + op.OperationID)
+		var exec workflow.NexusOperationExecution
+		fut.GetNexusOperationExecution().Get(ctx, &exec)
+		logger.Info("Started Nexus Operation: " + exec.OperationToken)
 	} else {
 		// execute an async activity to ship the item
 		f = workflow.ExecuteActivity(ctx, activities.ShipOrder, shippingInput)
