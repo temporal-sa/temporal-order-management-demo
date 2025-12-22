@@ -1,69 +1,69 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    bigdecimal (3.2.2)
+    bigdecimal (4.0.1)
     diff-lcs (1.6.2)
-    google-protobuf (4.31.1)
+    google-protobuf (4.33.2)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.31.1-aarch64-linux-gnu)
+    google-protobuf (4.33.2-aarch64-linux-gnu)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.31.1-aarch64-linux-musl)
+    google-protobuf (4.33.2-aarch64-linux-musl)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.31.1-arm64-darwin)
+    google-protobuf (4.33.2-arm64-darwin)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.31.1-x86-linux-gnu)
+    google-protobuf (4.33.2-x86-linux-gnu)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.31.1-x86-linux-musl)
+    google-protobuf (4.33.2-x86-linux-musl)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.31.1-x86_64-darwin)
+    google-protobuf (4.33.2-x86_64-darwin)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.31.1-x86_64-linux-gnu)
+    google-protobuf (4.33.2-x86_64-linux-gnu)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.31.1-x86_64-linux-musl)
+    google-protobuf (4.33.2-x86_64-linux-musl)
       bigdecimal
       rake (>= 13)
     logger (1.7.0)
-    rake (13.3.0)
-    rspec (3.13.1)
+    rake (13.3.1)
+    rspec (3.13.2)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
       rspec-mocks (~> 3.13.0)
-    rspec-core (3.13.5)
+    rspec-core (3.13.6)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-mocks (3.13.5)
+    rspec-mocks (3.13.7)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-support (3.13.4)
-    temporalio (0.4.0)
+    rspec-support (3.13.6)
+    temporalio (1.1.0)
       google-protobuf (>= 3.25.0)
       logger
-    temporalio (0.4.0-aarch64-linux)
+    temporalio (1.1.0-aarch64-linux)
       google-protobuf (>= 3.25.0)
       logger
-    temporalio (0.4.0-aarch64-linux-musl)
+    temporalio (1.1.0-aarch64-linux-musl)
       google-protobuf (>= 3.25.0)
       logger
-    temporalio (0.4.0-arm64-darwin)
+    temporalio (1.1.0-arm64-darwin)
       google-protobuf (>= 3.25.0)
       logger
-    temporalio (0.4.0-x86_64-darwin)
+    temporalio (1.1.0-x86_64-darwin)
       google-protobuf (>= 3.25.0)
       logger
-    temporalio (0.4.0-x86_64-linux)
+    temporalio (1.1.0-x86_64-linux)
       google-protobuf (>= 3.25.0)
       logger
-    temporalio (0.4.0-x86_64-linux-musl)
+    temporalio (1.1.0-x86_64-linux-musl)
       google-protobuf (>= 3.25.0)
       logger
 
@@ -82,10 +82,10 @@ PLATFORMS
 
 DEPENDENCIES
   rspec
-  temporalio
+  temporalio (~> 1.1)
 
 RUBY VERSION
-   ruby 3.4.5p51
+   ruby 3.4.7p58
 
 BUNDLED WITH
    2.6.9

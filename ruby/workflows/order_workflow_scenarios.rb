@@ -84,7 +84,6 @@ module Workflows
 
       wait_for_updated_address_or_timeout(input) if [SIGNAL, UPDATE].include?(workflow_type)
 
-      # TODO: These is not working asynchronously
       activity_handles = order_items.map do |item|
         logger.info("Shipping item: #{item.description}")
         if workflow_type == CHILD
@@ -154,9 +153,7 @@ module Workflows
       @updated_address = update_input['Address']
     end
 
-    # TODO: This won't work. Only one of these can be decorated with a specific name, unlike other SDKs where "UpdateOrder" is the name for all three
-    # Only one of these will work at a time, and do so by making its name 'UpdateOrder' as that's what the UI calls. Not going to change all the otehr SDKs just for Ruby, which is still in Alpha
-    workflow_update(name: 'UpdateOrderUpdate')
+    workflow_update(name: 'UpdateOrder')
     def update_order_update(update_input)
       logger.info("Received update order update with address: #{update_input['Address']}")
       @updated_address = update_input['Address']
