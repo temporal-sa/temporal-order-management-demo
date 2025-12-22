@@ -1,6 +1,6 @@
 nodejs 22.20.0
 java temurin-17.0.12+7
-golang 1.24.6
+golang 1.24.11
 python 3.12.12
 uv 0.9.18
 dotnet 8.0.416
