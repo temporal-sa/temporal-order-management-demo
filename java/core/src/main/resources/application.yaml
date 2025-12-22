@@ -15,7 +15,6 @@ spring:
       packages:
         - com.example.ordermgmt.workflows
         - com.example.ordermgmt.activities
-    start-workers: false
 
 #logging:
 #  pattern:

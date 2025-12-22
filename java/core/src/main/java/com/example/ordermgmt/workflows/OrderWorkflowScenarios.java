@@ -9,6 +9,7 @@ import io.temporal.common.SearchAttributeKey;
 import io.temporal.common.converter.EncodedValues;
 import io.temporal.failure.ActivityFailure;
 import io.temporal.failure.ApplicationFailure;
+import io.temporal.spring.boot.WorkflowImpl;
 import io.temporal.workflow.*;
 import org.slf4j.Logger;
 
@@ -16,6 +17,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+@WorkflowImpl(taskQueues = "${orders.task-queue}")
 public class OrderWorkflowScenarios implements DynamicWorkflow {
     private static final String BUG = "OrderWorkflowRecoverableFailure";
     private static final String CHILD = "OrderWorkflowChildWorkflow";
