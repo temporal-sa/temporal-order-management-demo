@@ -1,14 +1,8 @@
-[tool.poetry]
+[project]
 name = "order-management-app-python"
 version = "0.1.0"
-description = "Python Backend for Simple Order Management App"
-authors = ["Temporal SA"]
-
-[tool.poetry.dependencies]
-python = "^3.12"
-temporalio = "^1.7.1"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+description = "Python Backend for Order Management App"
+requires-python = ">=3.11"
+dependencies = [
+    "temporalio>=1.21.1",
+]
