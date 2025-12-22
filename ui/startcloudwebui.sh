@@ -1,5 +1,4 @@
 #!/bin/bash
 source ../setcloudenv.sh
 echo "Starting Web UI on http://localhost:5000 ..."
-poetry install --no-root
-poetry run python app.py
+uv run app.py

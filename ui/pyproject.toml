@@ -1,24 +1,13 @@
-[tool.poetry]
-name = "order-management-app"
+[project]
+name = "order-management-app-ui"
 version = "0.1.0"
-description = "Simple Order Management App"
-authors = ["Keith Tenzer <keith.tenzer@temporal.io>"]
-
-[tool.poetry.dependencies]
-python = "^3.11"
-flask = { extras = ["async"], version = "^2.2.3" }
-stripe = "^2.76.0"
-openai = "^0.27.7"
-
-[tool.poetry.group.encryption]
-optional = true
-dependencies = { cryptography = "^38.0.1", aiohttp = "^3.8.1" }
-
-[tool.poetry.dev-dependencies]
-
-[tool.poetry.group.dev.dependencies]
-temporalio = "^1.7.0"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+description = "Order Management App UI"
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp>=3.13.2",
+    "cryptography>=46.0.3",
+    "flask[async]>=3.1.2",
+    "openai>=2.14.0",
+    "stripe>=14.1.0",
+    "temporalio>=1.21.1",
+]
