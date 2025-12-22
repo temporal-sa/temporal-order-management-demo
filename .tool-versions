@@ -1,8 +1,7 @@
-nodejs 22.20.0
+nodejs 22.21.1
 java temurin-21.0.9+10.0.LTS
 golang 1.24.11
 python 3.12.12
 uv 0.9.18
 dotnet 8.0.416
-pnpm 9.10.0
 ruby 3.4.7
