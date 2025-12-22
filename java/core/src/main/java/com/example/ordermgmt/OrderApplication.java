@@ -15,9 +15,9 @@ import org.springframework.stereotype.Component;
 @SpringBootApplication
 public class OrderApplication {
     public static final String defaultShippingNexusEndpoint =
-                System.getenv("TEMPORAL_NEXUS_SHIPPING_ENDPOINT") != null ?
-                        System.getenv("TEMPORAL_NEXUS_SHIPPING_ENDPOINT") :
-                        "shipping-endpoint";
+            System.getenv("TEMPORAL_NEXUS_SHIPPING_ENDPOINT") != null ?
+                    System.getenv("TEMPORAL_NEXUS_SHIPPING_ENDPOINT") :
+                    "shipping-endpoint";
 
     public static void main(String[] args) {
         SpringApplication.run(OrderApplication.class, args);
