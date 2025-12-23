@@ -4,17 +4,18 @@ Demos various aspects of [Temporal](http://temporal.io) through an example Order
 | Prerequisites      |    | __ | Features       |   | __ | Patterns            |   |
 |:-------------------|--- |----|----------------|---|----|---------------------|---|
 | Network Connection |    | __  | Schedule      |    | __ | Entity              | __ |
-| Golang 1.18+       | ✅ | __ | Local Activity | ✅ | __ | Long-Running        | __ |
-| Python 3.11        | ✅ | __ | Timer          | ✅ | __ | Fanout              | ✅ |
-| Poetry 1.3.2       | ✅ | __ | Signal         | ✅ | __ | Continue As New     |    |
-| Node 20            | ✅ | __ | Query          | ✅ | __ | Manual Intervention | ✅ |
-|                    |    | __ | Update         | ✅ | __ | Saga                | ✅ |
-|                    |    | __ | Heartbeat      |    | __ | Long-polling        |    |
-|                    |    | __ | Retry          | ✅ | __ |                     |    |
+| Golang 1.24+       | ✅ | __ | Local Activity | ✅ | __ | Long-Running        | __ |
+| Python 3.12+       | ✅ | __ | Timer          | ✅ | __ | Fanout              | ✅ |
+| uv 0.9+            | ✅ | __ | Signal         | ✅ | __ | Continue As New     |    |
+| Node 22+           | ✅ | __ | Query          | ✅ | __ | Manual Intervention | ✅ |
+| .Net 8+            | ✅ | __ | Update         | ✅ | __ | Saga                | ✅ |
+| Java 21+           | ✅ | __ | Heartbeat      |    | __ | Long-polling        |    |
+| Ruby 3.4+          | ✅ | __ | Retry          | ✅ | __ |                     |    |
 |                    |    | __ | Data Converter |    | __ |                     |    |
 |                    |    | __ | Polyglot       | ✅ | __ |                     |    |
 |                    |    | __ | API Keys       | ✅ | __ |                     |    |
 
+The runtimes identified in the Prerequisites column can be installed using [asdf](#asdf)
 
 This demo walks through several scenarios using an order management process. The scenarios are:
 - HappyPath
@@ -233,3 +234,31 @@ This scenario demonstrates updating the API key for the worker without the need 
     - The predefined value in the `Update Key` text field is the value of the `TEMPORAL_APIKEY` environment variable. If you used `Remove Worker API Key` earlier, then this key will still work fine.
     - Alternatively, if you have disabled/revoked the key on the Temporal server then you will need to make sure you provide a vaild key here.
 4. Return to the in-flight `HappyPath` scenario. The workflow will now progress/complete.
+
+# ASDF
+
+The runtime versions for the prerequisites identified in this README can be managed
+using [asdf](https://asdf-vm.com/). The runtime versions are specified in the [.tool-versions](.tool-versions)
+file.
+
+## Install & Configure
+
+Install and configure `asdf` per the [Getting Started Guide](https://asdf-vm.com/guide/getting-started.html#getting-started)
+
+## Install Plugins
+
+Add [plugins](https://asdf-vm.com/manage/plugins.html) for the tools in [.tool-versions](.tool-versions)
+```sh
+asdf plugin add dotnet
+asdf plugin add golang
+asdf plugin add java
+asdf plugin add nodejs
+asdf plugin add python
+asdf plugin add ruby
+asdf plugin add uv
+```
+
+## Install Tool Versions
+```sh
+asdf install
+```
