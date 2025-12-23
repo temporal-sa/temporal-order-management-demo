@@ -15,7 +15,8 @@ Demos various aspects of [Temporal](http://temporal.io) through an example Order
 |                    |    | __ | Polyglot       | ✅ | __ |                     |    |
 |                    |    | __ | API Keys       | ✅ | __ |                     |    |
 
-The runtimes identified in the Prerequisites column can be installed using [asdf](#asdf)
+> [!TIP]
+> **The runtimes identified in the Prerequisites column can be easily installed using [asdf](#asdf)**
 
 This demo walks through several scenarios using an order management process. The scenarios are:
 - HappyPath
