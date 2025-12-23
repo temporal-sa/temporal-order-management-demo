@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.temporal.io/api/enums/v1"
+	"go.temporal.io/sdk/converter"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
@@ -24,10 +25,16 @@ const (
 
 var orderStatusKey = temporal.NewSearchAttributeKeyKeyword("OrderStatus")
 
-func OrderWorkflowScenarios(ctx workflow.Context, input app.OrderInput) (output *app.OrderOutput, err error) {
+func OrderWorkflowScenarios(ctx workflow.Context, args converter.EncodedValues) (output *app.OrderOutput, err error) {
+	var input app.OrderInput
+	err = args.Get(&input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode arguments: %w", err)
+	}
+
 	name := workflow.GetInfo(ctx).WorkflowType.Name
 	logger := workflow.GetLogger(ctx)
-	logger.Info("Processing order started", "orderId", input.OrderId)
+	logger.Info("Dynamic Order workflow started", "type", name, "orderId", input.OrderId)
 
 	activityOptions := workflow.ActivityOptions{
 		StartToCloseTimeout: 5 * time.Second,

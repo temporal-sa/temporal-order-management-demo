@@ -24,31 +24,8 @@ func main() {
 	w.RegisterWorkflowWithOptions(workflows.OrderWorkflow, workflow.RegisterOptions{
 		Name: "OrderWorkflowHappyPath",
 	})
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
-		Name: "OrderWorkflowAPIFailure",
-	})
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
-		Name: "OrderWorkflowRecoverableFailure",
-	})
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
-		Name: "OrderWorkflowNonRecoverableFailure",
-	})
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
-		Name: "OrderWorkflowChildWorkflow",
-	})
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
-		Name: "OrderWorkflowNexusOperation",
-	})
+	w.RegisterDynamicWorkflow(workflows.OrderWorkflowScenarios, workflow.DynamicRegisterOptions{})
 	w.RegisterWorkflow(workflows.ShippingWorkflow)
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
-		Name: "OrderWorkflowAdvancedVisibility",
-	})
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
-		Name: "OrderWorkflowHumanInLoopSignal",
-	})
-	w.RegisterWorkflowWithOptions(workflows.OrderWorkflowScenarios, workflow.RegisterOptions{
-		Name: "OrderWorkflowHumanInLoopUpdate",
-	})
 
 	// activities
 	w.RegisterActivity(activities.GetItems)
