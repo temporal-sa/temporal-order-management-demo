@@ -15,10 +15,12 @@ import (
 )
 
 func main() {
-	c, err := client.Dial(app.GetClientOptions())
+	co := app.GetClientOptions()
+	c, err := client.Dial(co)
 	if err != nil {
 		log.Fatalln("Unable to create client", err)
 	}
+	log.Printf("✅ Client connected to %v in namespace '%v'", co.HostPort, co.Namespace)
 	defer c.Close()
 
 	w := worker.New(c, app.GetEnv("TEMPORAL_NEXUS_TASK_QUEUE", "shipping"), worker.Options{})

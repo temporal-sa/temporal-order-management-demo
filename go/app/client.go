@@ -1,24 +1,18 @@
 package app
 
 import (
-	"context"
-	"crypto/tls"
-	"io"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/uber-go/tally/v4"
 	"github.com/uber-go/tally/v4/prometheus"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/contrib/envconfig"
 	sdktally "go.temporal.io/sdk/contrib/tally"
 	tlog "go.temporal.io/sdk/log"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 )
 
 func GetClientOptions() client.Options {
@@ -27,99 +21,83 @@ func GetClientOptions() client.Options {
 	}))
 	slog.SetDefault(logger)
 
-	address := GetEnv("TEMPORAL_ADDRESS", "localhost:7233")
-	namespace := GetEnv("TEMPORAL_NAMESPACE", "default")
-	clientOptions := client.Options{
-		HostPort:  address,
-		Namespace: namespace,
-		Logger:    tlog.NewStructuredLogger(logger),
-		MetricsHandler: sdktally.NewMetricsHandler(newPrometheusScope(prometheus.Configuration{
-			ListenAddress: "0.0.0.0:9090",
-			TimerType:     "histogram",
-		})),
+	clientOptions, err := envconfig.LoadDefaultClientOptions()
+	if err != nil {
+		log.Fatalln("error loading default client options", err)
 	}
 
-	apiKey := GetEnv("TEMPORAL_APIKEY", "")
-	tlsCertPath := GetEnv("TEMPORAL_CERT_PATH", "")
-	tlsKeyPath := GetEnv("TEMPORAL_KEY_PATH", "")
+	clientOptions.Logger = tlog.NewStructuredLogger(logger)
+	clientOptions.MetricsHandler = sdktally.NewMetricsHandler(newPrometheusScope(prometheus.Configuration{
+		ListenAddress: "0.0.0.0:9090",
+		TimerType:     "histogram",
+	}))
 
-	switch {
-	case apiKey != "":
-		serverName := strings.Split(address, ":")[0]
-
-		// "kms" service
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-			if r.Method == http.MethodOptions {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-
-			if r.Method != http.MethodPut {
-				http.Error(w, "", http.StatusMethodNotAllowed)
-				return
-			}
-
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, "Failed to read request body", http.StatusBadRequest)
-				return
-			}
-			defer r.Body.Close()
-
-			apiKey = string(body)
-			log.Default().Println("API key updated")
-
-			w.WriteHeader(http.StatusAccepted)
-		})
-
-		go func() {
-			err := http.ListenAndServe(":3333", nil) // make this an env variable
-			if err != nil {
-				log.Fatalln("Unable to start webserver", err)
-			}
-		}()
-
-		clientOptions.Credentials = client.NewAPIKeyDynamicCredentials(
-			func(context.Context) (string, error) {
-				return apiKey, nil
-			},
-		)
-		clientOptions.ConnectionOptions = client.ConnectionOptions{
-			TLS: &tls.Config{
-				InsecureSkipVerify: true,
-				ServerName:         serverName,
-			},
-			DialOptions: []grpc.DialOption{
-				grpc.WithUnaryInterceptor(
-					func(ctx context.Context, method string, req any, reply any, cc *grpc.ClientConn,
-						invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-						return invoker(
-							metadata.AppendToOutgoingContext(ctx, "temporal-namespace", namespace),
-							method,
-							req,
-							reply,
-							cc,
-							opts...,
-						)
-					},
-				),
-			},
-		}
-	case tlsCertPath != "" && tlsKeyPath != "":
-		cert, err := tls.LoadX509KeyPair(tlsCertPath, tlsKeyPath)
-		if err != nil {
-			log.Fatalln("Unable to load cert and key pair", err)
-		}
-		clientOptions.ConnectionOptions = client.ConnectionOptions{
-			TLS: &tls.Config{
-				Certificates: []tls.Certificate{cert},
-			},
-		}
-	}
+	//switch {
+	//case apiKey != "":
+	//	serverName := strings.Split(address, ":")[0]
+	//
+	//	// "kms" service
+	//	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	//		w.Header().Set("Access-Control-Allow-Origin", "*")
+	//		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	//		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	//
+	//		if r.Method == http.MethodOptions {
+	//			w.WriteHeader(http.StatusOK)
+	//			return
+	//		}
+	//
+	//		if r.Method != http.MethodPut {
+	//			http.Error(w, "", http.StatusMethodNotAllowed)
+	//			return
+	//		}
+	//
+	//		body, err := io.ReadAll(r.Body)
+	//		if err != nil {
+	//			http.Error(w, "Failed to read request body", http.StatusBadRequest)
+	//			return
+	//		}
+	//		defer r.Body.Close()
+	//
+	//		apiKey = string(body)
+	//		log.Default().Println("API key updated")
+	//
+	//		w.WriteHeader(http.StatusAccepted)
+	//	})
+	//
+	//	go func() {
+	//		err := http.ListenAndServe(":3333", nil) // make this an env variable
+	//		if err != nil {
+	//			log.Fatalln("Unable to start webserver", err)
+	//		}
+	//	}()
+	//
+	//	clientOptions.Credentials = client.NewAPIKeyDynamicCredentials(
+	//		func(context.Context) (string, error) {
+	//			return apiKey, nil
+	//		},
+	//	)
+	//	clientOptions.ConnectionOptions = client.ConnectionOptions{
+	//		TLS: &tls.Config{
+	//			InsecureSkipVerify: true,
+	//			ServerName:         serverName,
+	//		},
+	//		DialOptions: []grpc.DialOption{
+	//			grpc.WithUnaryInterceptor(
+	//				func(ctx context.Context, method string, req any, reply any, cc *grpc.ClientConn,
+	//					invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	//					return invoker(
+	//						metadata.AppendToOutgoingContext(ctx, "temporal-namespace", namespace),
+	//						method,
+	//						req,
+	//						reply,
+	//						cc,
+	//						opts...,
+	//					)
+	//				},
+	//			),
+	//		},
+	//	}
 
 	return clientOptions
 }
