@@ -1,3 +1,10 @@
 #!/bin/bash
 source ../setcloudenv.sh
-./gradlew :shipping-service:bootRun --args='--spring.profiles.active=tc'
+
+if [ -n "$TEMPORAL_API_KEY" ]; then
+    export SPRING_PROFILES_ACTIVE=tc-apikey
+else
+    export SPRING_PROFILES_ACTIVE=tc-mtls
+fi
+
+./gradlew :shipping-service:bootRun

@@ -8,9 +8,9 @@ spring:
   application:
     name: temporal-ordermgmt-shipping
   temporal:
-    namespace: default
+    namespace: ${TEMPORAL_NAMESPACE}
     connection:
-      target: local
+      target: ${TEMPORAL_ADDRESS}
     workers:
       - task-queue: ${TEMPORAL_NEXUS_TASK_QUEUE:shipping}
         workflow-classes:
@@ -18,7 +18,3 @@ spring:
         activity-beans:
           - orderActivitiesImpl
     start-workers: false
-
-#logging:
-#  pattern:
-#    console: "%d{HH:mm:ss.SSS} {%X{WorkflowId} %X{ActivityId}} [%thread] %-5level %logger{36} - %msg %n"

@@ -1,0 +1,4 @@
+spring:
+  temporal:
+    connection:
+      apiKey: ${TEMPORAL_API_KEY}
