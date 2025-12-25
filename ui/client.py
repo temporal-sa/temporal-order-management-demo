@@ -1,46 +1,8 @@
-from temporalio.client import Client, TLSConfig
-from typing import Optional
-import os
+from temporalio.client import Client
+from temporalio.envconfig import ClientConfig
 
 async def get_client()-> Client:
-
-    if (os.getenv("TEMPORAL_APIKEY") is not None):
-        print(os.getenv("TEMPORAL_APIKEY"), os.getenv("TEMPORAL_NAMESPACE"), os.getenv("TEMPORAL_ADDRESS"))
-
-        client = await Client.connect(
-            os.getenv("TEMPORAL_ADDRESS"),
-            namespace=os.getenv("TEMPORAL_NAMESPACE"),
-            rpc_metadata={"temporal-namespace": os.getenv("TEMPORAL_NAMESPACE")},
-            api_key=os.getenv("TEMPORAL_APIKEY"),
-            tls=True,
-        )
-    elif (
-        os.getenv("TEMPORAL_CERT_PATH")
-        and os.getenv("TEMPORAL_KEY_PATH") is not None
-    ):
-        server_root_ca_cert: Optional[bytes] = None
-        with open(os.getenv("TEMPORAL_CERT_PATH"), "rb") as f:
-            client_cert = f.read()
-
-        with open(os.getenv("TEMPORAL_KEY_PATH"), "rb") as f:
-            client_key = f.read()
-
-        # Start client
-        client = await Client.connect(
-            os.getenv("TEMPORAL_ADDRESS"),
-            namespace=os.getenv("TEMPORAL_NAMESPACE"),
-            tls=TLSConfig(
-                server_root_ca_cert=server_root_ca_cert,
-                client_cert=client_cert,
-                client_private_key=client_key,
-            ),
-            #data_converter=dataclasses.replace(
-            #    temporalio.converter.default(), payload_codec=EncryptionCodec()
-            #),
-        )
-    else:
-        client = await Client.connect(
-            "localhost:7233",
-        )
-
+    connect_config = ClientConfig.load_client_connect_config()
+    client = await Client.connect(**connect_config)
+    print(f"Client connected to {client.service_client.config.target_host} in namespace '{client.namespace}'")
     return client

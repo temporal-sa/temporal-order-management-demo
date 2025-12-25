@@ -1,17 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 
 ### COPY THIS FILE TO `setcloudenv.sh`, and then EDIT YOUR COPY AS NEEDED
+
+# See https://docs.temporal.io/references/client-environment-configuration
+# for more information on the available environment variables used by the Temporal client.
 
 # env vars that need to be set when connecting to cloud via mTLS
 export TEMPORAL_ADDRESS=<namespace>.<accountId>.tmprl.cloud:7233
 export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-export TEMPORAL_CERT_PATH=<path/to/client.pem>
-export TEMPORAL_KEY_PATH=<path/to/client.key>
+export TEMPORAL_TLS_CLIENT_CERT_PATH=<path/to/client.pem>
+export TEMPORAL_TLS_CLIENT_KEY_PATH=<path/to/client.key>
 
 # env vars that need to be set when connecting to cloud via API key
 export TEMPORAL_ADDRESS=<region>.<cloudProvider>.api.temporal.io:7233
 export TEMPORAL_NAMESPACE=<namespace>.<accountId>
-export TEMPORAL_APIKEY=<apiKey>
+export TEMPORAL_API_KEY=<apiKey>
 
 # env vars to optionally set, or customize for your environment
 export TEMPORAL_TASK_QUEUE=orders
@@ -20,9 +23,13 @@ export TEMPORAL_NEXUS_SHIPPING_ENDPOINT=shipping-endpoint
 
 
 # the alternate, over-engineered :), way using the temporal cli to populate the vars
-# TEMPORAL_ENV=<env>
-# export TEMPORAL_ADDRESS=$(temporal env get --env ${TEMPORAL_ENV} --key address -o json | jq -r '.[].value')
-# export TEMPORAL_NAMESPACE=$(temporal env get --env ${TEMPORAL_ENV} --key namespace -o json | jq -r '.[].value')
-# export TEMPORAL_CERT_PATH=$(temporal env get --env ${TEMPORAL_ENV} --key tls-cert-path -o json | jq -r '.[].value')
-# export TEMPORAL_KEY_PATH=$(temporal env get --env ${TEMPORAL_ENV} --key tls-key-path -o json | jq -r '.[].value')
-# export TEMPORAL_KEY_PKCS8_PATH=$(temporal env get --env ${TEMPORAL_ENV} --key tls-key-pkcs8-path -o json | jq -r '.[].value')
+# get_value() {
+#     temporal --profile ${TEMPORAL_PROFILE} config get --prop ${1} --output json | jq -r '.value'
+# }
+
+# TEMPORAL_PROFILE=<profile>
+# export TEMPORAL_ADDRESS=$(get_value address)
+# export TEMPORAL_NAMESPACE=$(get_value namespace)
+# export TEMPORAL_TLS_CLIENT_CERT_PATH=$(get_value tls.client_cert_path)
+# export TEMPORAL_TLS_CLIENT_KEY_PATH=$(get_value tls.client_key_path)
+# export TEMPORAL_API_KEY=$(get_value api_key)
