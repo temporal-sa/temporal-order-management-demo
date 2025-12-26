@@ -13,7 +13,7 @@ async function main() {
   const connectionOptions = await getConnectionOptions();
   const connection = await NativeConnection.connect(connectionOptions);
 
-  if (process.env.TEMPORAL_APIKEY) {
+  if (process.env.TEMPORAL_API_KEY) {
     createApiKeyServer(connection).listen(3333, () => {
       console.log('API Key server is running on http://localhost:3333');
     });

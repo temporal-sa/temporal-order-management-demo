@@ -95,11 +95,11 @@ class Worker
   end
 
   def cert_path
-    ENV['TEMPORAL_CERT_PATH']
+    ENV['TEMPORAL_TLS_CLIENT_CERT_PATH']
   end
 
   def key_path
-    ENV['TEMPORAL_KEY_PATH']
+    ENV['TEMPORAL_TLS_CLIENT_KEY_PATH']
   end
 
   def using_tls?

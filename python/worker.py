@@ -13,8 +13,8 @@ from shipping_child_workflow import ShippingChildWorkflow
 async def main():
     address = os.getenv("TEMPORAL_ADDRESS","127.0.0.1:7233")
     namespace = os.getenv("TEMPORAL_NAMESPACE","default")
-    tlsCertPath = os.getenv("TEMPORAL_CERT_PATH","")
-    tlsKeyPath = os.getenv("TEMPORAL_KEY_PATH","")
+    tlsCertPath = os.getenv("TEMPORAL_TLS_CLIENT_CERT_PATH","")
+    tlsKeyPath = os.getenv("TEMPORAL_TLS_CLIENT_KEY_PATH","")
     tls = None
 
     if tlsCertPath and tlsKeyPath:

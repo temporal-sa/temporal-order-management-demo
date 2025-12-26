@@ -4,5 +4,5 @@ spring:
     connection:
       target: ${TEMPORAL_ADDRESS}
       mtls:
-        key-file: ${TEMPORAL_KEY_PATH}
-        cert-chain-file: ${TEMPORAL_CERT_PATH}
+        key-file: ${TEMPORAL_TLS_CLIENT_KEY_PATH}
+        cert-chain-file: ${TEMPORAL_TLS_CLIENT_CERT_PATH}

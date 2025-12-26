@@ -24,14 +24,14 @@ export async function getConnectionOptions(): Promise<ConnectionOptions> {
   let apiKey: string | undefined = undefined;
   let metadata: Record<string, string> = {};
 
-  if (process.env.TEMPORAL_CERT_PATH && process.env.TEMPORAL_KEY_PATH) {
-    const crt = await fs.readFile(getenv('TEMPORAL_CERT_PATH'));
-    const key = await fs.readFile(getenv('TEMPORAL_KEY_PATH'));
+  if (process.env.TEMPORAL_TLS_CLIENT_CERT_PATH && process.env.TEMPORAL_TLS_CLIENT_KEY_PATH) {
+    const crt = await fs.readFile(getenv('TEMPORAL_TLS_CLIENT_CERT_PATH'));
+    const key = await fs.readFile(getenv('TEMPORAL_TLS_CLIENT_KEY_PATH'));
 
     tls = { clientCertPair: { crt, key } };
     console.info('🤖: Connecting to Temporal Cloud (mTLS) ⛅');
-  } else if (process.env.TEMPORAL_APIKEY) {
-    apiKey = getenv('TEMPORAL_APIKEY');
+  } else if (process.env.TEMPORAL_API_KEY) {
+    apiKey = getenv('TEMPORAL_API_KEY');
     tls = true;
     metadata = {
       'temporal-namespace': getenv('TEMPORAL_NAMESPACE'),

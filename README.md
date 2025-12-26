@@ -232,7 +232,7 @@ This scenario demonstrates updating the API key for the worker without the need 
     - Alternatively, you could diable/revoke the key on the Temporal server.
 2. Start the `HappyPath` scenario. The workflow will fail to make progress.
 3. In a new browser tab/window, open the Order Management UI (http://127.0.0.1:5000) and update the worker API key.
-    - The predefined value in the `Update Key` text field is the value of the `TEMPORAL_APIKEY` environment variable. If you used `Remove Worker API Key` earlier, then this key will still work fine.
+    - The predefined value in the `Update Key` text field is the value of the `TEMPORAL_API_KEY` environment variable. If you used `Remove Worker API Key` earlier, then this key will still work fine.
     - Alternatively, if you have disabled/revoked the key on the Temporal server then you will need to make sure you provide a vaild key here.
 4. Return to the in-flight `HappyPath` scenario. The workflow will now progress/complete.
 
