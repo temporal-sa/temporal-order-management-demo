@@ -37,13 +37,21 @@ export TEMPORAL_NEXUS_SHIPPING_ENDPOINT=shipping-endpoint
 # export TEMPORAL_API_KEY=$(get_env_value api-key)
 
 ######## ELSE IF you are using the new CLI `config` option
-# get_config_value() {
-#     temporal --profile ${TEMPORAL_PROFILE} config get --prop ${1} --output json | jq -r '.value'
-# }
+get_config_value() {
+    temporal --profile ${1} config get --prop ${2} --output json | jq -r '.value'
+}
 
 # TEMPORAL_PROFILE=<profile>
-# export TEMPORAL_ADDRESS=$(get_config_value address)
-# export TEMPORAL_NAMESPACE=$(get_config_value namespace)
-# export TEMPORAL_TLS_CLIENT_CERT_PATH=$(get_config_value tls.client_cert_path)
-# export TEMPORAL_TLS_CLIENT_KEY_PATH=$(get_config_value tls.client_key_path)
-# export TEMPORAL_API_KEY=$(get_config_value api_key)
+# export TEMPORAL_ADDRESS=$(get_config_value $TEMPORAL_PROFILE address)
+# export TEMPORAL_NAMESPACE=$(get_config_value $TEMPORAL_PROFILE namespace)
+# export TEMPORAL_TLS_CLIENT_CERT_PATH=$(get_config_value $TEMPORAL_PROFILE tls.client_cert_path)
+# export TEMPORAL_TLS_CLIENT_KEY_PATH=$(get_config_value $TEMPORAL_PROFILE tls.client_key_path)
+# export TEMPORAL_API_KEY=$(get_config_value $TEMPORAL_PROFILE api_key)
+
+#### FOR JAVA AND NEXUS DEMO - you can also set a 2nd profile for the Nexus handler namespace
+# TEMPORAL_NEXUS_PROFILE=<profile>
+# export TEMPORAL_NEXUS_ADDRESS=$(get_config_value $TEMPORAL_NEXUS_PROFILE address)
+# export TEMPORAL_NEXUS_NAMESPACE=$(get_config_value $TEMPORAL_NEXUS_PROFILE namespace)
+# export TEMPORAL_NEXUS_TLS_CLIENT_CERT_PATH=$(get_config_value $TEMPORAL_NEXUS_PROFILE tls.client_cert_path)
+# export TEMPORAL_NEXUS_TLS_CLIENT_KEY_PATH=$(get_config_value $TEMPORAL_NEXUS_PROFILE tls.client_key_path)
+# export TEMPORAL_NEXUS_API_KEY=$(get_config_value $TEMPORAL_NEXUS_PROFILE api_key)

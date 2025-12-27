@@ -41,10 +41,12 @@ cd ui
 
 ## (Optional) Create Nexus Endpoint
 ```bash
+temporal operator namespace create --namespace nexus-demo
+
 temporal operator nexus endpoint create \
     --name shipping-endpoint \
     --target-task-queue shipping \
-    --target-namespace default
+    --target-namespace nexus-demo
 ```
 
 ## Run Worker
