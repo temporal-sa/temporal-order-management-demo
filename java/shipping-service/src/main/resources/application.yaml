@@ -15,6 +15,7 @@ spring:
       - task-queue: ${TEMPORAL_NEXUS_TASK_QUEUE:shipping}
         workflow-classes:
           - com.example.ordermgmt.workflows.ShippingWorkflowImpl
-        activity-beans:
-          - orderActivitiesImpl
-    start-workers: false
+    workersAutoDiscovery:
+      packages:
+        - com.example.ordermgmt.nexus.handler
+        - com.example.ordermgmt.activities
