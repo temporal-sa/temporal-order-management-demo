@@ -2,23 +2,20 @@ package app
 
 import (
 	"context"
-	"crypto/tls"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/uber-go/tally/v4"
 	"github.com/uber-go/tally/v4/prometheus"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/contrib/envconfig"
 	sdktally "go.temporal.io/sdk/contrib/tally"
 	tlog "go.temporal.io/sdk/log"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 )
 
 func GetClientOptions() client.Options {
@@ -27,26 +24,19 @@ func GetClientOptions() client.Options {
 	}))
 	slog.SetDefault(logger)
 
-	address := GetEnv("TEMPORAL_ADDRESS", "localhost:7233")
-	namespace := GetEnv("TEMPORAL_NAMESPACE", "default")
-	clientOptions := client.Options{
-		HostPort:  address,
-		Namespace: namespace,
-		Logger:    tlog.NewStructuredLogger(logger),
-		MetricsHandler: sdktally.NewMetricsHandler(newPrometheusScope(prometheus.Configuration{
-			ListenAddress: "0.0.0.0:9090",
-			TimerType:     "histogram",
-		})),
+	clientOptions, err := envconfig.LoadDefaultClientOptions()
+	if err != nil {
+		log.Fatalln("error loading default client options", err)
 	}
 
+	clientOptions.Logger = tlog.NewStructuredLogger(logger)
+	clientOptions.MetricsHandler = sdktally.NewMetricsHandler(newPrometheusScope(prometheus.Configuration{
+		ListenAddress: "0.0.0.0:9090",
+		TimerType:     "histogram",
+	}))
+
 	apiKey := GetEnv("TEMPORAL_API_KEY", "")
-	tlsCertPath := GetEnv("TEMPORAL_TLS_CLIENT_CERT_PATH", "")
-	tlsKeyPath := GetEnv("TEMPORAL_TLS_CLIENT_KEY_PATH", "")
-
-	switch {
-	case apiKey != "":
-		serverName := strings.Split(address, ":")[0]
-
+	if apiKey != "" {
 		// "kms" service
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -88,39 +78,7 @@ func GetClientOptions() client.Options {
 				return apiKey, nil
 			},
 		)
-		clientOptions.ConnectionOptions = client.ConnectionOptions{
-			TLS: &tls.Config{
-				InsecureSkipVerify: true,
-				ServerName:         serverName,
-			},
-			DialOptions: []grpc.DialOption{
-				grpc.WithUnaryInterceptor(
-					func(ctx context.Context, method string, req any, reply any, cc *grpc.ClientConn,
-						invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-						return invoker(
-							metadata.AppendToOutgoingContext(ctx, "temporal-namespace", namespace),
-							method,
-							req,
-							reply,
-							cc,
-							opts...,
-						)
-					},
-				),
-			},
-		}
-	case tlsCertPath != "" && tlsKeyPath != "":
-		cert, err := tls.LoadX509KeyPair(tlsCertPath, tlsKeyPath)
-		if err != nil {
-			log.Fatalln("Unable to load cert and key pair", err)
-		}
-		clientOptions.ConnectionOptions = client.ConnectionOptions{
-			TLS: &tls.Config{
-				Certificates: []tls.Certificate{cert},
-			},
-		}
 	}
-
 	return clientOptions
 }
 
