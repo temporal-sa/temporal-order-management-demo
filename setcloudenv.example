@@ -48,7 +48,7 @@ get_config_value() {
 # export TEMPORAL_TLS_CLIENT_KEY_PATH=$(get_config_value $TEMPORAL_PROFILE tls.client_key_path)
 # export TEMPORAL_API_KEY=$(get_config_value $TEMPORAL_PROFILE api_key)
 
-#### FOR JAVA AND NEXUS DEMO - you can also set a 2nd profile for the Nexus handler namespace
+#### FOR NEXUS DEMO (Go and Java) - set a 2nd set of env vars for the Nexus handler namespace
 # TEMPORAL_NEXUS_PROFILE=<profile>
 # export TEMPORAL_NEXUS_ADDRESS=$(get_config_value $TEMPORAL_NEXUS_PROFILE address)
 # export TEMPORAL_NEXUS_NAMESPACE=$(get_config_value $TEMPORAL_NEXUS_PROFILE namespace)

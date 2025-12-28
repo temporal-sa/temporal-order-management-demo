@@ -1,6 +1,4 @@
 #!/bin/bash
-
-# make sure you have created your endoint, e.g.
-# temporal operator nexus endpoint create --name shipping-endpoint --target-namespace default --target-task-queue shipping
-
+export TEMPORAL_NEXUS_ADDRESS=localhost:7233
+export TEMPORAL_NEXUS_NAMESPACE=nexus-demo
 go run nexus/worker/worker.go

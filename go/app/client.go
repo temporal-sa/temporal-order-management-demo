@@ -24,11 +24,7 @@ func GetClientOptions() client.Options {
 	}))
 	slog.SetDefault(logger)
 
-	clientOptions, err := envconfig.LoadDefaultClientOptions()
-	if err != nil {
-		log.Fatalln("error loading default client options", err)
-	}
-
+	clientOptions := envconfig.MustLoadDefaultClientOptions()
 	clientOptions.Logger = tlog.NewStructuredLogger(logger)
 	clientOptions.MetricsHandler = sdktally.NewMetricsHandler(newPrometheusScope(prometheus.Configuration{
 		ListenAddress: "0.0.0.0:9090",
