@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -93,7 +94,9 @@ public class OrderActivitiesImpl implements OrderActivities {
         log.info("Ship Order activity started, orderId ={}, itemId = {}, itemDescription = {}", input.getOrderId(), item.getId(), item.getDescription());
 
         // simulate external API call
-        simulateExternalOperation(1000);
+        int delayMs = ThreadLocalRandom.current().nextInt(1000, 4001);
+        log.info("Shipping Delay Time: {}", delayMs);
+        simulateExternalOperation(delayMs);
 
         return String.valueOf(item.getId());
     }

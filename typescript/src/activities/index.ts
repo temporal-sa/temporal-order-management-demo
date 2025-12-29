@@ -94,7 +94,9 @@ export async function chargeCustomer(input: OrderInput, type: string): Promise<s
 export async function shipOrder(input: OrderInput, item: OrderItem) {
   log.info(`Ship Order activity started, ${input.OrderId}, ${item.id}, ${item.description}`);
 
-  await simulateExternalOperation(1000);
+  const delayMs = Math.floor(Math.random() * 3001) + 1000;
+  log.info(`Shipping Delay Time: ${delayMs}`);
+  await simulateExternalOperation(delayMs);
 }
 
 export async function undoPrepareShipment(input: OrderInput): Promise<string> {
