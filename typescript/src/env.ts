@@ -1,54 +1,4 @@
-import fs from 'fs/promises';
-import type * as client from '@temporalio/client';
 import type { RuntimeOptions, WorkerOptions } from '@temporalio/worker';
-import { NativeConnectionOptions } from '@temporalio/worker';
-
-// Common set of connection options that can be used for both the client and worker connections.
-export type ConnectionOptions = Pick<NativeConnectionOptions, 'tls' | 'address' | 'apiKey' | 'metadata'>;
-
-export function getenv(key: string, defaultValue?: string): string {
-  const value = process.env[key];
-  if (!value) {
-    if (defaultValue != null) {
-      return defaultValue;
-    }
-    throw new Error(`missing env var: ${key}`);
-  }
-  return value;
-}
-
-export async function getConnectionOptions(): Promise<ConnectionOptions> {
-  const address = getenv('TEMPORAL_ADDRESS', 'localhost:7233');
-
-  let tls: ConnectionOptions['tls'] = undefined;
-  let apiKey: string | undefined = undefined;
-  let metadata: Record<string, string> = {};
-
-  if (process.env.TEMPORAL_TLS_CLIENT_CERT_PATH && process.env.TEMPORAL_TLS_CLIENT_KEY_PATH) {
-    const crt = await fs.readFile(getenv('TEMPORAL_TLS_CLIENT_CERT_PATH'));
-    const key = await fs.readFile(getenv('TEMPORAL_TLS_CLIENT_KEY_PATH'));
-
-    tls = { clientCertPair: { crt, key } };
-    console.info('🤖: Connecting to Temporal Cloud (mTLS) ⛅');
-  } else if (process.env.TEMPORAL_API_KEY) {
-    apiKey = getenv('TEMPORAL_API_KEY');
-    tls = true;
-    metadata = {
-      'temporal-namespace': getenv('TEMPORAL_NAMESPACE'),
-    };
-
-    console.info('🤖: Connecting to Temporal Cloud (API key) ⛅');
-  } else {
-    console.info('🤖: Connecting to Local Temporal');
-  }
-
-  return {
-    address,
-    tls,
-    apiKey,
-    metadata,
-  };
-}
 
 export function getWorkflowOptions(): Pick<WorkerOptions, 'workflowBundle' | 'workflowsPath'> {
   const workflowBundlePath = getenv('WORKFLOW_BUNDLE_PATH', 'lib/workflow-bundle.js');
@@ -63,11 +13,12 @@ export function getWorkflowOptions(): Pick<WorkerOptions, 'workflowBundle' | 'wo
 export function getTelemetryOptions(): RuntimeOptions {
   const metrics = getenv('TEMPORAL_WORKER_METRIC', 'PROMETHEUS');
   const port = getenv('TEMPORAL_WORKER_METRICS_PORT', '9464');
+  let bindAddress: string;
   let telemetryOptions = {};
 
   switch (metrics) {
     case 'PROMETHEUS':
-      const bindAddress = getenv('TEMPORAL_METRICS_PROMETHEUS_ADDRESS', `0.0.0.0:${port}`);
+      bindAddress = getenv('TEMPORAL_METRICS_PROMETHEUS_ADDRESS', `0.0.0.0:${port}`);
       telemetryOptions = {
         metrics: {
           prometheus: {
@@ -98,6 +49,16 @@ export function getTelemetryOptions(): RuntimeOptions {
   return { telemetryOptions };
 }
 
-export const namespace = getenv('TEMPORAL_NAMESPACE', 'default');
 export const taskQueue = getenv('TEMPORAL_TASK_QUEUE', 'orders');
 export const env = getenv('NODE_ENV', 'development');
+
+function getenv(key: string, defaultValue?: string): string {
+  const value = process.env[key];
+  if (!value) {
+    if (defaultValue != null) {
+      return defaultValue;
+    }
+    throw new Error(`missing env var: ${key}`);
+  }
+  return value;
+}

@@ -40,7 +40,7 @@ export function createApiKeyServer (connection: NativeConnection): Server<any, a
           try {
             const newApiKey: string = await getRequestBody(req);
             res.statusCode = 202;
-            connection.setApiKey(newApiKey);
+            await connection.setApiKey(newApiKey);
             res.end();
           } catch (error) {
             res.statusCode = 400;
