@@ -191,13 +191,13 @@ workflows instead.
 ![Shipping Workflows](ui/static/shipping-workflows.png)
 
 ## NexusOperation
+> [!CAUTION]
+> The NexusOperation scenario is currently ***only supported using Go and Java***.
+
 ![Nexus Operation](ui/static/nexus.png)
 
 This scenario follows Happy Path but instead of shipping items using parallel activities or Child Workflows, it does so
 using Nexus Operations to trigger the Shipping Workflow.
-
-> [!NOTE]
-> This scenario is currently only supported using Go and Java.
 
 ![Shipping Workflows](ui/static/nexus-workflows.png)
 
@@ -227,10 +227,10 @@ workflow to fail.
 ![Workflow Failed](ui/static/workflow-failed.png)
 
 ## Live API Key Rotation
-![Live API Key Rotation](ui/static/api-key-rotation.png)
+> [!CAUTION]
+> The APIKeyRotation scenario is currently ***only supported using Go and Typescript***.
 
-> [!NOTE]
-> This scenario is currently only supported using Go and Typescript.
+![Live API Key Rotation](ui/static/api-key-rotation.png)
 
 This scenario demonstrates updating the API key for the worker without the need to restart the worker. Steps;
 1. Invalidate the worker API key with `Remove Worker API Key`
@@ -244,7 +244,7 @@ This scenario demonstrates updating the API key for the worker without the need 
     a vaild key here.
 4. Return to the in-flight `HappyPath` scenario. The workflow will now progress/complete.
 
-# ASDF
+# asdf
 
 The runtime versions for the prerequisites identified in this README can be managed
 using [asdf](https://asdf-vm.com/). The runtime versions are specified in the [.tool-versions](.tool-versions)
