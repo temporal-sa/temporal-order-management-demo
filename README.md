@@ -282,8 +282,8 @@ Ensure you run the following `asdf install` command from within the same directo
 contains the `.tools-verions` file, which will tell `asdf` which specific versions to install and configure for your environment.
 
 ```sh
-cd temporal-order-management
-asdf install
+> cd temporal-order-management
+> asdf install
 
 # Example Output
 # for any version that you don't yet have installed, you will see output of asdf downloading and installing, e.g.
