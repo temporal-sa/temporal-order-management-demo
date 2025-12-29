@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 import time
 from datetime import timedelta
 
@@ -86,9 +87,10 @@ class OrderActivities:
     @activity.defn
     async def ship_order(self, input: OrderInput, item: OrderItem) -> None:
         activity.logger.info(f"Ship Order activity started, orderId = {input.OrderId}, itemId = {item.id}, itemDescription = {item.description}")
-
+        randTime = random.randint(1000, 4000)
+        activity.logger.info(f"Shipping Delay Time:  {randTime}")
         # Simulate external API call
-        await self.simulate_external_operation(1000)
+        await self.simulate_external_operation(randTime)
 
     @activity.defn
     async def undo_prepare_shipment(self, input: OrderInput) -> str:

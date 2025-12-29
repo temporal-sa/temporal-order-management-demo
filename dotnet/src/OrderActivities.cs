@@ -117,7 +117,9 @@ public class OrderActivities
             input.OrderId, item.Id, item.Description);
         
         // simulate external API call
-        await SimulateExternalOperationAsync(1000);
+        var delayMs = Random.Shared.Next(1000, 4001);
+        logger.LogInformation("Shipping Delay Time: {DelayMs}", delayMs);
+        await SimulateExternalOperationAsync(delayMs);
     }
 
     [Activity]
