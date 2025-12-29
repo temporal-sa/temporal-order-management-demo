@@ -251,7 +251,7 @@ using [asdf](https://asdf-vm.com/). The runtime versions are specified in the [.
 file.
 
 To get all of the needed language runtime versions installed and working should be a quick 3 step process:
-1. Install `asdf`` for your machine
+1. Install `asdf` for your machine
 2. Install the runtime ***plugins*** needed
 3. Install the specific runtime ***versions*** needed for the projects for this repository
 
