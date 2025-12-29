@@ -1,25 +1,7 @@
-# temporal-order-management-dotnet
+# Temporal Order Management Demo - .NET
 
-An order management demo written using the Temporal .NET SDK, which is compatable with the Python UI.
+An implementation of the Temporal Order Management Demo backend
+using the [.NET SDK](https://github.com/temporalio/sdk-dotnet).
 
-See the main [README](../README.md) for instructions for starting the UI
-
-## Run Worker Locally
-```bash
-./startlocalworker.sh
-```
-
-## Start Worker on Temporal Cloud
-If you haven't created the setcloudenv.sh file, then copy setcloundenv.example to setcloudenv.sh
-and edit as needed
-
-```bash
-cd ..
-cp setcloudenv.example setcloudenv.sh
-vi setcloudenv.sh # edit setcloudenv.sh to match your Temporal Cloud account
-```
-
-```bash
-# run the worker
-./startcloudworker.sh
-```
+All of the scenarios outlined in the main [README](../README.md) are implemented in this Typescript version, except where noted.
+See the main README for instructions on how to run the UI, and the Workers.

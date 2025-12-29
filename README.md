@@ -196,7 +196,8 @@ workflows instead.
 This scenario follows Happy Path but instead of shipping items using parallel activities or Child Workflows, it does so
 using Nexus Operations to trigger the Shipping Workflow.
 
-Note: This scenario is currently only supported using Go.
+> [!NOTE]
+> This scenario is currently only supported using Go and Java.
 
 ![Shipping Workflows](ui/static/nexus-workflows.png)
 
@@ -228,14 +229,19 @@ workflow to fail.
 ## Live API Key Rotation
 ![Live API Key Rotation](ui/static/api-key-rotation.png)
 
+> [!NOTE]
+> This scenario is currently only supported using Go and Typescript.
+
 This scenario demonstrates updating the API key for the worker without the need to restart the worker. Steps;
 1. Invalidate the worker API key with `Remove Worker API Key`
     - This doesn't disable/revoke the key with the Temporal server, it just sets a blank key on the worker.
     - Alternatively, you could diable/revoke the key on the Temporal server.
 2. Start the `HappyPath` scenario. The workflow will fail to make progress.
 3. In a new browser tab/window, open the Order Management UI (http://127.0.0.1:5000) and update the worker API key.
-    - The predefined value in the `Update Key` text field is the value of the `TEMPORAL_API_KEY` environment variable. If you used `Remove Worker API Key` earlier, then this key will still work fine.
-    - Alternatively, if you have disabled/revoked the key on the Temporal server then you will need to make sure you provide a vaild key here.
+    - The predefined value in the `Update Key` text field is the value of the `TEMPORAL_API_KEY` environment variable.
+    If you used `Remove Worker API Key` earlier, then this key will still work fine.
+    - Alternatively, if you have disabled/revoked the key on the Temporal server then you will need to make sure you provide
+    a vaild key here.
 4. Return to the in-flight `HappyPath` scenario. The workflow will now progress/complete.
 
 # ASDF

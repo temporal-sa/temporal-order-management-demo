@@ -1,16 +1,10 @@
 # Temporal Order Management Demo - Typescript
 
-This is an alternate implementation of the Temporal Order Management Demo backend
-using the [Typescript SDK](https://typescript.temporal.io/)
+An implementation of the Temporal Order Management Demo backend
+using the [Typescript SDK](https://github.com/temporalio/sdk-typescript)
 
-All of the scenarios suppported in the Go backend, and outlined in the main README are implemented in this Typescript version.
-This version is also fully compatible with the Python UI. See the main README for instructions on how to run the UI, and the
-instructions below for running the Typescript backend.
-
-## Run Worker
-```bash
-./startlocalworker.sh
-```
+All of the scenarios outlined in the main [README](../README.md) are implemented in this Typescript version, except where noted.
+See the main README for instructions on how to run the UI, and the Workers.
 
 ## (Optional) Run Worker in Productionize Build
 

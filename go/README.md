@@ -1,7 +1,7 @@
-# Temporal Order Management Demo - Python
+# Temporal Order Management Demo - Go
 
 An implementation of the Temporal Order Management Demo backend
-using the [Python SDK](https://github.com/temporalio/sdk-python).
+the [Go SDK](https://github.com/temporalio/sdk-go).
 
 All of the scenarios outlined in the main [README](../README.md) are implemented in this Typescript version, except where noted.
 See the main README for instructions on how to run the UI, and the Workers.
