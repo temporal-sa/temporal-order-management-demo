@@ -81,7 +81,12 @@ class OrderWorkflowImpl implements OrderWorkflow {
     private void sleep(int sleep, int progress) {
         this.progress = progress;
         if (sleep > 0) {
-            Workflow.sleep(Duration.ofSeconds(sleep));
+            Workflow.newTimer(
+                    Duration.ofSeconds(sleep),
+                    TimerOptions.newBuilder()
+                            .setSummary("Sleep")
+                            .build()
+            ).get();
         }
     }
 }

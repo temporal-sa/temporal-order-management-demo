@@ -156,7 +156,12 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
     private void updateProgress(String orderStatus, int progress, int sleep) {
         this.progress = progress;
         if (sleep > 0) {
-            Workflow.sleep(Duration.ofSeconds(sleep));
+            Workflow.newTimer(
+                    Duration.ofSeconds(sleep),
+                    TimerOptions.newBuilder()
+                            .setSummary("Sleep")
+                            .build()
+            ).get();
         }
         if (VISIBILITY.equals(Workflow.getInfo().getWorkflowType())) {
             Workflow.upsertTypedSearchAttributes(ORDER_STATUS_SA.valueSet(orderStatus));
