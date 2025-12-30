@@ -4,27 +4,53 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Temporal Orders</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <style>
-      .header-image {
-        text-align: center;
-        margin-top: 0px;
-      }
-  
-      .header-image img {
-        width: 150px;
-        height: 150px;
-      }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
   </head>
-  <body>
-    <div class="header-image">
-      <img src="{{ url_for('static', filename='Temporal_Logo_Animation.ac2f7996.gif') }}" alt="Animated Image">
-    </div>    
+  <body id="main-body">
+    <div id="darkModeIconContainer" class="dark-mode-icons">
+        <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </div>
+    <div class="logo-container">
+      <a href="{{ url_for('main_order_page') }}">
+        <img src="{{ url_for('static', filename='Temporal_Logo_Animation.ac2f7996.gif') }}" alt="Temporal Orders - Click to return to main page" class="logo">
+      </a>
+    </div>
     <div class="container">
       {% block content %}
       {% endblock %}
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const darkModeIconContainer = document.getElementById('darkModeIconContainer');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const body = document.getElementById('main-body');
+
+        function setDarkMode(enabled) {
+          if (enabled) {
+            body.classList.add('dark-mode');
+            sunIcon.style.display = 'none';
+            moonIcon.style.display = 'block';
+            localStorage.setItem('darkMode', 'enabled');
+          } else {
+            body.classList.remove('dark-mode');
+            sunIcon.style.display = 'block';
+            moonIcon.style.display = 'none';
+            localStorage.setItem('darkMode', 'disabled');
+          }
+        }
+
+        // Check for saved dark mode preference
+        const darkModePreference = localStorage.getItem('darkMode');
+        setDarkMode(darkModePreference === 'enabled');
+
+        darkModeIconContainer.addEventListener('click', () => {
+          const isDarkMode = body.classList.contains('dark-mode');
+          setDarkMode(!isDarkMode);
+        });
+      });
+    </script>
   </body>
 </html>

@@ -1,0 +1,210 @@
+/* Dark Mode */
+.dark-mode-icons {
+    cursor: pointer;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.dark-mode-icons svg {
+    width: 24px;
+    height: 24px;
+}
+
+#moonIcon {
+    display: none;
+}
+
+/* Body */
+body {
+    font-family: sans-serif;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    color: #1f2937;
+    position: relative;
+}
+
+/* Logo */
+.logo-container {
+    display: flex;
+    justify-content: center;
+}
+
+.logo {
+    width: 150px;
+    height: 150px;
+}
+
+/* Typography */
+h2, h3, h4 {
+    font-weight: 600;
+}
+
+h2 {
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+h4 {
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+}
+
+section {
+    margin-bottom: 1.25rem;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.25rem;
+}
+
+th, td {
+    border: 1px solid #d1d5db;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+}
+
+td {
+    background-color: #f9fafb;
+}
+
+/* Forms */
+select, input[type="text"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 1.1rem;
+}
+
+#apikey {
+    font-size: 1.5rem;
+    padding: 0.2rem;
+}
+
+.human-in-loop-container input {
+    width: 50%;
+    max-width: 400px;
+    margin-bottom: 0.75rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.25rem;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.25rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #000000;
+}
+
+.btn-primary:hover {
+    background-color: #374151;
+}
+
+.btn-danger {
+    background-color: #dc2626;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+.btn-success {
+    background-color: #22c55e;
+}
+
+.btn-success:hover {
+    background-color: #16a34a;
+}
+
+.button-container {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* API Key Box */
+#apikeybox {
+    display: none;
+    margin: 2rem 0;
+}
+
+#apikeybox.visible {
+    display: flex;
+}
+
+.apikey-column {
+    flex: 1;
+    padding: 0 1rem;
+}
+
+.apikey-column:first-child {
+    border-right: 1px solid #d1d5db;
+}
+
+/* Progress Bar */
+.progress-container {
+    width: 100%;
+    height: 1.25rem;
+    background-color: #e5e7eb;
+    border-radius: 0.25rem;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #22c55e;
+    transition: width 0.3s ease-in-out;
+}
+
+.progress-bar.failed {
+    background-color: #dc2626;
+}
+
+/* Human in the Loop */
+.human-in-loop-container {
+    display: none;
+    margin-bottom: 1.25rem;
+}
+
+.human-in-loop-container.visible {
+    display: block;
+}
+
+.countdown {
+    margin-top: 0.75rem;
+}
+
+/* Utilities */
+.text-center {
+    text-align: center;
+}
+
+.error-message {
+    color: #dc2626;
+    margin-bottom: 1.25rem;
+}

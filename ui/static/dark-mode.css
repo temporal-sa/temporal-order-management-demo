@@ -1,0 +1,50 @@
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #f1f1f1;
+    border-color: #444;
+}
+
+body.dark-mode .logo {
+    filter: invert(1);
+}
+
+body.dark-mode table {
+    border-color: #444;
+}
+
+body.dark-mode th,
+body.dark-mode td {
+    border-color: #444;
+}
+
+body.dark-mode th {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode td {
+    background-color: #1f1f1f;
+}
+
+body.dark-mode select,
+body.dark-mode input[type="text"] {
+    background-color: #2a2a2a;
+    color: #f1f1f1;
+    border-color: #444;
+}
+
+body.dark-mode .btn-primary {
+    background-color: #3a3a3a;
+    color: #f1f1f1;
+}
+
+body.dark-mode .btn-primary:hover {
+    background-color: #555;
+}
+
+body.dark-mode .progress-container {
+    background-color: #444;
+}
+
+body.dark-mode .error-message {
+    color: #ff5555;
+}

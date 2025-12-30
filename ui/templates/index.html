@@ -2,105 +2,11 @@
 
 {% block content %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 0px auto;
-            padding: 0px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f2f2f2;  /* light gray background for headers */
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            width: 50%;
-            background-color: #f9f9f9;  /* light gray background for all rows */
-        }        
-
-        select {
-            width: 100%;
-            padding: 10px;
-            /* margin-bottom: 20px; */
-        }
-
-        input {
-            width: 100%;
-            padding: 5px;
-        }
-
-        button {
-            padding: 10px;
-            background-color: #000000;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px 0;
-        }
-
-        .flexCenter {
-            display: flex; 
-            justify-content: center;
-        }
-
-        .flexCol {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .show {
-            display: flex;
-        }
-
-        .show div {
-            flex-grow: 1; 
-            flex-basis: 0;
-            padding: 0px 10px 0px 0px;
-        }
-
-        .show div div {
-            flex-grow: 1;
-        }
-
-    </style>
-    <script>
-        function placeOrder() {
-            document.getElementById('orderForm').submit();
-        }
-    </script>    
-</head>
 <body>
-    <section style="display: flex; justify-content: center;">
+    <section>
         <h2>Temporal Orders</h2>
     </section>
- 
+
     <div id="orders">
         <section>
             <h3>Order Details</h3>
@@ -110,10 +16,10 @@
                     <th>Description</th>
                 </tr>
                 {% for key, value in order_data.items() %}
-                    <tr>
-                        <td>{{ value['quantity'] }}</td>
-                        <td>{{ value['item'] }}</td>
-                    </tr>
+                <tr>
+                    <td>{{ value['quantity'] }}</td>
+                    <td>{{ value['item'] }}</td>
+                </tr>
                 {% endfor %}
             </table>
         </section>
@@ -155,58 +61,47 @@
         <h4>Choose Scenario</h4>
         <select id="scenario" name="scenario">
             {% for choice in scenarios %}
-                <option value="{{ choice }}">{{ choice }}</option>
+            <option value="{{ choice }}">{{ choice }}</option>
             {% endfor %}
-        </select>        
+        </select>
     </section>
 
-    <section class="hidden" id="apikeybox" style="margin: 30px 0px 10px 0px;">
-        <div class="flexCol" style="border-right: 1px solid #ddd;">
-            <div>
-                <h3>Update Key</h3>
-            </div>
-
-            <div>
-                <input id="apikey" name="apikey" value="{{ api_key }}"/>
-            </div>
-            
-            <div class="flexCenter">
-                <button type="button" onclick="updateAPIKey(false)">Update Worker API Key</button>
+    <section id="apikeybox">
+        <div class="apikey-column">
+            <h3>Update Key</h3>
+            <input id="apikey" name="apikey" value="{{ api_key }}" />
+            <div class="button-container">
+                <button type="button" onclick="updateAPIKey(false)" class="btn btn-primary">
+                    Update Worker API Key
+                </button>
             </div>
         </div>
 
-        <div class="flexCol" style="padding-left: 10px;">
-            <div>
-                <h3>Remove Key</h3>
-            </div>
-
-            <div style="padding-bottom: 10px;">
-                This will result in the worker being unable to connect to the Temporal namesapce.
-            </div>
-
-            <div class="flexCenter">
-                <button type="button" onclick="updateAPIKey(true)" style="background: red;">Remove Worker API Key</button>
+        <div class="apikey-column">
+            <h3>Remove Key</h3>
+            <p>This will result in the worker being unable to connect to the Temporal namespace.</p>
+            <div class="button-container">
+                <button type="button" onclick="updateAPIKey(true)" class="btn btn-danger">
+                    Remove Worker API Key
+                </button>
             </div>
         </div>
     </section>
 
-    <section id="placeOrder" class="flexCenter">
-        <button type="button" onclick="placeOrder()">Place Order</button>
+    <section id="placeOrder" class="button-container">
+        <button type="button" onclick="placeOrder()" class="btn btn-primary">
+            Place Order
+        </button>
     </section>
 
     <section>
         <input type="hidden" id="order_id" value="{{ order_id }}">
     </section>
-    
+
     <script>
         function placeOrder() {
-            // Get the selected scenario
             var selectedScenario = document.getElementById('scenario').value;
-
-            // Get the order_id
             var order_id = document.getElementById('order_id').value;
-    
-            // Redirect to order processing page with the selected scenario as a query parameter
             window.location.href = '/process_order?scenario=' + encodeURIComponent(selectedScenario) + '&order_id=' + encodeURIComponent(order_id);
         }
 
@@ -242,21 +137,13 @@
             var orderButton = document.getElementById('placeOrder');
 
             if (document.getElementById('scenario').value == "APIKeyRotation") {
-                // show API key details
-                apikeybox.classList.remove("hidden");
-                apikeybox.classList.add("show");
-                
-                // hide order details
-                orders.classList.add("hidden");
-                orderButton.classList.add("hidden");
+                apikeybox.classList.add("visible");
+                orders.style.display = 'none';
+                orderButton.style.display = 'none';
             } else {
-                // hide API key details
-                apikeybox.classList.add("hidden");
-                apikeybox.classList.remove("show");
-
-                // show order details
-                orders.classList.remove("hidden");
-                orderButton.classList.remove("hidden");
+                apikeybox.classList.remove("visible");
+                orders.style.display = 'block';
+                orderButton.style.display = 'block';
             }
         }
 

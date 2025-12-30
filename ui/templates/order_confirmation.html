@@ -2,57 +2,8 @@
 
 {% block content %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmation</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 0px auto;
-            padding: 0px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;  /* light gray background for headers */
-        }
-        button {
-            padding: 10px;
-            background-color: #000000;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px 0;
-        }
-    </style>
-    <script>
-        function reloadMainPage() {
-            window.location.href = '/';
-        }
-    </script>
-</head>
 <body>
-    <section style="display: flex; justify-content: center;">
+    <section>
         <h2>Order Confirmation</h2>
     </section>
 
@@ -69,13 +20,21 @@
             <tr>
                 <th>Address</th>
                 <td>{{ address }}</td>
-            </tr>        
+            </tr>
         </table>
     </section>
 
-    <section style="display: flex; justify-content: center;">
-        <button onclick="reloadMainPage()">Place New Order</button>
+    <section class="button-container">
+        <button onclick="reloadMainPage()" class="btn btn-primary">
+            Place New Order
+        </button>
     </section>
+
+    <script>
+        function reloadMainPage() {
+            window.location.href = '/';
+        }
+    </script>
 </body>
 
 {% endblock %}
