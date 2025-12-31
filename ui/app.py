@@ -6,6 +6,13 @@ from data import OrderInput, UpdateOrder
 
 app = Quart(__name__)
 
+client = None
+
+@app.before_serving
+async def startup():
+    global client
+    client = await get_client()
+
 # Order Info
 order_data = {
     "table_top": {"item": "Table Top", "quantity": 1},
@@ -61,7 +68,6 @@ async def main_order_page():
 async def process_order():
     selected_scenario = request.args.get('scenario')
     order_id = request.args.get('order_id')
-    client = await get_client()
 
     input = OrderInput(
         OrderId= order_id,
@@ -81,7 +87,6 @@ async def process_order():
 async def order_confirmation():
     order_id = request.args.get('order_id')
 
-    client = await get_client()
     order_workflow = client.get_workflow_handle(f'order-{order_id}')
     order_output = await order_workflow.result()
 
@@ -96,7 +101,6 @@ async def get_progress():
 
     progress_percent = 0
     try:
-        client = await get_client()
         order_workflow = client.get_workflow_handle(f'order-{order_id}')
         progress_percent = await order_workflow.query("getProgress")
 
@@ -121,7 +125,6 @@ async def signal():
     )
 
     try:
-        client = await get_client()
         order_workflow = client.get_workflow_handle(f'order-{order_id}')
         await order_workflow.signal("UpdateOrder", SignalOrderInput)
     except Exception as e:
@@ -142,7 +145,6 @@ async def update():
 
     update_result = None
     try:
-        client = await get_client()
         order_workflow = client.get_workflow_handle(f'order-{order_id}')
         update_result = await order_workflow.execute_update(
             update="UpdateOrder",
