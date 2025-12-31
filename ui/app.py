@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, jsonify
+from quart import Quart, render_template, request, jsonify
 import uuid
 import os
 from client import get_client
 from data import OrderInput, UpdateOrder
 
-app = Flask(__name__)
+app = Quart(__name__)
 
 # Order Info
 order_data = {
@@ -47,7 +47,15 @@ if api_key:
 @app.route('/', methods=['GET', 'POST'])
 async def main_order_page():
     order_id = str(uuid.uuid4().int)[:6]
-    return render_template('index.html', order_data=order_data, payment_data=payment_data, shipping_data=shipping_data, scenarios=scenarios, order_id=order_id, api_key=api_key)
+    return await render_template(
+        'index.html',
+        order_data=order_data,
+        payment_data=payment_data,
+        shipping_data=shipping_data,
+        scenarios=scenarios,
+        order_id=order_id,
+        api_key=api_key,
+    )
 
 @app.route('/process_order')
 async def process_order():
@@ -67,7 +75,7 @@ async def process_order():
         task_queue=os.getenv("TEMPORAL_TASK_QUEUE", "orders"),
     )
 
-    return render_template('process_order.html', selected_scenario=selected_scenario, oder_id=order_id)
+    return await render_template('process_order.html', selected_scenario=selected_scenario, oder_id=order_id)
 
 @app.route('/order_confirmation')
 async def order_confirmation():
@@ -80,7 +88,7 @@ async def order_confirmation():
     tracking_id = order_output["trackingId"]
     address = order_output["address"]
 
-    return render_template('order_confirmation.html', order_id=order_id, tracking_id=tracking_id, address=address)
+    return await render_template('order_confirmation.html', order_id=order_id, tracking_id=tracking_id, address=address)
 
 @app.route('/get_progress')
 async def get_progress():
@@ -105,7 +113,8 @@ async def get_progress():
 @app.route('/signal', methods=['POST'])
 async def signal():
     order_id = request.args.get('order_id')
-    address = request.json.get('address')
+    data = await request.get_json()
+    address = data.get('address')
 
     SignalOrderInput = UpdateOrder(
         Address=address
@@ -124,7 +133,8 @@ async def signal():
 @app.route('/update', methods=['POST'])
 async def update():
     order_id = request.args.get('order_id')
-    address = request.json.get('address')
+    data = await request.get_json()
+    address = data.get('address')
 
     UpdateOrderInput = UpdateOrder(
         Address=address
