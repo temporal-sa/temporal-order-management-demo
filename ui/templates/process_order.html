@@ -71,38 +71,52 @@
             }
         }        
 
-        function updateProgress() {
+        function startProgressStream() {
             var urlParams = new URLSearchParams(window.location.search);
             var order_id = urlParams.get('order_id');
             var selectedScenario = urlParams.get('scenario');
 
-            fetch('/get_progress?order_id=' + encodeURIComponent(order_id))
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error(`Failed to fetch progress. Status: ${response.status}`);
-                    }
-                })
-                .then(data => {
-                    document.getElementById('progress-bar').style.width = data.progress + '%';
+            var eventSource = new EventSource('/stream_progress?order_id=' + encodeURIComponent(order_id));
 
-                    if (data.progress === 100) {
-                        window.location.href = '/order_confirmation?order_id=' + encodeURIComponent(order_id);
-                    } else {
-                        setTimeout(updateProgress, 1000);
+            eventSource.onmessage = function(event) {
+                try {
+                    var data = JSON.parse(event.data);
+                    
+                    if (data.error) {
+                        console.error('Error in progress stream:', data.error);
+                        document.getElementById('error-message').innerText = data.error;
+                        document.getElementById('progress-bar').classList.add("failed");
+                        eventSource.close();
+                        return;
                     }
-                    updateScenarioElements(selectedScenario, data.progress);
-                })
-                .catch(error => {
-                    console.error('Error fetching progress:', error.message);
-                    document.getElementById('error-message').innerText = error.message;
+
+                    if (data.progress !== undefined) {
+                        document.getElementById('progress-bar').style.width = data.progress + '%';
+                        updateScenarioElements(selectedScenario, data.progress);
+
+                        if (data.progress >= 100) {
+                            eventSource.close();
+                            window.location.href = '/order_confirmation?order_id=' + encodeURIComponent(order_id);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error parsing progress data:', error);
+                    document.getElementById('error-message').innerText = 'Error parsing progress data';
                     document.getElementById('progress-bar').classList.add("failed");
-                });
+                    eventSource.close();
+                }
+            };
+
+            eventSource.onerror = function(error) {
+                console.error('EventSource error:', error);
+                document.getElementById('error-message').innerText = 'Connection error. Please refresh the page.';
+                document.getElementById('progress-bar').classList.add("failed");
+                eventSource.close();
+            };
         }    
 
         document.addEventListener("DOMContentLoaded", function () {
-            updateProgress();
+            startProgressStream();
         });
 
         function signal() {
