@@ -109,9 +109,6 @@
 
             eventSource.onerror = function(error) {
                 console.error('EventSource error:', error);
-                document.getElementById('error-message').innerText = 'Connection error. Please refresh the page.';
-                document.getElementById('progress-bar').classList.add("failed");
-                eventSource.close();
             };
         }    
 
