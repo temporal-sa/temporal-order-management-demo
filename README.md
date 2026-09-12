@@ -12,6 +12,7 @@ Demos various aspects of [Temporal](http://temporal.io) through an example Order
 | Java 21+           | ✅ | __ | Heartbeat      |    | __ | Long-polling        |    |
 | Ruby 3.4+          | ✅ | __ | Retry          | ✅ | __ |                     |    |
 |                    |    | __ | Data Converter |    | __ |                     |    |
+|                    |    | __ | External Storage | ✅ TS | __ |                     |    |
 |                    |    | __ | Polyglot       | ✅ | __ |                     |    |
 |                    |    | __ | API Keys       | ✅ | __ |                     |    |
 
@@ -25,6 +26,7 @@ This demo walks through several scenarios using an order management process. The
 - HumanInLoopUpdate
 - ChildWorkflow
 - NexusOperation
+- ExternalStorage
 - APIFailure
 - RecoverableFailure
 - NonRecoverableFailure
@@ -200,6 +202,50 @@ This scenario follows Happy Path but instead of shipping items using parallel ac
 using Nexus Operations to trigger the Shipping Workflow.
 
 ![Shipping Workflows](ui/static/nexus-workflows.png)
+
+## External Storage
+> [!CAUTION]
+> The ExternalStorage scenario is currently ***only supported using Typescript***.
+
+> [!NOTE]
+> This scenario requires Temporal CLI 1.8.0+ (Web UI 2.50+). Earlier versions of the Web UI cannot render external
+> storage references. It has been verified with Temporal CLI 1.8.3 (Server 1.31.2, UI 2.50.1).
+
+This scenario follows Happy Path, however the Worker writes claim checks into Event History instead of payloads. The
+payload bytes are stored in an S3 bucket and the event carries an ExternalStorageReference pointing at them instead.
+This is the claim check pattern, which is how payloads that are too large for Event History are kept out of it.
+
+The scenario is not about payload size. It reuses the same small order payloads as every other scenario and sets the
+payload size threshold to 0, so every payload is offloaded no matter how small it is. At this size the claim check is
+larger than the payload it replaces - a reference is roughly 362 bytes whether the original was 33 bytes or 184 bytes -
+so the payloads in Event History grow by around 7x overall. The scenario demonstrates the mechanic, not a size win.
+
+MinIO stands in for S3 and runs under Docker Compose. Start it before the rest of the demo:
+```bash
+cd typescript
+./startminio.sh
+```
+Then start the dev server, the Worker, and the Web UI as described above. The Web UI needs the same external storage
+environment variables as the Worker so that it can resolve the references it receives, and `startlocalwebui.sh` sets
+them. The progress bar depends on this, because query responses are offloaded too.
+
+Run the ExternalStorage scenario and open the workflow in the Web UI. The contrast is the demo:
+- WorkflowExecutionStarted still shows readable inline JSON, because the input was written by the client, not the Worker
+- the activity inputs and results, the local activity marker, and the workflow result all show a claim check instead
+
+The stored objects can be shown live in the MinIO console at http://localhost:9001 (minioadmin/minioadmin). They are
+keyed by workflow rather than by activity, and the task queue does not appear in the key:
+```
+v0/ns/<namespace>/wt/<workflow-type>/wi/<workflow-id>/ri/<run-id>/d/sha256/<hex>
+```
+
+The Web UI renders the claim check on its own. Optionally run the codec server as well, which lets the Web UI fetch the
+payload behind a reference using the Download button on the event:
+```bash
+cd typescript
+./startcodecserver.sh
+```
+Point the Web UI at it under Settings -> Data Encoder -> Remote Codec Endpoint `http://localhost:8081`.
 
 ## API Failure
 ![API Failure](ui/static/api-failure.png)

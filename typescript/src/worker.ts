@@ -3,6 +3,7 @@ import * as activities from './activities/index';
 import { getWorkflowOptions, getTelemetryOptions, taskQueue } from './env';
 import { loadClientConnectConfig } from '@temporalio/envconfig';
 import { createApiKeyServer } from './apikey-server';
+import { getDataConverter } from './data-converter';
 
 async function main() {
   const telemetryOptions = getTelemetryOptions();
@@ -26,6 +27,7 @@ async function main() {
       namespace: config.namespace,
       taskQueue,
       activities: { ...activities },
+      dataConverter: getDataConverter(),
       ...getWorkflowOptions(),
     });
 

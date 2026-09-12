@@ -5,5 +5,5 @@ description = "Order Management App UI"
 requires-python = ">=3.11"
 dependencies = [
     "quart>=0.19.7",
-    "temporalio>=1.21.1",
+    "temporalio[aioboto3]>=1.32.0",
 ]

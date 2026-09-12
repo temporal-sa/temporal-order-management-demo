@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc --build && node lib/scripts/create-bundle.js",
+    "codec-server": "ts-node src/codec-server.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
@@ -19,12 +20,18 @@
       "src"
     ]
   },
+  "//": "protobufjs is a direct dependency so every @temporalio/* package resolves to one hoisted copy; two copies break instanceof and throw 'type must be a Type'",
   "dependencies": {
-    "@temporalio/activity": "^1.14.0",
-    "@temporalio/client": "^1.14.0",
-    "@temporalio/envconfig": "^1.14.0",
-    "@temporalio/worker": "^1.14.0",
-    "@temporalio/workflow": "^1.14.0"
+    "@aws-sdk/client-s3": "^3.1131.0",
+    "@temporalio/activity": "1.23.0",
+    "@temporalio/client": "1.23.0",
+    "@temporalio/common": "1.23.0",
+    "@temporalio/envconfig": "1.23.0",
+    "@temporalio/external-storage-s3": "1.23.0",
+    "@temporalio/external-storage-s3-aws-sdk": "1.23.0",
+    "@temporalio/worker": "1.23.0",
+    "@temporalio/workflow": "1.23.0",
+    "protobufjs": "8.8.0"
   },
   "devDependencies": {
     "@types/node": "^22.9.1",
