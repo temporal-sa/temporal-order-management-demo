@@ -11,9 +11,10 @@ See the main README for instructions on how to run the UI, and the Workers.
 The ExternalStorage scenario offloads payloads to S3 and writes claim checks into Event History. See the main
 [README](../README.md#external-storage) for what the scenario demonstrates and what to look for in the Web UI.
 
-MinIO stands in for S3 locally and runs under Docker Compose.
+MinIO stands in for S3 locally and runs under Docker Compose from the root of the repo, since it is not specific to
+this SDK.
 
-1. `./startminio.sh` to start MinIO and create the bucket
+1. `../startminio.sh` to start MinIO and create the bucket
 1. `./startlocalworker.sh` to run the Worker with external storage enabled
 1. (Optional) `./startcodecserver.sh` to run the codec server on http://localhost:8081
 

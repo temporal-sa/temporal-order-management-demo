@@ -220,9 +220,9 @@ payload size threshold to 0, so every payload is offloaded no matter how small i
 larger than the payload it replaces - a reference is roughly 362 bytes whether the original was 33 bytes or 184 bytes -
 so the payloads in Event History grow by around 7x overall. The scenario demonstrates the mechanic, not a size win.
 
-MinIO stands in for S3 and runs under Docker Compose. Start it before the rest of the demo:
+MinIO stands in for S3 and runs under Docker Compose from the root of the repo, so it is shared by any SDK that
+implements the scenario. Start it before the rest of the demo:
 ```bash
-cd typescript
 ./startminio.sh
 ```
 Then start the dev server, the Worker, and the Web UI as described above. The Web UI needs the same external storage
