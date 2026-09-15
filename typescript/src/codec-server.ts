@@ -2,10 +2,11 @@ import type { Payload } from '@temporalio/common';
 import { ExternalStorageRunner, isReferencePayload } from '@temporalio/common/lib/internal-non-workflow';
 import { temporal } from '@temporalio/proto';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { EXTERNAL_STORAGE_WORKFLOW_TYPE, getDataConverter } from './data-converter';
-import { codecServerPort, webUiOrigin } from './env';
+import { getDataConverter } from './data-converter';
+import { webUiOrigin } from './env';
 
 const { Payloads } = temporal.api.common.v1;
+const port = 8081;
 
 const externalStorage = getDataConverter()?.externalStorage;
 if (!externalStorage) {
@@ -41,23 +42,13 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse): Promis
     return;
   }
 
-  const url = new URL(req.url ?? '/', `http://localhost:${codecServerPort}`);
+  const url = new URL(req.url ?? '/', `http://localhost:${port}`);
 
   try {
     const { payloads } = Payloads.fromObject(JSON.parse(await getRequestBody(req)));
     let result: Payload[];
 
     switch (url.pathname) {
-      case '/encode':
-        // the worker only offloads one scenario, so the driverSelector needs a matching target
-        result = await runner.store(payloads, {
-          target: {
-            kind: 'workflow',
-            namespace: String(req.headers['x-namespace'] ?? 'default'),
-            type: EXTERNAL_STORAGE_WORKFLOW_TYPE,
-          },
-        });
-        break;
       case '/decode':
         result = url.searchParams.get('preserveStorageRefs') == 'true' ? payloads : await runner.retrieve(payloads);
         break;
@@ -90,6 +81,6 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse): Promis
   }
 };
 
-createServer(requestHandler).listen(codecServerPort, () => {
-  console.info(`🤖: Codec Server on http://localhost:${codecServerPort}`);
+createServer(requestHandler).listen(port, () => {
+  console.info(`🤖: Codec Server on http://localhost:${port}`);
 });

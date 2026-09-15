@@ -27,12 +27,11 @@ The Worker, the codec server, and the Python Web UI all read the same environmen
 | `S3_BUCKET`        | `temporal-payloads` | Bucket the payloads are written to                                           |
 | `AWS_REGION`       | `us-east-1`         | Region used by the S3 client                                                 |
 
-The codec server reads two more of its own:
+The codec server reads one more of its own:
 
-| Variable            | Default                 | Description                                                 |
-| :------------------ | :---------------------- | :---------------------------------------------------------- |
-| `CODEC_SERVER_PORT` | `8081`                  | Port the codec server listens on                            |
-| `WEB_UI_ORIGIN`     | `http://localhost:8233` | Origin allowed by CORS - the Web UI the codec server serves |
+| Variable        | Default                 | Description                                                 |
+| :-------------- | :---------------------- | :---------------------------------------------------------- |
+| `WEB_UI_ORIGIN` | `http://localhost:8233` | Origin allowed by CORS - the Web UI the codec server serves |
 
 For Temporal Cloud, `./startcloudcodecserver.sh` sources `../setcloudenv.sh` the same way the Worker and Web UI cloud
 scripts do, so set `WEB_UI_ORIGIN=https://cloud.temporal.io` there along with the bucket and region.

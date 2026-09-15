@@ -5,7 +5,7 @@ import { S3StorageDriver } from '@temporalio/external-storage-s3';
 import { AwsSdkS3StorageDriverClient } from '@temporalio/external-storage-s3-aws-sdk';
 import { awsRegion, externalStorage, s3Bucket, s3Endpoint } from './env';
 
-export const EXTERNAL_STORAGE_WORKFLOW_TYPE = 'OrderWorkflowExternalStorage';
+const EXTERNAL_STORAGE_WORKFLOW_TYPE = 'OrderWorkflowExternalStorage';
 
 export function getDataConverter(): DataConverter | undefined {
   if (!externalStorage) {
