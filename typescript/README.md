@@ -27,6 +27,23 @@ The Worker, the codec server, and the Python Web UI all read the same environmen
 | `S3_BUCKET`        | `temporal-payloads` | Bucket the payloads are written to                                           |
 | `AWS_REGION`       | `us-east-1`         | Region used by the S3 client                                                 |
 
+The codec server reads two more of its own:
+
+| Variable            | Default                 | Description                                                 |
+| :------------------ | :---------------------- | :---------------------------------------------------------- |
+| `CODEC_SERVER_PORT` | `8081`                  | Port the codec server listens on                            |
+| `WEB_UI_ORIGIN`     | `http://localhost:8233` | Origin allowed by CORS - the Web UI the codec server serves |
+
+For Temporal Cloud, `./startcloudcodecserver.sh` sources `../setcloudenv.sh` the same way the Worker and Web UI cloud
+scripts do, so set `WEB_UI_ORIGIN=https://cloud.temporal.io` there along with the bucket and region.
+
+> [!CAUTION]
+> The codec server has no authentication, so anything that can reach it can read any payload in the bucket. That is
+> fine on localhost and not fine exposed. Before putting it anywhere reachable, terminate TLS in front of it - the
+> Cloud Web UI is served over https and browsers block plaintext subresource requests from a secure page, with
+> `http://localhost` the only exemption - and verify the access token the Web UI can forward when
+> "Pass access token" is enabled.
+
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are picked up from the environment by the AWS SDK, and by aioboto3 in
 the Web UI. The local scripts set them to the MinIO defaults.
 

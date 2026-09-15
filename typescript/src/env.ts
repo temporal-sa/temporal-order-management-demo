@@ -55,6 +55,8 @@ export const externalStorage = getenv('EXTERNAL_STORAGE', 'false') == 'true';
 export const s3Endpoint = getenv('S3_ENDPOINT', '');
 export const s3Bucket = getenv('S3_BUCKET', 'temporal-payloads');
 export const awsRegion = getenv('AWS_REGION', 'us-east-1');
+export const codecServerPort = Number(getenv('CODEC_SERVER_PORT', '8081'));
+export const webUiOrigin = getenv('WEB_UI_ORIGIN', 'http://localhost:8233');
 
 function getenv(key: string, defaultValue?: string): string {
   const value = process.env[key];

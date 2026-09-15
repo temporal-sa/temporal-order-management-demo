@@ -3,9 +3,9 @@ import { ExternalStorageRunner, isReferencePayload } from '@temporalio/common/li
 import { temporal } from '@temporalio/proto';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { EXTERNAL_STORAGE_WORKFLOW_TYPE, getDataConverter } from './data-converter';
+import { codecServerPort, webUiOrigin } from './env';
 
 const { Payloads } = temporal.api.common.v1;
-const port = 8081;
 
 const externalStorage = getDataConverter()?.externalStorage;
 if (!externalStorage) {
@@ -25,7 +25,7 @@ async function getRequestBody(req: IncomingMessage): Promise<string> {
 
 const requestHandler = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
   // CORS
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8233');
+  res.setHeader('Access-Control-Allow-Origin', webUiOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'content-type, x-namespace');
 
@@ -41,7 +41,7 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse): Promis
     return;
   }
 
-  const url = new URL(req.url ?? '/', `http://localhost:${port}`);
+  const url = new URL(req.url ?? '/', `http://localhost:${codecServerPort}`);
 
   try {
     const { payloads } = Payloads.fromObject(JSON.parse(await getRequestBody(req)));
@@ -90,6 +90,6 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse): Promis
   }
 };
 
-createServer(requestHandler).listen(port, () => {
-  console.info(`🤖: Codec Server on http://localhost:${port}`);
+createServer(requestHandler).listen(codecServerPort, () => {
+  console.info(`🤖: Codec Server on http://localhost:${codecServerPort}`);
 });

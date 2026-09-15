@@ -26,6 +26,8 @@ export TEMPORAL_NEXUS_SHIPPING_ENDPOINT=shipping-endpoint
 # export EXTERNAL_STORAGE=true
 # export S3_BUCKET=<bucket>
 # export AWS_REGION=<region>
+# the codec server also needs the origin of the Web UI it will be called from
+# export WEB_UI_ORIGIN=https://cloud.temporal.io
 
 
 ## Alternate ways to set the env vars using the temporal CLI
