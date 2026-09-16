@@ -3,7 +3,7 @@ import uuid
 import os
 import asyncio
 import json
-from client import get_client
+from client import get_client, close_client
 from data import OrderInput, UpdateOrder
 
 app = Quart(__name__)
@@ -14,6 +14,10 @@ client = None
 async def startup():
     global client
     client = await get_client()
+
+@app.after_serving
+async def shutdown():
+    await close_client()
 
 # Order Info
 order_data = {
@@ -43,6 +47,7 @@ scenarios = [
     "HumanInLoopUpdate",
     "ChildWorkflow",
     "NexusOperation",
+    "ExternalStorage",
     "APIFailure",
     "RecoverableFailure",
     "NonRecoverableFailure",

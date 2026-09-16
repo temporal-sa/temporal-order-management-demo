@@ -21,6 +21,14 @@ export TEMPORAL_TASK_QUEUE=orders
 export TEMPORAL_NEXUS_TASK_QUEUE=shipping
 export TEMPORAL_NEXUS_SHIPPING_ENDPOINT=shipping-endpoint
 
+# env vars for the ExternalStorage demo (Typescript), which offloads payloads to a real AWS S3 bucket
+# leave S3_ENDPOINT unset for AWS S3, and let the AWS SDK pick up credentials from your environment or profile
+# export EXTERNAL_STORAGE=true
+# export S3_BUCKET=<bucket>
+# export AWS_REGION=<region>
+# the codec server also needs the origin of the Web UI it will be called from
+# export WEB_UI_ORIGIN=https://cloud.temporal.io
+
 
 ## Alternate ways to set the env vars using the temporal CLI
 

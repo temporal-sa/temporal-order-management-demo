@@ -226,6 +226,7 @@ export const OrderWorkflowHumanInLoopUpdate = OrderWorkflowScenarios;
 export const OrderWorkflowAdvancedVisibility = OrderWorkflowScenarios;
 export const OrderWorkflowAPIFailure = OrderWorkflowScenarios;
 export const OrderWorkflowNonRecoverableFailure = OrderWorkflowScenarios;
+export const OrderWorkflowExternalStorage = OrderWorkflowScenarios;
 
 const WF_TYPES = {
   BUG: 'OrderWorkflowRecoverableFailure',

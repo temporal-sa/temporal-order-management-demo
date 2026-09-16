@@ -11,7 +11,8 @@ Demos various aspects of [Temporal](http://temporal.io) through an example Order
 | .Net 8+            | ✅ | __ | Update         | ✅ | __ | Saga                | ✅ |
 | Java 21+           | ✅ | __ | Heartbeat      |    | __ | Long-polling        |    |
 | Ruby 3.4+          | ✅ | __ | Retry          | ✅ | __ |                     |    |
-|                    |    | __ | Data Converter |    | __ |                     |    |
+| Docker             | ✅ | __ | Data Converter |    | __ |                     |    |
+|                    |    | __ | External Storage | ✅ TS | __ |                     |    |
 |                    |    | __ | Polyglot       | ✅ | __ |                     |    |
 |                    |    | __ | API Keys       | ✅ | __ |                     |    |
 
@@ -25,6 +26,7 @@ This demo walks through several scenarios using an order management process. The
 - HumanInLoopUpdate
 - ChildWorkflow
 - NexusOperation
+- ExternalStorage
 - APIFailure
 - RecoverableFailure
 - NonRecoverableFailure
@@ -200,6 +202,31 @@ This scenario follows Happy Path but instead of shipping items using parallel ac
 using Nexus Operations to trigger the Shipping Workflow.
 
 ![Shipping Workflows](ui/static/nexus-workflows.png)
+
+## External Storage
+> [!CAUTION]
+> The ExternalStorage scenario is currently ***only supported using Typescript***.
+
+> [!NOTE]
+> Requires Temporal CLI 1.8.0+ (Web UI 2.50+). Earlier Web UI versions cannot render external storage references.
+
+This scenario follows Happy Path, however the Worker keeps the payload bytes in your own S3 bucket and writes only an
+ExternalStorageReference into Event History. This is the claim check pattern, and it is how payloads stay in storage
+you control - your account, your region - while Temporal holds nothing but a pointer to them.
+
+MinIO stands in for S3. Start it before the dev server, the Worker and the Web UI, and stop it with
+`docker rm -fv minio` when you are done:
+```bash
+./startminio.sh
+```
+
+Open the workflow in the Web UI and the contrast is the demo: WorkflowExecutionStarted still shows readable JSON
+because the client wrote it, while the activity inputs and results and the workflow result show a claim check instead.
+The stored objects can be shown live in the MinIO console at http://localhost:9001 (minioadmin/minioadmin).
+
+Optionally run `./startcodecserver.sh` from the `typescript` directory and point the Web UI at
+`http://localhost:8081` under Settings -> Data Encoder, which enables the Download button to fetch the payload
+behind a reference.
 
 ## API Failure
 ![API Failure](ui/static/api-failure.png)
