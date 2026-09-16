@@ -20,7 +20,7 @@
       "src"
     ]
   },
-  "//": "protobufjs is a direct dependency so every @temporalio/* package resolves to one hoisted copy; two copies break instanceof and throw 'type must be a Type'",
+  "//": "protobufjs is a direct dependency so every @temporalio/* package resolves to one hoisted copy; without it they each nest their own, instanceof fails across the package boundary, and the first offloaded payload throws 'type must be a Type'. The older copy nested under @grpc/proto-loader is expected and harmless - it is not on the payload path.",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",
     "@temporalio/activity": "1.23.0",
