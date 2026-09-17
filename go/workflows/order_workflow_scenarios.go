@@ -66,6 +66,14 @@ func OrderWorkflowScenarios(ctx workflow.Context, args converter.EncodedValues) 
 		return nil, err
 	}
 
+	// Registered up front rather than in the UPDATE branch below. Registering it there leaves the workflow
+	// advertising progress 75 for the length of the "Ship Order" sleep with no handler yet, and an update
+	// arriving in that window is rejected as "unknown update UpdateOrder".
+	updatedAddress, err := messages.SetUpdateHandlerForUpdateOrder(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// Get items
 	items := app.Items{}
 	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
@@ -120,10 +128,6 @@ func OrderWorkflowScenarios(ctx workflow.Context, args converter.EncodedValues) 
 	if UPDATE == name {
 		// Await update message to update address
 		logger.Info("Waiting up to 60 seconds for updated address")
-		updatedAddress, err := messages.SetUpdateHandlerForUpdateOrder(ctx)
-		if err != nil {
-			return nil, err
-		}
 		ok, _ := workflow.AwaitWithTimeout(ctx, time.Minute, func() bool {
 			return *updatedAddress != ""
 		})
