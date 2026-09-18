@@ -66,9 +66,7 @@ func OrderWorkflowScenarios(ctx workflow.Context, args converter.EncodedValues) 
 		return nil, err
 	}
 
-	// Registered up front rather than in the UPDATE branch below. Registering it there leaves the workflow
-	// advertising progress 75 for the length of the "Ship Order" sleep with no handler yet, and an update
-	// arriving in that window is rejected as "unknown update UpdateOrder".
+	// Register update handler
 	updatedAddress, err := messages.SetUpdateHandlerForUpdateOrder(ctx)
 	if err != nil {
 		return nil, err
