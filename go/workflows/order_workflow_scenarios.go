@@ -66,6 +66,12 @@ func OrderWorkflowScenarios(ctx workflow.Context, args converter.EncodedValues) 
 		return nil, err
 	}
 
+	// Register update handler
+	updatedAddress, err := messages.SetUpdateHandlerForUpdateOrder(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// Get items
 	items := app.Items{}
 	err = workflow.ExecuteLocalActivity(laCtx, activities.GetItems).Get(ctx, &items)
@@ -120,10 +126,6 @@ func OrderWorkflowScenarios(ctx workflow.Context, args converter.EncodedValues) 
 	if UPDATE == name {
 		// Await update message to update address
 		logger.Info("Waiting up to 60 seconds for updated address")
-		updatedAddress, err := messages.SetUpdateHandlerForUpdateOrder(ctx)
-		if err != nil {
-			return nil, err
-		}
 		ok, _ := workflow.AwaitWithTimeout(ctx, time.Minute, func() bool {
 			return *updatedAddress != ""
 		})
