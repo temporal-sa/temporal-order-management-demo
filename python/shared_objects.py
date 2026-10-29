@@ -15,6 +15,13 @@ class OrderItem:
 
 
 @dataclass
+class ShippingInput:
+    Order: OrderInput
+    Item: OrderItem
+    Index: int = 0  # item n ships in n*2 seconds; 0 means a random delay
+
+
+@dataclass
 class OrderOutput:
     trackingId: str
     address: str
