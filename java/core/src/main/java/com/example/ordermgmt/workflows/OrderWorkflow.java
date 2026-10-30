@@ -4,6 +4,8 @@ import com.example.ordermgmt.activities.OrderActivities;
 import com.example.ordermgmt.model.OrderInput;
 import com.example.ordermgmt.model.OrderItem;
 import com.example.ordermgmt.model.OrderOutput;
+import com.example.ordermgmt.model.ShippingInput;
+import io.temporal.activity.ActivityOptions;
 import io.temporal.spring.boot.WorkflowImpl;
 import io.temporal.workflow.*;
 import org.slf4j.Logger;
@@ -28,6 +30,16 @@ class OrderWorkflowImpl implements OrderWorkflow {
     private final OrderActivities activities = Workflow.newActivityStub(
             OrderActivities.class,
             OrderActivities.defaultActivityOptions
+    );
+
+    private final OrderActivities shipActivities = Workflow.newActivityStub(
+            OrderActivities.class,
+            ActivityOptions.newBuilder(OrderActivities.defaultActivityOptions)
+                    // item n takes n*2s; leave headroom so start-to-close doesn't fire first
+                    .setStartToCloseTimeout(Duration.ofSeconds(15))
+                    // a dead worker is detected in ~2s instead of waiting out the full start-to-close
+                    .setHeartbeatTimeout(Duration.ofSeconds(2))
+                    .build()
     );
 
     private final OrderActivities localActivities = Workflow.newLocalActivityStub(
@@ -57,11 +69,12 @@ class OrderWorkflowImpl implements OrderWorkflow {
         activities.chargeCustomer(input, type);
         sleep(3, 75);
 
-        // Ship order items
+        // Ship order items. 
         List<Promise<String>> promiseList = new ArrayList<>();
-        for (OrderItem orderItem : orderItems) {
+        for (int i = 0; i < orderItems.size(); i++) {
+            OrderItem orderItem = orderItems.get(i);
             log.info("Shipping item: {}", orderItem.getDescription());
-            promiseList.add(Async.function(activities::shipOrder, input, orderItem));
+            promiseList.add(Async.function(shipActivities::shipOrder, new ShippingInput(input, orderItem, i + 1)));
         }
 
         // Wait for all items to ship

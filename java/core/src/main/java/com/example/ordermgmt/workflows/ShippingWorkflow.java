@@ -24,6 +24,6 @@ class ShippingWorkflowImpl implements ShippingWorkflow {
     @Override
     public String execute(ShippingInput input) {
         log.info("Shipping workflow started, orderId = {}", input.getOrderInput().getOrderId());
-        return activities.shipOrder(input.getOrderInput(), input.getOrderItem());
+        return activities.shipOrder(input);
     }
 }
