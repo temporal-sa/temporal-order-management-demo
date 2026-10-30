@@ -47,7 +47,7 @@ describe Workflows::ShippingChildWorkflow do
   let(:item) { double('item') }
 
   it 'calls ShipOrderActivity' do
-    expect(Temporalio::Workflow).to receive(:execute_activity).with(Activities::ShipOrderActivity, input, item, start_to_close_timeout: 5, retry_policy: nil)
+    expect(Temporalio::Workflow).to receive(:execute_activity).with(Activities::ShipOrderActivity, Models::ShippingInput.new(input, item), start_to_close_timeout: 5, retry_policy: nil)
     workflow.execute(input, item)
   end
 end 

@@ -3,6 +3,7 @@ require 'temporalio/error'
 require_relative '../models/order_input'
 require_relative '../models/order_output'
 require_relative '../models/update_order_input'
+require_relative '../models/shipping_input'
 require_relative 'shipping_child_workflow'
 
 module Workflows
@@ -99,7 +100,7 @@ module Workflows
           Temporalio::Workflow::Future.new do
             Temporalio::Workflow.execute_activity(
               Activities::ShipOrderActivity,
-              input, item,
+              Models::ShippingInput.new(input, item),
               start_to_close_timeout: 5,
               retry_policy: @retry_policy
             )
