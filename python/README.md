@@ -17,3 +17,14 @@ uv sync
 # or, if you use pip instead of uv
 pip install -U temporalio
 ```
+
+## NexusOperation Scenario
+
+The Python Worker implements the caller side of the NexusOperation scenario only. The `shipping-service`
+Nexus Service it calls is handled by the Go Nexus Worker, so run both:
+
+```bash
+# create the nexus-demo Namespace and shipping-endpoint first (see the main README)
+cd go && ./startlocalworker_nexus.sh
+cd python && ./startlocalworker.sh
+```

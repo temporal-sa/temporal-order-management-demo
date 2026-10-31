@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import timedelta
 import asyncio
 from collections.abc import Sequence
@@ -10,10 +11,13 @@ from temporalio.exceptions import ApplicationError
 from temporalio.workflow import ParentClosePolicy
 
 from activities import OrderActivities
-from shared_objects import OrderInput, OrderOutput, UpdateOrderInput, OrderItem
+from shared_objects import OrderInput, OrderOutput, UpdateOrderInput, OrderItem, ShippingInput
 from shipping_child_workflow import ShippingChildWorkflow
+from shipping_service import ShippingService
 
 logging.basicConfig(level=logging.INFO)
+
+SHIPPING_ENDPOINT = os.getenv("TEMPORAL_NEXUS_SHIPPING_ENDPOINT", "shipping-endpoint")
 
 
 @workflow.defn(dynamic=True)
@@ -21,6 +25,7 @@ class OrderWorkflowScenarios:
 
     BUG = "OrderWorkflowRecoverableFailure"
     CHILD = "OrderWorkflowChildWorkflow"
+    NEXUS = "OrderWorkflowNexusOperation"
     SIGNAL = "OrderWorkflowHumanInLoopSignal"
     UPDATE = "OrderWorkflowHumanInLoopUpdate"
     VISIBILITY = "OrderWorkflowAdvancedVisibility"
@@ -125,6 +130,9 @@ class OrderWorkflowScenarios:
                 parent_close_policy=ParentClosePolicy.TERMINATE
             )
 
+        elif self.NEXUS == workflow_type:
+            return self.ship_item_nexus(input, item)
+
         else:
             return workflow.execute_activity_method(
                 OrderActivities.ship_order,
@@ -132,6 +140,12 @@ class OrderWorkflowScenarios:
                 start_to_close_timeout=timedelta(seconds=5),
                 retry_policy=self.retry_policy
             )
+
+    async def ship_item_nexus(self, input: OrderInput, item: OrderItem) -> str:
+        nexus_client = workflow.create_nexus_client(service=ShippingService, endpoint=SHIPPING_ENDPOINT)
+        handle = await nexus_client.start_operation(ShippingService.ship_item, ShippingInput(input, item))
+        workflow.logger.info(f"Started Nexus Operation: {handle.operation_token}")
+        return await handle
 
     async def wait_for_updated_address_or_timeout(self, input: OrderInput):
         workflow.logger.info("Waiting up to 60 seconds for updated address")

@@ -194,7 +194,12 @@ workflows instead.
 
 ## NexusOperation
 > [!CAUTION]
-> The NexusOperation scenario is currently ***only supported using Go and Java***.
+> The NexusOperation scenario is currently ***only supported using Go, Java, and Python***.
+
+> [!NOTE]
+> The Nexus Service (the handler side) is implemented in Go and Java only. When running the Python Worker,
+> also run the Go Nexus Worker (`go/startlocalworker_nexus.sh`) to handle the shipping Nexus Operations.
+> This is also a polyglot demo: a Python caller Workflow invoking a Go Nexus Service.
 
 ![Nexus Operation](ui/static/nexus.png)
 
