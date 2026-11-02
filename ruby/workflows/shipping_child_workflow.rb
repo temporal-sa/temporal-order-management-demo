@@ -1,4 +1,5 @@
 require 'temporalio/workflow'
+require_relative '../models/shipping_input'
 
 module Workflows
   class ShippingChildWorkflow < Temporalio::Workflow::Definition
@@ -13,7 +14,7 @@ module Workflows
 
       Temporalio::Workflow.execute_activity(
         Activities::ShipOrderActivity,
-        input, item,
+        Models::ShippingInput.new(input, item),
         start_to_close_timeout: 5,
         retry_policy: @retry_policy
       )

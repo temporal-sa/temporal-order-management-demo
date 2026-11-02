@@ -5,7 +5,7 @@ import asyncio
 from temporalio import workflow
 
 from activities import OrderActivities
-from shared_objects import OrderInput, OrderOutput
+from shared_objects import OrderInput, OrderOutput, ShippingInput
 
 logging.basicConfig(level=logging.INFO)
 
@@ -55,15 +55,19 @@ class OrderWorkflow:
         )
         await self.sleep(3, 75)
 
-        # Ship order items
+        # Ship order items. Item n takes n*2 seconds, so they finish one at a time - kill the worker
+        # mid fan-out and show the completed shipments aren't re-run on restart.
         handles = []
-        for item in order_items:
+        for index, item in enumerate(order_items, start=1):
             workflow.logger.info(f"Shipping item: {item.description}")
             handles.append(
                 workflow.execute_activity_method(
                     OrderActivities.ship_order,
-                    args=[input, item],
-                    start_to_close_timeout=timedelta(seconds=5),
+                    ShippingInput(input, item, index),
+                    # Item n takes n*2s; leave headroom so start-to-close doesn't fire first
+                    start_to_close_timeout=timedelta(seconds=15),
+                    # A dead worker is detected in ~2s instead of waiting out the full start-to-close
+                    heartbeat_timeout=timedelta(seconds=2),
                     retry_policy=self.retry_policy
                 )
             )

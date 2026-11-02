@@ -8,7 +8,7 @@ from temporalio import activity
 from temporalio.exceptions import ApplicationError
 from temporalio.common import RetryPolicy
 
-from shared_objects import OrderItem, OrderInput
+from shared_objects import OrderItem, OrderInput, ShippingInput
 
 logging.basicConfig(level=logging.INFO)
 
@@ -85,12 +85,21 @@ class OrderActivities:
         return input.OrderId
 
     @activity.defn
-    async def ship_order(self, input: OrderInput, item: OrderItem) -> None:
-        activity.logger.info(f"Ship Order activity started, orderId = {input.OrderId}, itemId = {item.id}, itemDescription = {item.description}")
-        randTime = random.randint(1000, 4000)
-        activity.logger.info(f"Shipping Delay Time:  {randTime}")
-        # Simulate external API call
-        await self.simulate_external_operation(randTime)
+    async def ship_order(self, input: ShippingInput) -> None:
+        activity.logger.info(f"Ship Order activity started, orderId = {input.Order.OrderId}, itemId = {input.Item.id}, itemDescription = {input.Item.description}")
+        # Item n ships in n*2 seconds, so a fan-out finishes one item at a time; no index means random
+        delay_ms = input.Index * 2000 if input.Index > 0 else random.randint(1000, 4000)
+
+        # On a retry, pick up from the last second this item reported
+        details = activity.info().heartbeat_details
+        seconds_done = details[0] if details else 0
+        activity.logger.info(f"Shipping Delay Time:  {delay_ms}, resuming at {seconds_done}s")
+
+        # Simulate external API call, heartbeating progress each second so a retry can resume
+        for second in range(seconds_done, delay_ms // 1000):
+            await self.simulate_external_operation(1000)
+            activity.heartbeat(second + 1)
+        await self.simulate_external_operation(delay_ms % 1000)
 
     @activity.defn
     async def undo_prepare_shipment(self, input: OrderInput) -> str:

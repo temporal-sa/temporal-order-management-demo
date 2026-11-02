@@ -14,6 +14,6 @@ public class ShippingChildWorkflow
         
         // Ship order
         await Workflow.ExecuteActivityAsync((OrderActivities act) =>
-            act.ShipOrder(input, orderItem), OrderActivities.ActivityOpts);
+            act.ShipOrder(new ShippingInput(input, orderItem)), OrderActivities.ActivityOpts);
     }
 }

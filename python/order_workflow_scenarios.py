@@ -136,7 +136,7 @@ class OrderWorkflowScenarios:
         else:
             return workflow.execute_activity_method(
                 OrderActivities.ship_order,
-                args=[input, item],
+                ShippingInput(input, item),
                 start_to_close_timeout=timedelta(seconds=5),
                 retry_policy=self.retry_policy
             )

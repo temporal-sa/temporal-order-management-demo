@@ -2,6 +2,7 @@ package com.example.ordermgmt.activities;
 
 import com.example.ordermgmt.model.OrderInput;
 import com.example.ordermgmt.model.OrderItem;
+import com.example.ordermgmt.model.ShippingInput;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -40,7 +41,7 @@ public interface OrderActivities {
     String chargeCustomer(OrderInput input, String type);
 
     @ActivityMethod
-    String shipOrder(OrderInput input, OrderItem item);
+    String shipOrder(ShippingInput input);
 
     @ActivityMethod
     String undoPrepareShipment(OrderInput input);

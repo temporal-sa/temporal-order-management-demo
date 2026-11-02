@@ -194,7 +194,7 @@ async function shipItemAsync(
     log.info(`Started Nexus Operation: ${handle.token}`);
     await handle.result();
   } else {
-    return shipOrder(input, orderItem);
+    return shipOrder({ Order: input, Item: orderItem });
   }
 }
 

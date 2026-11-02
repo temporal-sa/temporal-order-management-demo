@@ -2,7 +2,9 @@ package com.example.ordermgmt.activities;
 
 import com.example.ordermgmt.model.OrderInput;
 import com.example.ordermgmt.model.OrderItem;
+import com.example.ordermgmt.model.ShippingInput;
 import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.failure.ApplicationFailure;
 import io.temporal.spring.boot.ActivityImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -90,13 +92,24 @@ public class OrderActivitiesImpl implements OrderActivities {
     }
 
     @Override
-    public String shipOrder(OrderInput input, OrderItem item) {
-        log.info("Ship Order activity started, orderId ={}, itemId = {}, itemDescription = {}", input.getOrderId(), item.getId(), item.getDescription());
+    public String shipOrder(ShippingInput input) {
+        OrderItem item = input.getOrderItem();
+        log.info("Ship Order activity started, orderId ={}, itemId = {}, itemDescription = {}", input.getOrderInput().getOrderId(), item.getId(), item.getDescription());
 
-        // simulate external API call
-        int delayMs = ThreadLocalRandom.current().nextInt(1000, 4001);
-        log.info("Shipping Delay Time: {}", delayMs);
-        simulateExternalOperation(delayMs);
+        // item n ships in n*2 seconds, so a fan-out finishes one item at a time; no index means random
+        int delayMs = input.getIndex() > 0 ? input.getIndex() * 2000 : ThreadLocalRandom.current().nextInt(1000, 4001);
+
+        // on a retry, pick up from the last second this item reported
+        ActivityExecutionContext context = Activity.getExecutionContext();
+        int secondsDone = context.getHeartbeatDetails(Integer.class).orElse(0);
+        log.info("Shipping Delay Time: {}, resuming at {}s", delayMs, secondsDone);
+
+        // simulate external API call, heartbeating progress each second so a retry can resume
+        for (int second = secondsDone; second < delayMs / 1000; second++) {
+            simulateExternalOperation(1000);
+            context.heartbeat(second + 1);
+        }
+        simulateExternalOperation(delayMs % 1000);
 
         return String.valueOf(item.getId());
     }
