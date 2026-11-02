@@ -135,7 +135,7 @@ public class OrderWorkflowScenarios implements DynamicWorkflow {
             promise = handle.getResult();
         } else {
             // execute an async activity to ship the item
-            promise = Async.function(activities::shipOrder, input, orderItem);
+            promise = Async.function(activities::shipOrder, new ShippingInput(input, orderItem));
         }
         return promise;
     }

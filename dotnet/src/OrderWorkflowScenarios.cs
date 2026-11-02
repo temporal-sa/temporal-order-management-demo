@@ -165,7 +165,7 @@ public class OrderWorkflowScenarios
             logger.LogInformation("Shipping item: {}", orderItem.Description);
             activities.Add(
                 Workflow.ExecuteActivityAsync((OrderActivities act) =>
-                    act.ShipOrder(input, orderItem), OrderActivities.ActivityOpts)
+                    act.ShipOrder(new ShippingInput(input, orderItem)), OrderActivities.ActivityOpts)
             );
         }
         // Wait for all items to ship

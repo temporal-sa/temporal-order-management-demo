@@ -179,7 +179,7 @@ async function shipItemAsync(input: OrderInput, orderItem: OrderItem, type: stri
       parentClosePolicy: ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE,
     });
   } else {
-    return shipOrder(input, orderItem);
+    return shipOrder({ Order: input, Item: orderItem });
   }
 }
 

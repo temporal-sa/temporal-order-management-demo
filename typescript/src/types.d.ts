@@ -9,6 +9,12 @@ export interface OrderItem {
   quantity: number;
 }
 
+export interface ShippingInput {
+  Order: OrderInput;
+  Item: OrderItem;
+  Index?: number; // item n ships in n*2 seconds; omitted means a random delay
+}
+
 export interface OrderOutput {
   trackingId: string;
   address: string;

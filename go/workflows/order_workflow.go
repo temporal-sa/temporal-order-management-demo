@@ -68,11 +68,18 @@ func OrderWorkflow(ctx workflow.Context, input app.OrderInput) (output *app.Orde
 
 	sleep(ctx, 3, progress, 75)
 
-	// Ship order items
+	// Ship order items. Item n takes n*2 seconds, so they finish one at a time - kill the worker
+	// mid fan-out and show the completed shipments aren't re-run on restart.
+	// Item n takes n*2s; leave headroom so start-to-close doesn't fire first
+	shipCtx := workflow.WithStartToCloseTimeout(ctx, 15*time.Second)
+	// A dead worker is detected in ~2s instead of waiting out the full start-to-close
+	shipCtx = workflow.WithHeartbeatTimeout(shipCtx, 2*time.Second)
+
 	var shipFutures []workflow.Future
-	for _, item := range items {
+	for i, item := range items {
 		logger.Info("Shipping item " + item.Description)
-		f := workflow.ExecuteActivity(ctx, activities.ShipOrder, input, item)
+		shippingInput := app.ShippingInput{Order: input, Item: item, Index: i + 1}
+		f := workflow.ExecuteActivity(shipCtx, activities.ShipOrder, shippingInput)
 		shipFutures = append(shipFutures, f)
 	}
 

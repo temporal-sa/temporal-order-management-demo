@@ -31,7 +31,8 @@ public class OrderActivities
 
     private static async Task<string> SimulateExternalOperationAsync(int ms)
     {
-        await Task.Delay(ms);
+        // cancellation-aware, so Ctrl+C on the worker interrupts in-flight activities instead of draining them
+        await Task.Delay(ms, ActivityExecutionContext.Current.CancellationToken);
         return "SUCCESS";
     }
 
@@ -110,16 +111,29 @@ public class OrderActivities
     }
 
     [Activity]
-    public async Task ShipOrder(OrderInput input, OrderItem item)
+    public async Task ShipOrder(ShippingInput input)
     {
-        var logger = ActivityExecutionContext.Current.Logger;
-        logger.LogInformation("Ship Order activity started, orderId ={}, itemId = {}, itemDescription = {}", 
-            input.OrderId, item.Id, item.Description);
-        
-        // simulate external API call
-        var delayMs = Random.Shared.Next(1000, 4001);
-        logger.LogInformation("Shipping Delay Time: {DelayMs}", delayMs);
-        await SimulateExternalOperationAsync(delayMs);
+        var context = ActivityExecutionContext.Current;
+        var logger = context.Logger;
+        logger.LogInformation("Ship Order activity started, orderId ={}, itemId = {}, itemDescription = {}",
+            input.Order.OrderId, input.Item.Id, input.Item.Description);
+
+        // item n ships in n*2 seconds, so a fan-out finishes one item at a time; no index means random
+        var delayMs = input.Index > 0 ? input.Index * 2000 : Random.Shared.Next(1000, 4001);
+
+        // on a retry, pick up from the last second this item reported
+        var secondsDone = context.Info.HeartbeatDetails.Count > 0
+            ? await context.Info.HeartbeatDetailAtAsync<int>(0)
+            : 0;
+        logger.LogInformation("Shipping Delay Time: {DelayMs}, resuming at {SecondsDone}s", delayMs, secondsDone);
+
+        // simulate external API call, heartbeating progress each second so a retry can resume
+        for (var second = secondsDone; second < delayMs / 1000; second++)
+        {
+            await SimulateExternalOperationAsync(1000);
+            context.Heartbeat(second + 1);
+        }
+        await SimulateExternalOperationAsync(delayMs % 1000);
     }
 
     [Activity]

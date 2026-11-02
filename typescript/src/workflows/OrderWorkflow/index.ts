@@ -23,8 +23,16 @@ const { getItems } = proxyLocalActivities<typeof activities>({
   retry: DEFAULT_RETRY_POLICY,
 });
 
-const { checkFraud, chargeCustomer, prepareShipment, shipOrder } = proxyActivities<typeof activities>({
+const { checkFraud, chargeCustomer, prepareShipment } = proxyActivities<typeof activities>({
   startToCloseTimeout: '5s',
+  retry: DEFAULT_RETRY_POLICY,
+});
+
+const { shipOrder } = proxyActivities<typeof activities>({
+  // Item n takes n*2s; leave headroom so start-to-close doesn't fire first
+  startToCloseTimeout: '15s',
+  // A dead worker is detected in ~2s instead of waiting out the full start-to-close
+  heartbeatTimeout: '2s',
   retry: DEFAULT_RETRY_POLICY,
 });
 
@@ -55,11 +63,11 @@ export async function OrderWorkflow(input: OrderInput): Promise<OrderOutput> {
   await chargeCustomer(input, workflowType);
   progress = await doSleep(3, 75);
 
-  // Ship Order
+  // Ship order items. 
   const shipOrderPromises = [];
-  for (const orderItem of orderItems) {
+  for (const [i, orderItem] of orderItems.entries()) {
     log.info(`Shipping item: ${orderItem.description}`);
-    shipOrderPromises.push(shipOrder(input, orderItem));
+    shipOrderPromises.push(shipOrder({ Order: input, Item: orderItem, Index: i + 1 }));
   }
 
   // Wait for all items to ship

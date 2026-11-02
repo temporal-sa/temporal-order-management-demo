@@ -2,6 +2,7 @@ require 'temporalio/workflow'
 require_relative '../models/order_input'
 require_relative '../models/order_output'
 require_relative '../models/update_order_input'
+require_relative '../models/shipping_input'
 
 module Workflows
   class OrderWorkflow < Temporalio::Workflow::Definition
@@ -47,13 +48,15 @@ module Workflows
       )
       sleep_fn(3, 75)
 
-      activity_handles = order_items.map do |item|
+      # Ship order items
+      activity_handles = order_items.each_with_index.map do |item, i|
         logger.info("Shipping item: #{item.description}")
         Temporalio::Workflow::Future.new do
           Temporalio::Workflow.execute_activity(
             Activities::ShipOrderActivity,
-            input, item,
-            start_to_close_timeout: 5,
+            Models::ShippingInput.new(input, item, i + 1),
+            start_to_close_timeout: 15,
+            heartbeat_timeout: 2,
             retry_policy: @retry_policy
           )
         end

@@ -14,5 +14,5 @@ const { shipOrder } = proxyActivities<typeof activities>({
 export async function ShippingWorkflow(input: OrderInput, item: OrderItem) {
   log.info(`Shipping workflow started, orderId ${input.OrderId}`);
 
-  await shipOrder(input, item);
+  await shipOrder({ Order: input, Item: item });
 }

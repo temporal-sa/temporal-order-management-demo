@@ -10,7 +10,7 @@ from temporalio.exceptions import ApplicationError
 from temporalio.workflow import ParentClosePolicy
 
 from activities import OrderActivities
-from shared_objects import OrderInput, OrderOutput, UpdateOrderInput, OrderItem
+from shared_objects import OrderInput, OrderOutput, UpdateOrderInput, OrderItem, ShippingInput
 from shipping_child_workflow import ShippingChildWorkflow
 
 logging.basicConfig(level=logging.INFO)
@@ -128,7 +128,7 @@ class OrderWorkflowScenarios:
         else:
             return workflow.execute_activity_method(
                 OrderActivities.ship_order,
-                args=[input, item],
+                ShippingInput(input, item),
                 start_to_close_timeout=timedelta(seconds=5),
                 retry_policy=self.retry_policy
             )

@@ -6,6 +6,9 @@ require_relative '../activities/ship_order_activity'
 require_relative '../activities/undo_prepare_shipment_activity'
 require_relative '../activities/undo_charge_customer_activity'
 require_relative '../activities/get_items_activity'
+require_relative '../models/order_input'
+require_relative '../models/order_item'
+require 'temporalio/testing'
 
 describe Activities::ChargeCustomerActivity do
   let(:activity) { described_class.new }
@@ -50,11 +53,15 @@ end
 
 describe Activities::ShipOrderActivity do
   let(:activity) { described_class.new }
-  let(:input) { double('input') }
-  let(:item) { double('item') }
+  let(:input) do
+    Models::ShippingInput.new(Models::OrderInput.new('1', 'addr'), Models::OrderItem.new(1, 'desc', 1), 1)
+  end
 
-  it 'returns SUCCESS' do
-    expect(activity.execute(input, item)).to eq('SUCCESS')
+  it 'returns SUCCESS and heartbeats progress each second' do
+    heartbeats = []
+    env = Temporalio::Testing::ActivityEnvironment.new(on_heartbeat: ->(details) { heartbeats << details.first })
+    expect(env.run(activity, input)).to eq('SUCCESS')
+    expect(heartbeats).to eq([1, 2])
   end
 end
 
