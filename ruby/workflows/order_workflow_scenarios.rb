@@ -5,6 +5,7 @@ require_relative '../models/order_output'
 require_relative '../models/update_order_input'
 require_relative '../models/shipping_input'
 require_relative 'shipping_child_workflow'
+require_relative 'shipping_service'
 
 module Workflows
   class OrderWorkflowScenarios < Temporalio::Workflow::Definition
@@ -12,6 +13,7 @@ module Workflows
 
     BUG = 'OrderWorkflowRecoverableFailure'
     CHILD = 'OrderWorkflowChildWorkflow'
+    NEXUS = 'OrderWorkflowNexusOperation'
     SIGNAL = 'OrderWorkflowHumanInLoopSignal'
     UPDATE = 'OrderWorkflowHumanInLoopUpdate'
     VISIBILITY = 'OrderWorkflowAdvancedVisibility'
@@ -96,6 +98,8 @@ module Workflows
               parent_close_policy: Temporalio::Workflow::ParentClosePolicy::TERMINATE
             )
           end
+        elsif workflow_type == NEXUS
+          Temporalio::Workflow::Future.new { ship_item_nexus(input, item) }
         else
           Temporalio::Workflow::Future.new do
             Temporalio::Workflow.execute_activity(
@@ -115,6 +119,15 @@ module Workflows
 
       tracking_id = Temporalio::Workflow.random.uuid
       Models::OrderOutput.new(tracking_id, input.address).deep_camelize_keys
+    end
+
+    def ship_item_nexus(input, item)
+      client = Temporalio::Workflow.create_nexus_client(
+        endpoint: ShippingService::ENDPOINT, service: ShippingService::NAME
+      )
+      handle = client.start_operation(ShippingService::SHIP_ITEM, ShippingService.ship_item_input(input, item))
+      logger.info("Started Nexus Operation: #{handle.operation_token}")
+      handle.result
     end
 
     def wait_for_updated_address_or_timeout(input)
