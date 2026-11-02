@@ -194,12 +194,12 @@ workflows instead.
 
 ## NexusOperation
 > [!CAUTION]
-> The NexusOperation scenario is currently ***only supported using Go, Java, Python, TypeScript, and Ruby***.
+> The NexusOperation scenario is currently ***supported using Go, Java, Python, TypeScript, .NET, and Ruby***.
 
 > [!NOTE]
-> The Nexus Service (the handler side) is implemented in Go and Java only. When running the Python, TypeScript, or
-> Ruby Worker, also run the Go Nexus Worker (`go/startlocalworker_nexus.sh`) to handle the shipping Nexus Operations.
-> This is also a polyglot demo: a Python, TypeScript, or Ruby caller Workflow invoking a Go Nexus Service.
+> The Nexus Service (the handler side) is implemented in Go and Java only. When running the Python, TypeScript,
+> .NET, or Ruby Worker, also run the Go Nexus Worker (`go/startlocalworker_nexus.sh`) to handle the shipping Nexus Operations.
+> This is also a polyglot demo: a Python, TypeScript, .NET, or Ruby caller Workflow invoking a Go Nexus Service.
 
 ![Nexus Operation](ui/static/nexus.png)
 
