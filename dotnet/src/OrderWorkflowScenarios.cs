@@ -15,9 +15,15 @@ public class OrderWorkflowScenarios
 {
     private static readonly string BUG = "OrderWorkflowRecoverableFailure";
     private static readonly string CHILD = "OrderWorkflowChildWorkflow";
+    private static readonly string NEXUS = "OrderWorkflowNexusOperation";
     private static readonly string SIGNAL = "OrderWorkflowHumanInLoopSignal";
     private static readonly string UPDATE = "OrderWorkflowHumanInLoopUpdate";
     private static readonly string VISIBILITY = "OrderWorkflowAdvancedVisibility";
+
+    private static readonly string SHIPPING_ENDPOINT =
+        Environment.GetEnvironmentVariable("TEMPORAL_NEXUS_SHIPPING_ENDPOINT") is { Length: > 0 } endpoint
+            ? endpoint
+            : "shipping-endpoint";
 
     private SearchAttributeKey<string> ORDER_STATUS_SA = SearchAttributeKey.CreateKeyword("OrderStatus");
 
@@ -92,6 +98,10 @@ public class OrderWorkflowScenarios
         if (CHILD.Equals(type))
         {
             await ShipOrderChildWorkflowsAndWait(input, orderItems, type);
+        }
+        else if (NEXUS.Equals(type))
+        {
+            await ShipOrderNexusOperationsAndWait(input, orderItems);
         }
         else
         {
@@ -196,6 +206,27 @@ public class OrderWorkflowScenarios
         logger.LogInformation("Waiting for child shipping workflows to complete...");
         await Workflow.WhenAllAsync(childWorkflows);
         logger.LogInformation("Shipping child workflows are now completed");
+    }
+
+    private async Task ShipOrderNexusOperationsAndWait(OrderInput input, List<OrderItem> items)
+    {
+        var logger = Workflow.Logger;
+        var client = Workflow.CreateNexusWorkflowClient<IShippingService>(SHIPPING_ENDPOINT);
+
+        var operations = new List<Task>();
+        foreach (var orderItem in items)
+        {
+            logger.LogInformation("Shipping item via Nexus operation: {}", orderItem.Id);
+            var handle = await client.StartNexusOperationAsync(
+                svc => svc.ShipItem(new ShippingInput(input, orderItem)));
+            logger.LogInformation("Started Nexus Operation: {}", handle.OperationToken);
+
+            operations.Add(handle.GetResultAsync());
+        }
+
+        logger.LogInformation("Waiting for shipping Nexus operations to complete...");
+        await Workflow.WhenAllAsync(operations);
+        logger.LogInformation("Shipping Nexus operations are now completed");
     }
 
     private async Task SagaCompensate(List<Func<Task>> compensations)

@@ -27,6 +27,20 @@ and access to the bucket.
 > together - `external-storage-s3` exact-depends on `common`, so a caret range resolves a second copy of
 > `ExternalStorage`. The Web UI must read the format `1.23.0` writes, hence `temporalio[aioboto3]>=1.32.0`.
 
+## NexusOperation Scenario
+
+The TypeScript Worker implements the caller side of the NexusOperation scenario only. The `shipping-service`
+Nexus Service it calls is handled by the Go Nexus Worker, so run both:
+
+```bash
+# create the nexus-demo Namespace and shipping-endpoint first (see the main README)
+cd go && ./startlocalworker_nexus.sh
+cd typescript && ./startlocalworker.sh
+```
+
+Workflow code can't read environment variables, so the Workflow gets the endpoint name
+(`TEMPORAL_NEXUS_SHIPPING_ENDPOINT`, default `shipping-endpoint`) from the `getShippingEndpoint` local Activity.
+
 ## (Optional) Run Worker in Productionize Build
 
 1. `npm run build` to build out the worker and activites.

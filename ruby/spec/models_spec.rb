@@ -52,3 +52,14 @@ describe 'Serialization' do
     expect(camel).to include('orderId', 'address')
   end
 end 
+require_relative '../workflows/shipping_service'
+
+describe Workflows::ShippingService do
+  it 'builds ship-item input in the shape the Go handler expects' do
+    input = described_class.ship_item_input(Models::OrderInput.new('o1', '1 Main'), Models::OrderItem.new(7, 'desc', 2))
+    expect(JSON.parse(input.to_json)).to eq(
+      'Order' => { 'OrderId' => 'o1', 'Address' => '1 Main' },
+      'Item' => { 'id' => 7, 'description' => 'desc', 'quantity' => 2 }
+    )
+  end
+end

@@ -14,11 +14,13 @@ import {
   uuid4,
   condition,
   ParentClosePolicy,
+  createNexusServiceClient,
 } from '@temporalio/workflow';
 import type * as activities from '../../activities/index';
 import type { RetryPolicy } from '@temporalio/client';
 import type { OrderInput, OrderItem, OrderOutput, UpdateOrderInput } from '../../types';
 import { ShippingWorkflow } from '../Shipping';
+import { shippingService } from '../../shipping-service';
 
 const DEFAULT_RETRY_POLICY: RetryPolicy = {
   initialInterval: '1s',
@@ -26,7 +28,7 @@ const DEFAULT_RETRY_POLICY: RetryPolicy = {
   maximumInterval: '30s',
 };
 
-const { getItems } = proxyLocalActivities<typeof activities>({
+const { getItems, getShippingEndpoint } = proxyLocalActivities<typeof activities>({
   startToCloseTimeout: '5s',
   retry: DEFAULT_RETRY_POLICY,
 });
@@ -143,11 +145,14 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOu
     await waitForUpdatedAddressOrTimeout();
   }
 
+  // Workflow code can't read environment variables, so get the Nexus endpoint name from a local activity
+  const shippingEndpoint = WF_TYPES.NEXUS == workflowType ? await getShippingEndpoint() : '';
+
   // Ship Order
   const shipOrderPromises = [];
   for (const orderItem of orderItems) {
     log.info(`Shipping item: ${orderItem.description}`);
-    shipOrderPromises.push(shipItemAsync(input, orderItem, workflowType));
+    shipOrderPromises.push(shipItemAsync(input, orderItem, workflowType, shippingEndpoint));
   }
 
   // Wait for all items to ship
@@ -171,13 +176,23 @@ export async function OrderWorkflowScenarios(input: OrderInput): Promise<OrderOu
   }
 }
 
-async function shipItemAsync(input: OrderInput, orderItem: OrderItem, type: string): Promise<void> {
+async function shipItemAsync(
+  input: OrderInput,
+  orderItem: OrderItem,
+  type: string,
+  shippingEndpoint: string,
+): Promise<void> {
   if (WF_TYPES.CHILD == type) {
     return executeChild(ShippingWorkflow, {
       args: [input, orderItem],
       workflowId: `shipment-${input.OrderId}-${orderItem.id}`,
       parentClosePolicy: ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE,
     });
+  } else if (WF_TYPES.NEXUS == type) {
+    const client = createNexusServiceClient({ service: shippingService, endpoint: shippingEndpoint });
+    const handle = await client.startOperation('shipItem', { Order: input, Item: orderItem });
+    log.info(`Started Nexus Operation: ${handle.token}`);
+    await handle.result();
   } else {
     return shipOrder({ Order: input, Item: orderItem });
   }
@@ -227,10 +242,12 @@ export const OrderWorkflowAdvancedVisibility = OrderWorkflowScenarios;
 export const OrderWorkflowAPIFailure = OrderWorkflowScenarios;
 export const OrderWorkflowNonRecoverableFailure = OrderWorkflowScenarios;
 export const OrderWorkflowExternalStorage = OrderWorkflowScenarios;
+export const OrderWorkflowNexusOperation = OrderWorkflowScenarios;
 
 const WF_TYPES = {
   BUG: 'OrderWorkflowRecoverableFailure',
   CHILD: 'OrderWorkflowChildWorkflow',
+  NEXUS: 'OrderWorkflowNexusOperation',
   SIGNAL: 'OrderWorkflowHumanInLoopSignal',
   UPDATE: 'OrderWorkflowHumanInLoopUpdate',
   VISIBILITY: 'OrderWorkflowAdvancedVisibility',

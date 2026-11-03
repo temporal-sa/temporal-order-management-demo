@@ -48,6 +48,10 @@ export async function getItems(): Promise<Array<OrderItem>> {
   return items;
 }
 
+export async function getShippingEndpoint(): Promise<string> {
+  return process.env.TEMPORAL_NEXUS_SHIPPING_ENDPOINT || 'shipping-endpoint';
+}
+
 export async function checkFraud(input: OrderInput): Promise<string> {
   log.info(`Check Fraud activity started, ${input.OrderId}`);
 
