@@ -23,8 +23,3 @@ export interface OrderOutput {
 export interface UpdateOrderInput {
   Address: string;
 }
-
-export interface ShippingInput {
-  Order: OrderInput;
-  Item: OrderItem;
-}

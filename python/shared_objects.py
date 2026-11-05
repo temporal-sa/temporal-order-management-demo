@@ -30,9 +30,3 @@ class OrderOutput:
 @dataclass
 class UpdateOrderInput:
     Address: str
-
-
-@dataclass
-class ShippingInput:
-    Order: OrderInput
-    Item: OrderItem
