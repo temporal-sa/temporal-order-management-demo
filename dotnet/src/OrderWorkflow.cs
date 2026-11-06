@@ -38,9 +38,7 @@ public class OrderWorkflow
 
         // Ship order items
         var shipOpts = (ActivityOptions)OrderActivities.ActivityOpts.Clone();
-        // item n takes n*2s; leave headroom so start-to-close doesn't fire first
         shipOpts.StartToCloseTimeout = TimeSpan.FromSeconds(15);
-        // a dead worker is detected in ~2s instead of waiting out the full start-to-close
         shipOpts.HeartbeatTimeout = TimeSpan.FromSeconds(2);
 
         var activities = new List<Task>();
@@ -54,11 +52,9 @@ public class OrderWorkflow
             );
         }
 
-        // Wait for all items to ship
         await Workflow.WhenAllAsync(activities);
         await Sleep(0, 100);
 
-        // Generate tracking ID
         var trackingId = Workflow.Random.Next().ToString();
         return new OrderOutput(trackingId, input.Address);
     }

@@ -29,10 +29,7 @@ const { checkFraud, chargeCustomer, prepareShipment } = proxyActivities<typeof a
 });
 
 const { shipOrder } = proxyActivities<typeof activities>({
-  // Item n takes n*2s; leave headroom so start-to-close doesn't fire first
   startToCloseTimeout: '15s',
-  // A dead worker is detected in ~2s instead of waiting out the full start-to-close
-  heartbeatTimeout: '2s',
   retry: DEFAULT_RETRY_POLICY,
 });
 
